@@ -1,26 +1,164 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   Carnegüey OS — Tokens de diseño (spec §10.2 / §10.3 / §10.4)
+   Identidad visual: rojo Carnegüey sobre fondo blanco,
+   estilo iOS minimalista. SF Pro / system-ui stack.
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Tipografía iOS / system stack */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Paleta marca Carnegüey (spec §10.2) */
+  --brand-red: #d40000;
+  --brand-red-soft: #fff0f0;
+  --brand-red-dark: #a00000;
+
+  /* Superficies */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f7;
+  --bg-tertiary: #ebebed;
+
+  /* Texto */
+  --text-primary: #1c1c1e;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #aeaeb2;
+
+  /* Bordes */
+  --border-soft: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
+
+  /* Estados */
+  --success: #34c759;
+  --warning: #ff9500;
+  --danger: #ff3b30;
+
+  /* Radii (spec §10.4: cards 16, inputs 12, botones 14) */
+  --radius: 0.875rem; /* 14px = botón base */
+
+  /* === Mapeo a tokens semánticos de shadcn === */
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+  --card: var(--bg-primary);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-primary);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--brand-red);
+  --primary-foreground: #ffffff;
+  --secondary: var(--bg-secondary);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--bg-secondary);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--brand-red-soft);
+  --accent-foreground: var(--brand-red-dark);
+  --destructive: var(--danger);
+  --border: var(--border-soft);
+  --input: var(--border-soft);
+  --ring: var(--brand-red);
+  --chart-1: var(--brand-red);
+  --chart-2: var(--brand-red-dark);
+  --chart-3: var(--success);
+  --chart-4: var(--warning);
+  --chart-5: var(--text-secondary);
+  --sidebar: var(--bg-primary);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--brand-red);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--bg-secondary);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border-soft);
+  --sidebar-ring: var(--brand-red);
 }
 
 @theme inline {
+  /* Colores */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  /* Tipografía */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-sans);
+
+  /* Radii (spec §10.4) */
+  --radius-sm: 0.5rem;       /* 8px */
+  --radius-md: 0.75rem;      /* 12px — inputs */
+  --radius-lg: var(--radius);/* 14px — botones */
+  --radius-xl: 1rem;         /* 16px — cards */
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
+
+  /* Tipografía — escala (spec §10.3) */
+  --text-large-title: 1.75rem;     /* 28px / h1 */
+  --text-title: 1.375rem;          /* 22px / h2 */
+  --text-subtitle: 1.0625rem;      /* 17px / h3 */
+  --text-body: 0.9375rem;          /* 15px */
+  --text-caption: 0.8125rem;       /* 13px */
+  --text-small: 0.6875rem;         /* 11px */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: var(--text-body);
+  }
+  /* Inputs numéricos en móvil sin spinners feos */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 }

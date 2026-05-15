@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Carnegüey OS
 
-## Getting Started
+Sistema de gestión interno de **Carnegüey**, carnicería en Sincelejo (Sucre,
+Colombia).
 
-First, run the development server:
+Versión actual: **v1.0** — Módulo de Inventario. Spec maestra en
+[`docs/carneguey-os-spec-v1.md`](docs/carneguey-os-spec-v1.md). Estado del
+proyecto en [`docs/carneguey-os-status.md`](docs/carneguey-os-status.md).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Stack
+
+- **Framework:** Next.js 15 (App Router, TypeScript)
+- **Estilos:** Tailwind CSS v4 + shadcn/ui
+- **Backend:** Supabase (Postgres + Auth + Storage)
+- **Formularios:** react-hook-form + zod
+- **Fechas:** date-fns (zona `America/Bogota`)
+- **Iconos:** lucide-react
+- **Deploy:** Vercel
+
+## Cómo correr en local
+
+### Requisitos
+
+- Node.js 18.18+ o 20+
+- npm
+- Un proyecto de Supabase con las credenciales a mano
+
+### Pasos
+
+1. Instalar dependencias:
+
+   ```bash
+   npm install
+   ```
+
+2. Configurar variables de entorno:
+
+   Copiar `.env.local.example` a `.env.local` y rellenar los tres valores con
+   los del dashboard de Supabase (Project Settings → API).
+
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+   - `NEXT_PUBLIC_SUPABASE_URL` — URL del proyecto.
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — anon/public key.
+   - `SUPABASE_SERVICE_ROLE_KEY` — service role key (solo servidor, nunca exponer al cliente).
+
+3. Levantar el servidor de desarrollo:
+
+   ```bash
+   npm run dev
+   ```
+
+   La app queda disponible en [http://localhost:3000](http://localhost:3000).
+
+## Estructura
+
+```
+app/                  rutas (App Router de Next.js)
+components/
+  ui/                 componentes shadcn/ui
+lib/
+  supabase/           clientes de Supabase (browser, server, middleware)
+  utils.ts            utilidades (cn, formatters)
+middleware.ts         middleware de Next.js (auth + roles, paso 3)
+supabase/             migraciones SQL y seed (paso 2)
+docs/                 spec, estado, decisiones
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Documentación interna
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [`docs/carneguey-os-spec-v1.md`](docs/carneguey-os-spec-v1.md) — especificación completa de la v1.0.
+- [`docs/carneguey-os-status.md`](docs/carneguey-os-status.md) — bitácora de hitos y próximos pasos.
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — decisiones técnicas, deudas técnicas e ideas fuera de alcance.
+- [`CLAUDE.md`](CLAUDE.md) — instrucciones para el agente de desarrollo.
