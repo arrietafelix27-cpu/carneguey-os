@@ -6,6 +6,7 @@
 --
 --   BLOQUE A · Tablas + CHECK constraints + índices
 --   BLOQUE B · Secuencias y función gen_lot_code
+--   BLOQUE B2 · Funciones de rol (is_admin / is_active_user)
 --   BLOQUE C · Vistas calculadas
 --   BLOQUE D · Vistas restringidas para empleado (sin dinero)
 --   BLOQUE E · RLS + GRANTs por rol
@@ -396,6 +397,46 @@ create trigger trg_set_lot_code
 
 
 -- ============================================================================
+-- BLOQUE B2 · FUNCIONES DE ROL (is_admin / is_active_user)
+-- ----------------------------------------------------------------------------
+-- Se definen aquí, antes de las vistas (Bloque D) y las RLS (Bloque E) que
+-- las usan. SECURITY DEFINER: corren como owner (BYPASSRLS), por lo que
+-- consultar profiles NO dispara recursión de RLS. Pieza central del control
+-- admin vs employee (DECISIONS.md D-007).
+-- ============================================================================
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin' and active = true
+  );
+$$;
+
+create or replace function public.is_active_user()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and active = true
+  );
+$$;
+
+-- ============================================================================
+-- FIN BLOQUE B2
+-- ============================================================================
+
+
+-- ============================================================================
 -- BLOQUE C · VISTAS CALCULADAS (spec §6.12)
 -- ----------------------------------------------------------------------------
 -- Las 3 vistas se crean con `security_invoker = on` (Postgres 15+, Supabase
@@ -628,36 +669,9 @@ where public.is_admin();
 -- ============================================================================
 -- BLOQUE E · RLS + GRANTs POR ROL
 -- ----------------------------------------------------------------------------
--- is_admin(): SECURITY DEFINER, corre como owner (BYPASSRLS) por lo que
--- consultar profiles aquí NO dispara recursión de RLS. Es la pieza central
--- del control admin vs employee.
+-- Las funciones is_admin() / is_active_user() se definieron en el Bloque B2
+-- (deben existir antes de las vistas del Bloque D que las usan).
 -- ============================================================================
-
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public, pg_temp
-as $$
-  select exists (
-    select 1 from public.profiles
-    where id = auth.uid() and role = 'admin' and active = true
-  );
-$$;
-
-create or replace function public.is_active_user()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public, pg_temp
-as $$
-  select exists (
-    select 1 from public.profiles
-    where id = auth.uid() and active = true
-  );
-$$;
 
 -- ---- Habilitar RLS en TODAS las tablas (sin excepción) --------------------
 alter table public.profiles              enable row level security;
