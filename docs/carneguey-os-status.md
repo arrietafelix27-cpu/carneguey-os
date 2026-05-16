@@ -58,11 +58,20 @@ filtros, buscador y CRUD (nombre, categoría, unidad, origen, código POS).
 Catálogo real cargado (9 proveedores, 81 productos). Build OK, RLS
 verificada. **Pendiente:** que Félix lo pruebe en el navegador.
 
+### Paso 5 · Lote canal directo (res) y cerdo — ✅ redactado (2026-05-16)
+
+Flujo de compra para la cajera: proveedor, N° canales, peso, costo, fecha,
+foto de comprobante obligatoria, notas. Crea el lote vía RPC
+`fn_create_lot_carcass` (status active) y sube el comprobante a Storage
+(`receipts`). Nav inferior del empleado. Build OK. **Pendiente:** prueba de
+Félix/cajera en el navegador.
+
 ## Próximo paso
 
-### Paso 5 · Lote de canal directo y cerdo — ⏳ siguiente
+### Paso 6 · Entrada directa (pollo y otros) — ⏳ siguiente
 
-Primer flujo de compra para la cajera (el más simple, sección 15.3 #4).
+Compra de pollo y otros productos que entran directo al inventario
+(sección 15.3 #5).
 
 ---
 
