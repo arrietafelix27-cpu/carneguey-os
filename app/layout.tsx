@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Carnegüey OS",
@@ -19,7 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es-CO">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <Toaster richColors position="top-center" />
+      </body>
     </html>
   );
 }
