@@ -1,29 +1,38 @@
+import Link from "next/link";
+import { ShoppingCart, ChevronRight } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
-import { LogoutButton } from "@/components/shared/logout-button";
 
 export default async function EmployeeHome() {
   const profile = await getCurrentProfile();
 
   return (
-    <main className="min-h-[100dvh] bg-secondary">
-      <header className="flex items-center justify-between border-b border-border bg-card px-4 py-4 sm:px-6">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Punto de operación
-          </p>
-          <h1 className="text-lg font-bold text-foreground">
-            Hola, {profile.full_name}
-          </h1>
-        </div>
-        <LogoutButton />
-      </header>
+    <main className="mx-auto max-w-2xl px-4 py-8">
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+        Punto de operación
+      </p>
+      <h1 className="mb-6 text-2xl font-bold tracking-tight text-foreground">
+        Hola, {profile.full_name}
+      </h1>
 
-      <section className="px-4 py-8 sm:px-6">
-        <p className="text-sm text-muted-foreground">
-          Las compras, despostes y conteos se irán habilitando en los próximos
-          pasos.
-        </p>
-      </section>
+      <Link
+        href="/empleado/compras"
+        className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-transform active:scale-[0.98]"
+      >
+        <span className="grid size-11 place-items-center rounded-lg bg-accent text-accent-foreground">
+          <ShoppingCart className="size-5" />
+        </span>
+        <span className="flex-1">
+          <span className="block font-semibold text-foreground">Compras</span>
+          <span className="block text-sm text-muted-foreground">
+            Registrar mercancía que llega
+          </span>
+        </span>
+        <ChevronRight className="size-5 text-muted-foreground" />
+      </Link>
+
+      <p className="mt-6 text-sm text-muted-foreground">
+        Desposte e inventario se habilitarán en los próximos pasos.
+      </p>
     </main>
   );
 }
