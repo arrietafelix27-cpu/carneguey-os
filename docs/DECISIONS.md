@@ -66,6 +66,11 @@ del spec) se anotan aquí en lugar de implementarlas.
 **Decisión:** Los usuarios se crean SOLO por la API de administración oficial de Supabase, vía `scripts/seed-users.mjs` (usa la service_role key de `.env.local`). `seed.sql` ya no toca `auth.*`; solo siembra proveedores y productos. El profile lo sigue creando el trigger `on_auth_user_created` a partir de `user_metadata` (el trigger NO era el problema; se confirmó descartándolo). Idempotente: el script omite usuarios ya existentes.
 **Razón:** La Admin API rellena correctamente todas las columnas internas de `auth` que GoTrue necesita. Insertar a mano por SQL es frágil entre versiones y rompió el login en producción. Recuperación aplicada: borrar las filas malas de `auth.users/identities`, recrear por Admin API. Trade-off: el seed ya no es "un solo paste de SQL"; requiere además `node scripts/seed-users.mjs` (documentado en README).
 
+### D-013 · `providers.type` en desuso — UI lo ignora, se fija 'other' interno
+**Fecha:** 2026-05-16
+**Decisión:** El campo `providers.type` dejó de ser relevante para el negocio. Por petición de Félix NO se modifica el esquema (la columna y su CHECK NOT NULL quedan tal cual, para no romper nada ni arriesgar otra incidencia tipo login). La UI del módulo de proveedores ignora el campo por completo: no lo muestra, no lo deja elegir. El Server Action de crear/editar proveedor escribe `type = 'other'` de forma interna e invisible para satisfacer el NOT NULL. Proveedores = lista simple: nombre, teléfono opcional, activo/inactivo.
+**Razón:** Cambiar el esquema (default o drop constraint) es riesgo innecesario en producción cuando un valor fijo interno resuelve igual. Si en el futuro se decide limpiar el esquema, se hará en una migración aparte. El seed real de proveedores también usa `type='other'`.
+
 ### D-010 · Inmutabilidad por estado (append-only donde corresponde)
 **Fecha:** 2026-05-15
 **Decisión:** `inventory_movements` y `direct_purchases` no tienen policies de UPDATE/DELETE (solo se corrigen con ajustes nuevos). `despostes`/`desposte_items` y `physical_counts`/`physical_count_items` solo se editan/borran mientras están `in_progress`; al finalizar quedan congelados. Se permite borrar un desposte/conteo `in_progress` (cancelar algo iniciado por error) — no está en la spec pero es UX mínima sin riesgo (sin dinero, sin movimientos generados).

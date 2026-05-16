@@ -4,8 +4,12 @@
 -- Ejecutar UNA SOLA VEZ, DESPUÉS de 001_initial_schema.sql, en el SQL Editor.
 --
 -- Crea:
---   · 5 proveedores de ejemplo
+--   · 9 proveedores reales de Carnegüey
 --   · Catálogo real de productos de Carnegüey, todos con pos_code NULL
+--
+-- El campo providers.type ya no es relevante para el negocio (ver
+-- DECISIONS.md D-013). Se conserva en la base por compatibilidad y se
+-- llena con 'other' de forma interna. La UI lo ignora por completo.
 --
 -- LOS USUARIOS NO SE CREAN AQUÍ. Insertar usuarios a mano en auth.users por
 -- SQL deja filas incompletas que rompen el login de Supabase (GoTrue lanza
@@ -18,14 +22,20 @@
 -- ---- USUARIOS: ver scripts/seed-users.mjs (API oficial de Supabase) -------
 
 -- ---- PROVEEDORES ----------------------------------------------------------
+-- Lista real de Carnegüey. type='other' fijo (campo en desuso, ver D-013).
 insert into public.providers (name, type, phone)
-select * from (values
-  ('Don Hernán Pérez',           'live_cattle',   null),
-  ('Frigorífico La Esperanza',   'beef_carcass',  null),
-  ('Cerdos del Caribe',          'pork_carcass',  null),
-  ('Mac Pollo',                  'poultry',       null),
-  ('Doña Luz Arepas',            'other',         null)
-) as v(name, type, phone)
+select v.name, 'other', null
+from (values
+  ('Jairo Ospina'),
+  ('Señor Félix'),
+  ('Pitín'),
+  ('Nando Meza'),
+  ('Res Cárnica'),
+  ('Eduardo'),
+  ('La Marranera'),
+  ('Nadin'),
+  ('Mac Pollo')
+) as v(name)
 where not exists (select 1 from public.providers);
 
 -- ---- PRODUCTOS ------------------------------------------------------------
