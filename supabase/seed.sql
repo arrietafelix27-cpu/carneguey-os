@@ -4,108 +4,18 @@
 -- Ejecutar UNA SOLA VEZ, DESPUÉS de 001_initial_schema.sql, en el SQL Editor.
 --
 -- Crea:
---   · 3 usuarios: admin felix@carneguey.com (PIN 2723) +
---     cajera1/cajera2@carneguey.com (Carneguey2026!)
 --   · 5 proveedores de ejemplo
---   · Catálogo base de productos (spec §12), todos con pos_code NULL
+--   · Catálogo real de productos de Carnegüey, todos con pos_code NULL
 --
--- Los profiles se crean SOLOS por el trigger on_auth_user_created (Bloque G)
--- a partir de user_metadata. No hay que insertarlos a mano.
---
--- Si la creación de usuarios por SQL falla en tu instancia de Supabase, hay
--- un plan B manual por el panel (ver instrucciones que te entregué). Los
--- proveedores y productos sí entran siempre por SQL.
+-- LOS USUARIOS NO SE CREAN AQUÍ. Insertar usuarios a mano en auth.users por
+-- SQL deja filas incompletas que rompen el login de Supabase (GoTrue lanza
+-- "Database error querying schema"). Los 3 usuarios se crean por la API
+-- oficial de administración con el script `scripts/seed-users.mjs`
+-- (ver README / DECISIONS.md D-012). El profile se crea solo por el trigger
+-- on_auth_user_created a partir de user_metadata.
 -- ============================================================================
 
--- pgcrypto para hashear contraseñas (crypt / gen_salt). En Supabase ya viene.
-create extension if not exists pgcrypto with schema extensions;
-
--- ---- USUARIOS -------------------------------------------------------------
--- Patrón: insertar en auth.users + auth.identities. El trigger del Bloque G
--- crea el profile con el role que va en raw_user_meta_data.
-
-do $$
-declare
-  v_uid uuid;
-begin
-  -- Admin: Félix
-  if not exists (select 1 from auth.users where email = 'felix@carneguey.com') then
-    v_uid := gen_random_uuid();
-    insert into auth.users (
-      instance_id, id, aud, role, email, encrypted_password,
-      email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
-      created_at, updated_at
-    ) values (
-      '00000000-0000-0000-0000-000000000000', v_uid, 'authenticated',
-      'authenticated', 'felix@carneguey.com',
-      extensions.crypt('2723', extensions.gen_salt('bf')),
-      now(),
-      '{"provider":"email","providers":["email"]}'::jsonb,
-      '{"full_name":"Félix Arrieta","role":"admin"}'::jsonb,
-      now(), now()
-    );
-    insert into auth.identities (
-      id, user_id, provider_id, identity_data, provider,
-      last_sign_in_at, created_at, updated_at
-    ) values (
-      gen_random_uuid(), v_uid, v_uid::text,
-      jsonb_build_object('sub', v_uid::text, 'email', 'felix@carneguey.com'),
-      'email', now(), now(), now()
-    );
-  end if;
-
-  -- Cajera 1
-  if not exists (select 1 from auth.users where email = 'cajera1@carneguey.com') then
-    v_uid := gen_random_uuid();
-    insert into auth.users (
-      instance_id, id, aud, role, email, encrypted_password,
-      email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
-      created_at, updated_at
-    ) values (
-      '00000000-0000-0000-0000-000000000000', v_uid, 'authenticated',
-      'authenticated', 'cajera1@carneguey.com',
-      extensions.crypt('Carneguey2026!', extensions.gen_salt('bf')),
-      now(),
-      '{"provider":"email","providers":["email"]}'::jsonb,
-      '{"full_name":"Cajera 1","role":"employee"}'::jsonb,
-      now(), now()
-    );
-    insert into auth.identities (
-      id, user_id, provider_id, identity_data, provider,
-      last_sign_in_at, created_at, updated_at
-    ) values (
-      gen_random_uuid(), v_uid, v_uid::text,
-      jsonb_build_object('sub', v_uid::text, 'email', 'cajera1@carneguey.com'),
-      'email', now(), now(), now()
-    );
-  end if;
-
-  -- Cajera 2
-  if not exists (select 1 from auth.users where email = 'cajera2@carneguey.com') then
-    v_uid := gen_random_uuid();
-    insert into auth.users (
-      instance_id, id, aud, role, email, encrypted_password,
-      email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
-      created_at, updated_at
-    ) values (
-      '00000000-0000-0000-0000-000000000000', v_uid, 'authenticated',
-      'authenticated', 'cajera2@carneguey.com',
-      extensions.crypt('Carneguey2026!', extensions.gen_salt('bf')),
-      now(),
-      '{"provider":"email","providers":["email"]}'::jsonb,
-      '{"full_name":"Cajera 2","role":"employee"}'::jsonb,
-      now(), now()
-    );
-    insert into auth.identities (
-      id, user_id, provider_id, identity_data, provider,
-      last_sign_in_at, created_at, updated_at
-    ) values (
-      gen_random_uuid(), v_uid, v_uid::text,
-      jsonb_build_object('sub', v_uid::text, 'email', 'cajera2@carneguey.com'),
-      'email', now(), now(), now()
-    );
-  end if;
-end $$;
+-- ---- USUARIOS: ver scripts/seed-users.mjs (API oficial de Supabase) -------
 
 -- ---- PROVEEDORES ----------------------------------------------------------
 insert into public.providers (name, type, phone)

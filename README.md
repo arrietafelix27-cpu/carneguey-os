@@ -46,7 +46,20 @@ proyecto en [`docs/carneguey-os-status.md`](docs/carneguey-os-status.md).
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — anon/public key.
    - `SUPABASE_SERVICE_ROLE_KEY` — service role key (solo servidor, nunca exponer al cliente).
 
-3. Levantar el servidor de desarrollo:
+3. Aplicar la base de datos (una sola vez): en el SQL Editor de Supabase,
+   ejecutar `supabase/migrations/001_initial_schema.sql` y luego
+   `supabase/seed.sql` (proveedores + productos).
+
+4. Crear los usuarios iniciales (una sola vez):
+
+   ```bash
+   node scripts/seed-users.mjs
+   ```
+
+   Crea admin `felix@carneguey.com` (PIN 2723) y `cajera1`/`cajera2@carneguey.com`
+   (`Carneguey2026!`). Los usuarios NO se crean por SQL — ver DECISIONS.md D-012.
+
+5. Levantar el servidor de desarrollo:
 
    ```bash
    npm run dev

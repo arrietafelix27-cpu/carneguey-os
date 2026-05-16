@@ -56,10 +56,15 @@ del spec) se anotan aquí en lugar de implementarlas.
 **Decisión:** La spec §8.7 dice que la cajera "no debe ver el teórico durante el conteo" y lo plantea como regla de UI. Se refuerza también en la BD: `theoretical_quantity` se oculta a `authenticated` con GRANT a nivel de columna; las cajeras leen el conteo por `v_physical_count_items_employee` (sin teórico) y solo pueden escribir `physical_quantity`/`notes`. Félix ve el teórico/físico/diferencia por `v_physical_count_items_admin` (vista admin-only). Razón: la regla anti-fraude es un driver central del negocio (CLAUDE.md §2.5 — robos de empleados); enforcement solo-UI es débil (la cajera podría llamar la API directo).
 **Impacto negocio:** positivo — cierra un hueco de manipulación que la spec dejaba solo en UI.
 
-### D-009 · Usuarios semilla creados por SQL (con plan B manual)
-**Fecha:** 2026-05-15
-**Decisión:** `seed.sql` crea los 3 usuarios directamente en `auth.users` + `auth.identities` con contraseña hasheada (`pgcrypto`). El profile lo crea solo el trigger del Bloque G. Si fallara en alguna instancia de Supabase, hay plan B: crearlos a mano desde el panel de Authentication.
-**Razón:** Un solo paste de SQL deja todo listo para Félix (no técnico). Riesgo: el esquema interno de `auth` puede cambiar entre versiones de Supabase; por eso el plan B documentado.
+### D-009 · ~~Usuarios semilla creados por SQL~~ — REVERTIDA por D-012
+**Fecha:** 2026-05-15 · **Revertida:** 2026-05-16
+**Qué decía:** `seed.sql` creaba los 3 usuarios insertando directo en `auth.users` + `auth.identities` con `pgcrypto`.
+**Por qué se revirtió:** En la práctica esas filas quedan incompletas para la versión de GoTrue de Supabase (faltan columnas de token que GoTrue espera no-nulas). Resultado: login y admin API devuelven 500 "Database error querying schema / finding users". Confirmado en el proyecto real de Félix el 2026-05-16. Reemplazada por D-012.
+
+### D-012 · Usuarios creados por la Admin API (scripts/seed-users.mjs)
+**Fecha:** 2026-05-16
+**Decisión:** Los usuarios se crean SOLO por la API de administración oficial de Supabase, vía `scripts/seed-users.mjs` (usa la service_role key de `.env.local`). `seed.sql` ya no toca `auth.*`; solo siembra proveedores y productos. El profile lo sigue creando el trigger `on_auth_user_created` a partir de `user_metadata` (el trigger NO era el problema; se confirmó descartándolo). Idempotente: el script omite usuarios ya existentes.
+**Razón:** La Admin API rellena correctamente todas las columnas internas de `auth` que GoTrue necesita. Insertar a mano por SQL es frágil entre versiones y rompió el login en producción. Recuperación aplicada: borrar las filas malas de `auth.users/identities`, recrear por Admin API. Trade-off: el seed ya no es "un solo paste de SQL"; requiere además `node scripts/seed-users.mjs` (documentado en README).
 
 ### D-010 · Inmutabilidad por estado (append-only donde corresponde)
 **Fecha:** 2026-05-15
