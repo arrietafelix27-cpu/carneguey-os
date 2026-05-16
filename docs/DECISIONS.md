@@ -79,6 +79,12 @@ del spec) se anotan aquí en lugar de implementarlas.
 **Riesgo:** Si una contraseña inicial se filtra antes del cambio manual, el atacante tiene acceso a la cuenta hasta que Félix la rote.
 **Acción futura:** Implementar `force_password_change` flag en `profiles` y middleware que redirige a `/cambiar-clave` mientras el flag esté en true. Evaluar para v1.1.
 
+### DT-004 · PIN corto de 4 dígitos para el admin (decisión del dueño)
+**Fecha:** 2026-05-16
+**Descripción:** Félix pidió cambiar su usuario a `felix@carneguey.com` con contraseña `2723` (4 dígitos). Se le explicó el riesgo de seguridad de un PIN tan corto en un sistema con datos financieros; lo aceptó explícitamente. Se bajó el mínimo de la validación de la app (zod) de 6 a 4 caracteres. Las cajeras siguen con `Carneguey2026!`.
+**Por qué funciona sin tocar config de Supabase:** las contraseñas se fijan por SQL directo con `crypt()`, lo que evita la validación de longitud de la Auth API de Supabase (que solo aplica a signup/update vía API, no a sign-in ni a hash insertado por SQL).
+**Riesgo asumido:** un PIN de 4 dígitos numéricos es trivial de adivinar por fuerza bruta si alguien tiene acceso a la pantalla de login. Mitigación futura sugerida: rate limiting de intentos / 2FA para el admin. Evaluar en v1.1.
+
 ### DT-002 · `pos_code` de productos queda NULL en seed
 **Fecha:** 2026-05-15
 **Descripción:** El catálogo semilla no incluye los códigos de eSyspos porque Félix aún no tiene el export limpio. Los productos quedan con `pos_code IS NULL` y se llenan desde el panel de admin más adelante.

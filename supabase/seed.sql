@@ -4,7 +4,8 @@
 -- Ejecutar UNA SOLA VEZ, DESPUÉS de 001_initial_schema.sql, en el SQL Editor.
 --
 -- Crea:
---   · 3 usuarios (1 admin + 2 cajeras), contraseña inicial Carneguey2026!
+--   · 3 usuarios: admin felix@carneguey.com (PIN 2723) +
+--     cajera1/cajera2@carneguey.com (Carneguey2026!)
 --   · 5 proveedores de ejemplo
 --   · Catálogo base de productos (spec §12), todos con pos_code NULL
 --
@@ -28,7 +29,7 @@ declare
   v_uid uuid;
 begin
   -- Admin: Félix
-  if not exists (select 1 from auth.users where email = 'arrietafelix27@gmail.com') then
+  if not exists (select 1 from auth.users where email = 'felix@carneguey.com') then
     v_uid := gen_random_uuid();
     insert into auth.users (
       instance_id, id, aud, role, email, encrypted_password,
@@ -36,8 +37,8 @@ begin
       created_at, updated_at
     ) values (
       '00000000-0000-0000-0000-000000000000', v_uid, 'authenticated',
-      'authenticated', 'arrietafelix27@gmail.com',
-      extensions.crypt('Carneguey2026!', extensions.gen_salt('bf')),
+      'authenticated', 'felix@carneguey.com',
+      extensions.crypt('2723', extensions.gen_salt('bf')),
       now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
       '{"full_name":"Félix Arrieta","role":"admin"}'::jsonb,
@@ -48,7 +49,7 @@ begin
       last_sign_in_at, created_at, updated_at
     ) values (
       gen_random_uuid(), v_uid, v_uid::text,
-      jsonb_build_object('sub', v_uid::text, 'email', 'arrietafelix27@gmail.com'),
+      jsonb_build_object('sub', v_uid::text, 'email', 'felix@carneguey.com'),
       'email', now(), now(), now()
     );
   end if;
