@@ -84,6 +84,11 @@ del spec) se anotan aquí en lugar de implementarlas.
 **Descripción:** El catálogo semilla no incluye los códigos de eSyspos porque Félix aún no tiene el export limpio. Los productos quedan con `pos_code IS NULL` y se llenan desde el panel de admin más adelante.
 **Acción futura:** Cuando Félix consiga el export, importar masivamente con un script o desde admin.
 
+### DT-003 · Botón "Eliminar definitivamente" en /admin/productos
+**Fecha:** 2026-05-16
+**Descripción:** Pendiente para el módulo `/admin/productos`: agregar un botón "Eliminar definitivamente" que solo aparezca cuando el producto NO tenga movimientos de inventario, despostes ni compras asociadas. Por defecto, los productos se desactivan (`active = false`), no se eliminan, para preservar la integridad del histórico.
+**Acción futura:** Implementar en el paso de catálogo (sección 15.3 #4), con la verificación de "sin referencias" antes de permitir el borrado físico.
+
 ---
 
 ## Dudas pendientes

@@ -124,13 +124,18 @@ where not exists (select 1 from public.providers);
 insert into public.products (name, category, unit, origin)
 select v.name, 'beef', 'kg', 'from_processing'
 from (values
-  ('Lomo fino'), ('Lomo ancho'), ('Punta de anca'), ('Sobrebarriga'),
-  ('Pierna'), ('Cadera'), ('Bola de pierna'), ('Murillo'), ('Posta'),
-  ('Falda'), ('Pecho'), ('Costilla con piel'), ('Costilla gourmet sin piel'),
-  ('Carne de bisteck'), ('Carne goulash'), ('Cabeza de lomo'), ('Bofe'),
-  ('Bofe salado'), ('Asadura'), ('Corazón'), ('Hígado'), ('Lengua'),
-  ('Hueso carnudo'), ('Hueso de tuétano'), ('Molida corriente'),
-  ('Sebo'), ('Cola'), ('Rabo')
+  ('Lomo fino'), ('Lomo redondo'), ('Lomo ancho'), ('Salada extra fina'),
+  ('Salada fina'), ('Punta gorda'), ('Masa pierna'), ('Muchacho'),
+  ('Carne chocozuela'), ('Cabeza lomo'), ('Palomilla'), ('Morrillo'),
+  ('Carne bistec'), ('Hilachar'), ('Sobrebarriga delgada'),
+  ('Sobrebarriga gruesa'), ('Pecho espaldilla'), ('Jarrete pierna'),
+  ('Trocito res'), ('Carne adobada'), ('Galillo'), ('Pata res'),
+  ('Pezuña'), ('Costilla gourmet res'), ('Costilla super'),
+  ('Costilla especial'), ('Costilla corriente'), ('Molida especial'),
+  ('Molida'), ('Hueso salado'), ('Hueso rojo'), ('Hueso chato carnudo'),
+  ('Hueso paleta'), ('Hueso cogote'), ('Hueso rabo'), ('Osobuco'),
+  ('Bofe'), ('Bofe salado'), ('Panza'), ('Pajarilla'), ('Asadura'),
+  ('Lengua'), ('Hígado'), ('Corazón'), ('Ombligo salado'), ('Sebo')
 ) as v(name)
 where not exists (select 1 from public.products where category = 'beef');
 
@@ -138,10 +143,11 @@ where not exists (select 1 from public.products where category = 'beef');
 insert into public.products (name, category, unit, origin)
 select v.name, 'pork', 'kg', 'from_processing'
 from (values
-  ('Lomo de cerdo'), ('Pernil'), ('Costilla de cerdo'), ('Tocino'),
-  ('Papada'), ('Espinazo'), ('Cabeza de cerdo'), ('Manitas'),
-  ('Pierna de cerdo'), ('Brazuelo'), ('Chicharrón'), ('Molida de cerdo'),
-  ('Hueso de cerdo')
+  ('Lomo cerdo'), ('Pulpa cerdo'), ('Picada cerdo'),
+  ('Costilla con piel'), ('Costillita'), ('Costilla gourmet sin piel'),
+  ('Chuleta brazo'), ('Chuleta sin piel'), ('Papada'),
+  ('Tocino corriente'), ('Tocino carnudo super'), ('Espinazo cerdo'),
+  ('Hueso cerdo'), ('Cuadra codillo')
 ) as v(name)
 where not exists (select 1 from public.products where category = 'pork');
 
@@ -149,14 +155,19 @@ where not exists (select 1 from public.products where category = 'pork');
 insert into public.products (name, category, unit, origin)
 select v.name, 'poultry', v.unit, 'direct_purchase'
 from (values
-  ('Pechuga de pollo', 'kg'),
-  ('Muslo',            'kg'),
-  ('Contramuslo',      'kg'),
-  ('Alas',             'kg'),
-  ('Pollo entero',     'unit'),
-  ('Molleja',          'kg'),
-  ('Hígado de pollo',  'kg'),
-  ('Gallina criolla',  'unit')
+  ('Pollo entero',       'kg'),
+  ('Pollo semicriollo',  'kg'),
+  ('Gallina',            'kg'),
+  ('Pechuga',            'kg'),
+  ('Pechuga campesina',  'kg'),
+  ('Pechuga filetada',   'kg'),
+  ('Hueso pechuga',      'kg'),
+  ('Pernil mixto',       'kg'),
+  ('Pernil campesino',   'kg'),
+  ('Alas',               'kg'),
+  ('Ala campesina',      'kg'),
+  ('Molleja',            'kg'),
+  ('Menudencia',         'kg')
 ) as v(name, unit)
 where not exists (select 1 from public.products where category = 'poultry');
 
@@ -164,12 +175,14 @@ where not exists (select 1 from public.products where category = 'poultry');
 insert into public.products (name, category, unit, origin)
 select v.name, 'other', v.unit, 'direct_purchase'
 from (values
+  ('Chorizo cerdo',  'unit'),
+  ('Chorizo res',    'unit'),
+  ('Suero',          'unit'),
   ('Arepa',          'unit'),
-  ('Chorizo de cerdo','unit'),
-  ('Chorizo de res', 'unit'),
-  ('Queso costeño',  'kg'),
-  ('Suero costeño',  'unit'),
-  ('Butifarra',      'unit')
+  ('Condimentos',    'unit'),
+  ('Queso',          'kg'),
+  ('Carnero',        'kg'),
+  ('Carnero pierna', 'kg')
 ) as v(name, unit)
 where not exists (select 1 from public.products where category = 'other');
 
