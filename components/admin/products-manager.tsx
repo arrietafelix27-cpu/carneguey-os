@@ -35,7 +35,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 
 type Filter = "all" | Category;
@@ -266,7 +265,7 @@ export function ProductsManager({
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <span>{CATEGORY_LABELS[field.value as Category]}</span>
                     </SelectTrigger>
                     <SelectContent>
                       {CATEGORY_ORDER.map((c) => (
@@ -292,7 +291,9 @@ export function ProductsManager({
                       onValueChange={field.onChange}
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <span>
+                          {UNIT_LABELS[field.value as keyof typeof UNIT_LABELS]}
+                        </span>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="kg">Kilogramos</SelectItem>
@@ -313,7 +314,13 @@ export function ProductsManager({
                       onValueChange={field.onChange}
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <span>
+                          {
+                            ORIGIN_LABELS[
+                              field.value as keyof typeof ORIGIN_LABELS
+                            ]
+                          }
+                        </span>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="from_processing">
