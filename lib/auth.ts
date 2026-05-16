@@ -1,5 +1,30 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+/**
+ * Para Server Actions: devuelve el cliente y si el llamador es admin activo.
+ * No redirige (las actions devuelven error en su lugar).
+ */
+export async function getAdminContext(): Promise<{
+  supabase: SupabaseClient;
+  isAdmin: boolean;
+}> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { supabase, isAdmin: false };
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, active")
+    .eq("id", user.id)
+    .single();
+  return {
+    supabase,
+    isAdmin: !!profile && profile.active && profile.role === "admin",
+  };
+}
 
 export type Profile = {
   id: string;
