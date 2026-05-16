@@ -43,12 +43,26 @@ Decisiones técnicas registradas: D-005 a D-011 en `DECISIONS.md`.
 
 **Pendiente:** Félix ejecuta el SQL en su Supabase (instrucciones entregadas).
 
+### Paso 3 · Autenticación + roles + middleware — ✅ completado (2026-05-16)
+
+Login funcionando (verificado en navegador por Félix). Incidencia resuelta:
+los usuarios sembrados por SQL rompían GoTrue; se recrearon por Admin API
+(D-012). Admin: felix@carneguey.com / PIN 2723 (D-004). Cajeras:
+cajera1/cajera2@carneguey.com / Carneguey2026!.
+
+### Paso 4 · Gestión de proveedores y productos — ✅ redactado (2026-05-16)
+
+Panel admin con navegación. Proveedores: lista simple (sin campo tipo,
+D-013) con agregar/editar/activar. Productos: lista por categoría con
+filtros, buscador y CRUD (nombre, categoría, unidad, origen, código POS).
+Catálogo real cargado (9 proveedores, 81 productos). Build OK, RLS
+verificada. **Pendiente:** que Félix lo pruebe en el navegador.
+
 ## Próximo paso
 
-### Paso 3 · Autenticación + roles + middleware — ⏳ siguiente
+### Paso 5 · Lote de canal directo y cerdo — ⏳ siguiente
 
-Una vez la base de datos esté aplicada y los usuarios existan: pantalla de
-login, redirección por rol, protección de rutas en el middleware.
+Primer flujo de compra para la cajera (el más simple, sección 15.3 #4).
 
 ---
 
