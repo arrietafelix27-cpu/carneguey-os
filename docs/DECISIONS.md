@@ -29,12 +29,47 @@ del spec) se anotan aquí en lugar de implementarlas.
 **Decisión:** El cálculo de `unit_cost = total_cost_lote / carcass_weight_kg` por corte se hace dentro de una función Postgres `SECURITY DEFINER` invocada desde el Server Action de finalizar desposte, dentro de la misma transacción. El cliente nunca calcula ni envía el costo.
 **Razón:** Garantía adicional de que las cajeras no puedan inyectar costos manipulados ni leerlos por error.
 
+### D-005 · `physical_count_items.physical_quantity` es NULLABLE
+**Fecha:** 2026-05-15
+**Decisión:** Contra la letra de la spec §6.10 (que dice `NOT NULL`), la columna queda nullable con CHECK `(physical_quantity IS NULL OR physical_quantity >= 0)`.
+**Razón:** El flujo §8.7 crea los items con la cantidad física **vacía** y la cajera los llena progresivamente (puede guardar progreso e interrumpir). La validación §9.2 ("todos los productos deben tener cantidad antes de finalizar") confirma que el vacío es un estado válido durante el conteo. Forzar NOT NULL obligaría a un default (ej. 0), que es un valor de conteo legítimo y rompería la distinción entre "no contado" y "contado en 0". La función de cierre del conteo (Bloque F) exige que todos los items tengan `physical_quantity` antes de pasar a `completed`.
+
+### D-006 · `created_by` es `NOT NULL` en todas las tablas transaccionales
+**Fecha:** 2026-05-15
+**Decisión:** `created_by uuid NOT NULL REFERENCES profiles(id)` en `purchase_lots`, `direct_purchases`, `despostes`, `inventory_movements`, `physical_counts`, y `uploaded_by` en `receipts`.
+**Razón:** El `CLAUDE.md` exige que toda inserción registre `created_by = auth.uid()`. Hacerlo NOT NULL convierte la bitácora en un invariante de base de datos, no solo de aplicación. Las tablas de catálogo (`providers`, `products`) no llevan `created_by` según spec §6.2/§6.3, así que el seed SQL no choca con esta restricción.
+
 ### D-004 · Inserciones a `inventory_movements` solo vía funciones `SECURITY DEFINER`
 **Fecha:** 2026-05-15
 **Decisión:** Las policies sobre `inventory_movements` no permiten INSERT directo desde clientes con sesión `employee`. Las inserciones se hacen mediante funciones Postgres `SECURITY DEFINER` específicas para cada tipo de movimiento (`fn_insert_entry_direct`, `fn_finalize_desposte`, `fn_apply_count_adjustment`). Estas funciones son las únicas vías de escritura.
 **Razón:** Encapsular la lógica de inventario, evitar manipulación del `unit_cost` desde el cliente y mantener la integridad como invariante a nivel de DB, no solo de aplicación.
 
 ---
+
+### D-007 · Modelo de seguridad admin/employee en Supabase (RLS, no GRANT por rol)
+**Fecha:** 2026-05-15
+**Decisión:** La spec §7.3/§7.4 describe "GRANT solo sobre la vista" para separar admin/employee. En Supabase eso es imposible: todos los usuarios logueados comparten un único rol de BD (`authenticated`); admin vs employee es de aplicación (`profiles.role`). Implementación real: función `is_admin()` SECURITY DEFINER + RLS. Las tablas con dinero (`purchase_lots`, `direct_purchases`, `inventory_movements`) solo permiten SELECT al admin vía RLS; las cajeras leen esos datos por vistas `*_employee` (definer, sin columnas monetarias). Cumple la intención de la spec (cajeras nunca ven dinero) con el mecanismo correcto para Supabase.
+**Impacto negocio:** ninguno — el resultado para el usuario es exactamente el que pide la spec.
+
+### D-008 · Anti-fraude reforzado en conteo físico a nivel de base de datos
+**Fecha:** 2026-05-15
+**Decisión:** La spec §8.7 dice que la cajera "no debe ver el teórico durante el conteo" y lo plantea como regla de UI. Se refuerza también en la BD: `theoretical_quantity` se oculta a `authenticated` con GRANT a nivel de columna; las cajeras leen el conteo por `v_physical_count_items_employee` (sin teórico) y solo pueden escribir `physical_quantity`/`notes`. Félix ve el teórico/físico/diferencia por `v_physical_count_items_admin` (vista admin-only). Razón: la regla anti-fraude es un driver central del negocio (CLAUDE.md §2.5 — robos de empleados); enforcement solo-UI es débil (la cajera podría llamar la API directo).
+**Impacto negocio:** positivo — cierra un hueco de manipulación que la spec dejaba solo en UI.
+
+### D-009 · Usuarios semilla creados por SQL (con plan B manual)
+**Fecha:** 2026-05-15
+**Decisión:** `seed.sql` crea los 3 usuarios directamente en `auth.users` + `auth.identities` con contraseña hasheada (`pgcrypto`). El profile lo crea solo el trigger del Bloque G. Si fallara en alguna instancia de Supabase, hay plan B: crearlos a mano desde el panel de Authentication.
+**Razón:** Un solo paste de SQL deja todo listo para Félix (no técnico). Riesgo: el esquema interno de `auth` puede cambiar entre versiones de Supabase; por eso el plan B documentado.
+
+### D-010 · Inmutabilidad por estado (append-only donde corresponde)
+**Fecha:** 2026-05-15
+**Decisión:** `inventory_movements` y `direct_purchases` no tienen policies de UPDATE/DELETE (solo se corrigen con ajustes nuevos). `despostes`/`desposte_items` y `physical_counts`/`physical_count_items` solo se editan/borran mientras están `in_progress`; al finalizar quedan congelados. Se permite borrar un desposte/conteo `in_progress` (cancelar algo iniciado por error) — no está en la spec pero es UX mínima sin riesgo (sin dinero, sin movimientos generados).
+**Razón:** Cumple §9.5 (inmutabilidad) y §2.5 (cajeras solo crean, no modifican). El borrado de borradores en curso evita registros zombi.
+
+### D-011 · RPCs (funciones) como única vía de escritura sensible
+**Fecha:** 2026-05-15
+**Decisión:** Crear/activar lotes, compras directas, despostes y conteos pasan por funciones SECURITY DEFINER (`fn_*`) invocadas por RPC desde Server Actions. El cliente nunca inserta en `inventory_movements` ni calcula costos. Las funciones validan rol y reglas de negocio dentro de una transacción atómica.
+**Razón:** Encapsula la lógica de inventario, garantiza atomicidad (ej. finalizar desposte = generar N movimientos + cerrar lote, todo o nada) y mantiene el costo fuera del alcance del cliente.
 
 ## Deudas técnicas
 

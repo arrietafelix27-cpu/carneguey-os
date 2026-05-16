@@ -28,13 +28,27 @@ Stack base inicializado en la raíz `/Users/felixarrieta/Desktop/carneguey/`.
 
 ---
 
+### Paso 2 · Migración inicial de Supabase — ✅ redactada (2026-05-15)
+
+`supabase/migrations/001_initial_schema.sql` completa (bloques A–H) y
+`supabase/seed.sql` listos para ejecutar en el SQL Editor de Supabase.
+
+Contenido: 12 tablas, 17 índices, función `gen_lot_code` + trigger, 9 vistas
+(3 calculadas + 5 empleado + 1 resultado-conteo admin), 30 RLS policies +
+GRANTs, 10 funciones RPC SECURITY DEFINER de inventario, trigger
+`auth.users → profiles`, bucket Storage `receipts` con policies. Seed: 3
+usuarios (1 admin + 2 cajeras), 5 proveedores, ~55 productos.
+
+Decisiones técnicas registradas: D-005 a D-011 en `DECISIONS.md`.
+
+**Pendiente:** Félix ejecuta el SQL en su Supabase (instrucciones entregadas).
+
 ## Próximo paso
 
-### Paso 2 · Migración inicial de Supabase — ⏳ pendiente de aprobación
+### Paso 3 · Autenticación + roles + middleware — ⏳ siguiente
 
-Crear `supabase/migrations/001_initial_schema.sql` con todo el modelo de datos de la sección 6 del spec: tablas, CHECK constraints, RLS policies, vistas restringidas para `employee`, funciones `SECURITY DEFINER` para inserción en `inventory_movements`, secuencias y función de `lot_code`, y seed (`supabase/seed.sql`) con usuarios, proveedores y productos de la sección 12.
-
-Félix debe revisar este paso con calma antes de ejecutarlo, porque define la base de toda la app.
+Una vez la base de datos esté aplicada y los usuarios existan: pantalla de
+login, redirección por rol, protección de rutas en el middleware.
 
 ---
 
