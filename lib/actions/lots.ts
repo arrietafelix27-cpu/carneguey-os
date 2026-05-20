@@ -49,7 +49,11 @@ export async function createCarcassLot(formData: FormData): Promise<Result> {
   );
 
   if (rpcError || !lotRows || lotRows.length === 0) {
-    return { error: "No se pudo registrar el lote" };
+    return {
+      error: rpcError?.message
+        ? `No se pudo registrar el lote: ${rpcError.message}`
+        : "No se pudo registrar el lote",
+    };
   }
 
   const { lot_id: lotId, lot_code: lotCode } = lotRows[0];
