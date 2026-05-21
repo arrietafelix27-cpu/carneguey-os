@@ -8,6 +8,15 @@
 
 ---
 
+## Estado al 2026-05-20 (alcance redefinido)
+
+Alcance redefinido por Félix el 2026-05-20 (ver DECISIONS / memoria). Todo el
+flujo construido: compras (canal/cerdo, pollo y otros, ganado en pie +
+llegada de canales), desposte con contador, vista admin (últimas entradas +
+inventario), y conteo quincenal. **Pendiente:** aplicar `003_sales_count.sql`
+en Supabase y prueba final de Félix. Fuera de alcance (fase 2): cuadre,
+crédito, cuentas por pagar, gastos, WhatsApp, dashboard, notificaciones.
+
 ## Bitácora de hitos
 
 ### Paso 1 · Bootstrap del proyecto — ✅ completado (2026-05-15)
