@@ -22,7 +22,10 @@ export default async function AdminLayout({
             Carnegüey OS
           </span>
         </Link>
-        <ProfileMenu fullName={profile.full_name} />
+        <ProfileMenu
+          fullName={profile.full_name}
+          configHref="/admin/configuracion"
+        />
       </header>
       {children}
     </div>

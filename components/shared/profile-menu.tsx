@@ -1,7 +1,8 @@
 "use client";
 
 import { useTransition } from "react";
-import { LogOut, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { LogOut, Loader2, Settings } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import {
   DropdownMenu,
@@ -22,8 +23,15 @@ function initials(name: string) {
     .join("");
 }
 
-export function ProfileMenu({ fullName }: { fullName: string }) {
+export function ProfileMenu({
+  fullName,
+  configHref,
+}: {
+  fullName: string;
+  configHref?: string;
+}) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <DropdownMenu>
@@ -44,6 +52,17 @@ export function ProfileMenu({ fullName }: { fullName: string }) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        {configHref && (
+          <>
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => router.push(configHref)}>
+                <Settings className="size-4" />
+                Configuración
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuGroup>
           <DropdownMenuItem
             variant="destructive"
