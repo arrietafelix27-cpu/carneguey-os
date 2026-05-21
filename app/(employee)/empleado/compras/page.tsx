@@ -26,11 +26,11 @@ const OPTIONS = [
     ready: false,
   },
   {
-    href: "#",
+    href: "/empleado/compras/entrada-directa",
     label: "Pollo y otros",
-    desc: "Próximamente",
+    desc: "Productos que entran directo al inventario",
     icon: Bird,
-    ready: false,
+    ready: true,
   },
 ];
 
