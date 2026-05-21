@@ -33,11 +33,11 @@ const SECTIONS = [
     ready: false,
   },
   {
-    href: "#",
-    label: "Lotes",
-    desc: "Próximamente",
+    href: "/admin/lotes/nuevo-en-pie",
+    label: "Ganado en pie",
+    desc: "Registrar res comprada viva",
     icon: ShoppingCart,
-    ready: false,
+    ready: true,
   },
   {
     href: "#",

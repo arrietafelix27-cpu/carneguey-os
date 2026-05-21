@@ -19,11 +19,11 @@ const OPTIONS = [
     ready: true,
   },
   {
-    href: "#",
+    href: "/empleado/compras/llegada-canales",
     label: "Llegada de canales",
-    desc: "Próximamente",
+    desc: "Recibir canales de un lote de ganado en pie",
     icon: Truck,
-    ready: false,
+    ready: true,
   },
   {
     href: "/empleado/compras/entrada-directa",

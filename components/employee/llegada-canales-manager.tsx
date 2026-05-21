@@ -1,0 +1,179 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Loader2, Camera, Truck } from "lucide-react";
+import { registerLotArrival } from "@/lib/actions/lots";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+export type PendingLot = {
+  id: string;
+  lot_code: string;
+  provider_name: string;
+  live_animal_count: number | null;
+  live_purchase_date: string | null;
+};
+
+const today = () => new Date().toISOString().slice(0, 10);
+
+export function LlegadaCanalesManager({ lots }: { lots: PendingLot[] }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [active, setActive] = useState<PendingLot | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!active) return;
+    const fd = new FormData(e.currentTarget);
+    fd.set("lot_id", active.id);
+
+    startTransition(async () => {
+      const result = await registerLotArrival(fd);
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(`Llegada del lote ${active.lot_code} registrada`);
+      setActive(null);
+      setFileName(null);
+      router.refresh();
+    });
+  }
+
+  if (lots.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+        <Truck className="mx-auto mb-3 size-8 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          No hay lotes de ganado en pie pendientes de llegada.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <ul className="grid gap-3">
+        {lots.map((lot) => (
+          <li
+            key={lot.id}
+            className="rounded-xl border border-border bg-card p-4"
+          >
+            <p className="font-semibold text-foreground">{lot.lot_code}</p>
+            <p className="text-sm text-muted-foreground">
+              {lot.provider_name}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {lot.live_animal_count ?? "?"} animales esperados
+            </p>
+            <Button
+              className="mt-3 w-full"
+              onClick={() => {
+                setActive(lot);
+                setFileName(null);
+              }}
+            >
+              Registrar llegada
+            </Button>
+          </li>
+        ))}
+      </ul>
+
+      <Dialog
+        open={!!active}
+        onOpenChange={(o) => {
+          if (!o) setActive(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Llegada de canales · {active?.lot_code}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={onSubmit} className="grid gap-4" noValidate>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label htmlFor="cc">N° de canales</Label>
+                <Input
+                  id="cc"
+                  name="carcass_count"
+                  inputMode="numeric"
+                  placeholder="0"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="cw">Peso total (kg)</Label>
+                <Input
+                  id="cw"
+                  name="carcass_weight_kg"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="ad">Fecha de llegada</Label>
+              <Input
+                id="ad"
+                name="arrival_date"
+                type="date"
+                defaultValue={today()}
+                max={today()}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="photo">Foto del comprobante (opcional)</Label>
+              <label
+                htmlFor="photo"
+                className="flex cursor-pointer items-center gap-3 rounded-md border border-input bg-secondary px-4 py-3 text-sm"
+              >
+                <Camera className="size-5 text-muted-foreground" />
+                <span className="truncate text-muted-foreground">
+                  {fileName ?? "Tomar foto o elegir archivo"}
+                </span>
+              </label>
+              <input
+                id="photo"
+                name="photo"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) =>
+                  setFileName(e.target.files?.[0]?.name ?? null)
+                }
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="notes">Notas (opcional)</Label>
+              <Textarea id="notes" name="notes" rows={2} />
+            </div>
+
+            <DialogFooter>
+              <Button type="submit" disabled={isPending} className="gap-2">
+                {isPending && <Loader2 className="size-4 animate-spin" />}
+                Confirmar llegada
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
