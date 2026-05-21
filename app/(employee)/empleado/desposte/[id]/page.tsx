@@ -1,0 +1,74 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import type { Product } from "@/lib/catalog";
+import {
+  DesposteProgress,
+  type DesposteItem,
+} from "@/components/employee/desposte-progress";
+
+export const metadata = { title: "Desposte en curso · Carnegüey" };
+
+export default async function DesposteEnCursoPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const { data: desposte } = await supabase
+    .from("despostes")
+    .select("id, lot_id, input_weight_kg, status")
+    .eq("id", id)
+    .single();
+
+  if (!desposte || desposte.status !== "in_progress") {
+    redirect("/empleado/desposte");
+  }
+
+  const { data: lot } = await supabase
+    .from("v_purchase_lots_employee")
+    .select("lot_code, type")
+    .eq("id", desposte.lot_id)
+    .single();
+
+  const category =
+    lot?.type === "pork_carcass" ? "pork" : "beef";
+
+  const [{ data: products }, { data: items }] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, name, category, unit, origin, pos_code, active")
+      .eq("active", true)
+      .eq("origin", "from_processing")
+      .eq("category", category)
+      .order("name"),
+    supabase
+      .from("desposte_items")
+      .select("id, product_id, weight_kg, products(name)")
+      .eq("desposte_id", id)
+      .order("created_at", { ascending: true }),
+  ]);
+
+  const initialItems: DesposteItem[] = (items ?? []).map((it) => {
+    const prod = it.products as unknown as { name: string } | null;
+    return {
+      id: it.id as string,
+      product_id: it.product_id as string,
+      product_name: prod?.name ?? "Producto",
+      weight_kg: Number(it.weight_kg),
+    };
+  });
+
+  return (
+    <main className="mx-auto max-w-2xl px-4 py-6">
+      <DesposteProgress
+        desposteId={desposte.id as string}
+        lotCode={lot?.lot_code ?? "Lote"}
+        inputWeight={Number(desposte.input_weight_kg)}
+        products={(products ?? []) as Product[]}
+        initialItems={initialItems}
+      />
+    </main>
+  );
+}

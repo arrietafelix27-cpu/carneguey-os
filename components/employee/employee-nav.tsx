@@ -6,7 +6,7 @@ import { ShoppingCart, Scissors, Package } from "lucide-react";
 
 const ITEMS = [
   { href: "/empleado/compras", label: "Compras", icon: ShoppingCart, ready: true },
-  { href: "/empleado/desposte", label: "Desposte", icon: Scissors, ready: false },
+  { href: "/empleado/desposte", label: "Desposte", icon: Scissors, ready: true },
   { href: "/empleado/inventario", label: "Inventario", icon: Package, ready: false },
 ];
 
