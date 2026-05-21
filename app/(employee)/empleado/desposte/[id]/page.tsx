@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Product } from "@/lib/catalog";
 import {
@@ -62,6 +64,13 @@ export default async function DesposteEnCursoPage({
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-6">
+      <Link
+        href="/empleado/desposte"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"
+      >
+        <ChevronLeft className="size-4" />
+        Despostes
+      </Link>
       <DesposteProgress
         desposteId={desposte.id as string}
         lotCode={lot?.lot_code ?? "Lote"}

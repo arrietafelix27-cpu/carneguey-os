@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { PointerEventsGuard } from "@/components/shared/pointer-events-guard";
 
 export const metadata: Metadata = {
   title: "Carnegüey OS",
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body className="antialiased">
         {children}
         <Toaster richColors position="top-center" />
+        <PointerEventsGuard />
       </body>
     </html>
   );

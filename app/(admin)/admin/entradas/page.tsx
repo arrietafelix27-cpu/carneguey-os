@@ -37,6 +37,7 @@ export default async function EntradasPage() {
     { data: directPurchases },
     { data: lots },
     { data: despostes },
+    { data: desposteSummary },
   ] = await Promise.all([
     supabase.from("profiles").select("id, full_name"),
     supabase
@@ -59,10 +60,23 @@ export default async function EntradasPage() {
       .eq("status", "finalized")
       .order("finalized_at", { ascending: false })
       .limit(60),
+    supabase
+      .from("v_desposte_summary")
+      .select("desposte_id, merma_kg, merma_pct"),
   ]);
 
   const nameOf = new Map(
     (profiles ?? []).map((p) => [p.id as string, p.full_name as string]),
+  );
+
+  const mermaOf = new Map(
+    (desposteSummary ?? []).map((d) => [
+      d.desposte_id as string,
+      {
+        kg: Number(d.merma_kg ?? 0),
+        pct: Number(d.merma_pct ?? 0),
+      },
+    ]),
   );
 
   const events: Event[] = [];
@@ -106,12 +120,16 @@ export default async function EntradasPage() {
 
   for (const d of despostes ?? []) {
     const lot = d.purchase_lots as unknown as { lot_code: string } | null;
+    const merma = mermaOf.get(d.id as string);
+    const mermaText = merma
+      ? ` · merma ${formatKg(merma.kg)} kg (${merma.pct.toFixed(1)}%)`
+      : "";
     events.push({
       date: (d.finalized_at as string) ?? "",
       kind: "desposte",
       kindLabel: "Desposte",
       title: lot?.lot_code ?? "Lote",
-      detail: `entró ${formatKg(Number(d.input_weight_kg))} kg`,
+      detail: `entró ${formatKg(Number(d.input_weight_kg))} kg${mermaText}`,
       who: nameOf.get(d.created_by as string) ?? "—",
     });
   }

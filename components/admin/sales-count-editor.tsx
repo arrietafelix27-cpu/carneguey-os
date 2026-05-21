@@ -64,6 +64,7 @@ export function SalesCountEditor({
         return;
       }
       toast.success("Conteo finalizado. El inventario se actualizó.");
+      setConfirmOpen(false);
       router.push("/admin/conteo");
     });
   }

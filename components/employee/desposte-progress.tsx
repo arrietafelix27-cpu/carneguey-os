@@ -109,7 +109,8 @@ export function DesposteProgress({
         toast.error(result.error);
         return;
       }
-      toast.success("Desposte finalizado");
+      toast.success(`Desposte finalizado · Merma ${formatKg(remaining)} kg`);
+      setConfirmOpen(false);
       router.push("/empleado/desposte");
     });
   }
@@ -142,7 +143,7 @@ export function DesposteProgress({
             >
               {formatKg(remaining)}
             </p>
-            <p className="text-xs text-muted-foreground">Restante</p>
+            <p className="text-xs text-muted-foreground">Merma potencial</p>
           </div>
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary">
@@ -264,22 +265,30 @@ export function DesposteProgress({
           <DialogHeader>
             <DialogTitle>Finalizar desposte</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-2 text-sm">
+          <div className="grid gap-3 text-sm">
             <p className="text-muted-foreground">
               Registraste {formatKg(registered)} kg de{" "}
-              {formatKg(inputWeight)} kg.
+              {formatKg(inputWeight)} kg que entraron.
             </p>
-            {mermaPct > 10 ? (
-              <p className="rounded-md bg-accent px-3 py-2 text-accent-foreground">
-                La merma es de {formatKg(remaining)} kg ({mermaPct.toFixed(1)}
-                %), que parece alta. ¿Seguro que quieres finalizar?
+            <div className="rounded-xl bg-secondary px-4 py-3 text-center">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Merma
               </p>
-            ) : (
-              <p className="text-muted-foreground">
-                Merma: {formatKg(remaining)} kg. Una vez finalizado no se
-                puede modificar.
+              <p className="text-3xl font-bold text-foreground">
+                {formatKg(remaining)} kg
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {mermaPct.toFixed(1)}% del peso que entró
+              </p>
+            </div>
+            {mermaPct > 10 && (
+              <p className="rounded-md bg-accent px-3 py-2 text-accent-foreground">
+                La merma parece alta. ¿Seguro que quieres finalizar?
               </p>
             )}
+            <p className="text-xs text-muted-foreground">
+              Una vez finalizado no se puede modificar.
+            </p>
           </div>
           <DialogFooter>
             <Button

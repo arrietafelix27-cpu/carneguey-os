@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, Boxes } from "lucide-react";
+import Link from "next/link";
+import { Search, Boxes, ChevronRight } from "lucide-react";
 import { CATEGORY_LABELS, CATEGORY_ORDER, type Category } from "@/lib/catalog";
 import { formatQty, formatCOP } from "@/lib/format";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ export type InvItem = {
   category: Category | null;
   name: string;
   lotCode: string | null;
+  lotId: string | null;
   quantity: number;
   unit: "kg" | "unit";
   unitCost: number;
@@ -179,24 +181,41 @@ export function InventoryView({ items }: { items: InvItem[] }) {
                   </div>
                 )}
                 <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-                  {g.items.map((it) => (
-                    <li key={it.id} className="px-4 py-3">
-                      <div className="flex items-baseline justify-between gap-3">
-                        <p className="min-w-0 truncate font-medium text-foreground">
-                          {it.name}
+                  {g.items.map((it) => {
+                    const inner = (
+                      <>
+                        <div className="flex items-baseline justify-between gap-3">
+                          <p className="min-w-0 truncate font-medium text-foreground">
+                            {it.name}
+                          </p>
+                          <p className="shrink-0 font-semibold text-foreground tabular-nums">
+                            {formatCOP(it.totalValue)}
+                          </p>
+                        </div>
+                        <p className="mt-0.5 text-sm text-muted-foreground tabular-nums">
+                          {formatQty(it.quantity)}{" "}
+                          {it.unit === "kg" ? "kg" : "u"} ·{" "}
+                          {formatCOP(it.unitCost)} /
+                          {it.unit === "kg" ? "kg" : "u"}
                         </p>
-                        <p className="shrink-0 font-semibold text-foreground tabular-nums">
-                          {formatCOP(it.totalValue)}
-                        </p>
-                      </div>
-                      <p className="mt-0.5 text-sm text-muted-foreground tabular-nums">
-                        {formatQty(it.quantity)}{" "}
-                        {it.unit === "kg" ? "kg" : "u"} ·{" "}
-                        {formatCOP(it.unitCost)} /
-                        {it.unit === "kg" ? "kg" : "u"}
-                      </p>
-                    </li>
-                  ))}
+                      </>
+                    );
+                    return (
+                      <li key={it.id}>
+                        {it.kind === "canal" && it.lotId ? (
+                          <Link
+                            href={`/admin/lotes/${it.lotId}`}
+                            className="flex items-center gap-2 px-4 py-3 transition-transform active:scale-[0.99]"
+                          >
+                            <span className="min-w-0 flex-1">{inner}</span>
+                            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                          </Link>
+                        ) : (
+                          <div className="px-4 py-3">{inner}</div>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
             );
