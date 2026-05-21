@@ -8,6 +8,12 @@ del spec) se anotan aquí en lugar de implementarlas.
 
 ## Decisiones tomadas
 
+### D-014 · Conteo quincenal reusa physical_counts con semántica de ventas
+**Fecha:** 2026-05-20
+**Decisión:** El módulo de conteo quincenal (alcance redefinido, [[project_carneguey_os_v1]]) reusa las tablas `physical_counts` / `physical_count_items` en vez de tablas nuevas. Semántica: `theoretical_quantity` = stock teórico al iniciar; `physical_quantity` = cantidad VENDIDA en el período (la digita Félix); el "esperado" = `theoretical_quantity − physical_quantity` se calcula, no se almacena. Migración `003_sales_count.sql`: `fn_start_sales_count` (snapshot de productos con stock > 0) y `fn_complete_sales_count` (crea movimientos `adjustment_out` por las ventas y cierra el conteo).
+**Razón:** Velocidad — evita crear tablas nuevas + RLS. El flujo del spec original (`physical_counts`: la cajera cuenta a ciegas) fue descartado en la redefinición de alcance del 2026-05-20; el conteo ahora es admin-driven (Félix ingresa ventas). Las funciones `fn_start_physical_count` / `fn_complete_physical_count` del 001 quedan sin uso pero no estorban.
+**Trade-off:** `physical_quantity` significa "vendido" aquí, lo cual es semánticamente turbio respecto al nombre de la columna. Documentado para que no confunda. Si el modelo crece, considerar tablas dedicadas `sales_counts`.
+
 ### D-001 · Next.js pinned a v15 en v1.0
 **Fecha:** 2026-05-15
 **Decisión:** Usar `next@15` (instalado: 15.5.18) en lugar de `next@latest` (16.x).

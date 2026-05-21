@@ -47,11 +47,11 @@ const SECTIONS = [
     ready: true,
   },
   {
-    href: "#",
+    href: "/admin/conteo",
     label: "Conteo quincenal",
-    desc: "Próximamente",
+    desc: "Ingresar ventas y verificar",
     icon: ClipboardCheck,
-    ready: false,
+    ready: true,
   },
 ];
 
