@@ -2,15 +2,29 @@ import Link from "next/link";
 import {
   Boxes,
   ClipboardCheck,
+  History,
   Package,
   ShoppingCart,
   Truck,
-  Users,
   ChevronRight,
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 
 const SECTIONS = [
+  {
+    href: "/admin/entradas",
+    label: "Últimas entradas",
+    desc: "Todo lo que registran las cajeras",
+    icon: History,
+    ready: true,
+  },
+  {
+    href: "/admin/inventario",
+    label: "Inventario",
+    desc: "Cuánto debe haber y su valor",
+    icon: Boxes,
+    ready: true,
+  },
   {
     href: "/admin/productos",
     label: "Productos",
@@ -26,13 +40,6 @@ const SECTIONS = [
     ready: true,
   },
   {
-    href: "#",
-    label: "Inventario",
-    desc: "Próximamente",
-    icon: Boxes,
-    ready: false,
-  },
-  {
     href: "/admin/lotes/nuevo-en-pie",
     label: "Ganado en pie",
     desc: "Registrar res comprada viva",
@@ -41,16 +48,9 @@ const SECTIONS = [
   },
   {
     href: "#",
-    label: "Conteos",
+    label: "Conteo quincenal",
     desc: "Próximamente",
     icon: ClipboardCheck,
-    ready: false,
-  },
-  {
-    href: "#",
-    label: "Usuarios",
-    desc: "Próximamente",
-    icon: Users,
     ready: false,
   },
 ];
