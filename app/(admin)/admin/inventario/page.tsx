@@ -64,21 +64,18 @@ export default async function InventarioPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+    <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
       >
         <ChevronLeft className="size-4" />
         Panel
       </Link>
 
-      <h1 className="text-2xl font-bold tracking-tight text-foreground">
+      <h1 className="mb-7 text-3xl font-bold tracking-tight text-foreground">
         Inventario
       </h1>
-      <p className="mb-5 text-sm text-muted-foreground">
-        Lo que hay físicamente en el negocio hoy.
-      </p>
 
       <InventoryView items={items} />
     </main>

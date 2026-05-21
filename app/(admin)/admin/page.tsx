@@ -16,100 +16,78 @@ const SECTIONS = [
     label: "Últimas entradas",
     desc: "Todo lo que registran las cajeras",
     icon: History,
-    ready: true,
   },
   {
     href: "/admin/inventario",
     label: "Inventario",
-    desc: "Cuánto debe haber y su valor",
+    desc: "Cuánto hay y su valor",
     icon: Boxes,
-    ready: true,
-  },
-  {
-    href: "/admin/productos",
-    label: "Productos",
-    desc: "Catálogo de cortes y productos",
-    icon: Package,
-    ready: true,
-  },
-  {
-    href: "/admin/proveedores",
-    label: "Proveedores",
-    desc: "Lista de proveedores",
-    icon: Truck,
-    ready: true,
-  },
-  {
-    href: "/admin/lotes/nuevo-en-pie",
-    label: "Ganado en pie",
-    desc: "Registrar res comprada viva",
-    icon: ShoppingCart,
-    ready: true,
   },
   {
     href: "/admin/conteo",
     label: "Conteo quincenal",
     desc: "Ingresar ventas y verificar",
     icon: ClipboardCheck,
-    ready: true,
+  },
+  {
+    href: "/admin/lotes/nuevo-en-pie",
+    label: "Ganado en pie",
+    desc: "Registrar res comprada viva",
+    icon: ShoppingCart,
+  },
+  {
+    href: "/admin/productos",
+    label: "Productos",
+    desc: "Catálogo de cortes y productos",
+    icon: Package,
+  },
+  {
+    href: "/admin/proveedores",
+    label: "Proveedores",
+    desc: "Lista de proveedores",
+    icon: Truck,
   },
 ];
 
 export default async function AdminHome() {
   const profile = await getCurrentProfile();
+  const firstName = profile.full_name.split(" ")[0];
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <div className="mb-6">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">
-          Panel de administración
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Hola, {profile.full_name}
+    <main className="mx-auto max-w-2xl px-5 py-10">
+      <header className="mb-8">
+        <p className="text-sm text-muted-foreground">Panel de administración</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Hola, {firstName}
         </h1>
-      </div>
+      </header>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        {SECTIONS.map(({ href, label, desc, icon: Icon, ready }) =>
-          ready ? (
+      <ul className="overflow-hidden rounded-3xl bg-card">
+        {SECTIONS.map(({ href, label, desc, icon: Icon }, i) => (
+          <li
+            key={label}
+            className={i > 0 ? "border-t border-border/60" : undefined}
+          >
             <Link
-              key={label}
               href={href}
-              className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-transform active:scale-[0.98]"
+              className="flex items-center gap-4 px-5 py-4 transition-colors active:bg-secondary"
             >
-              <span className="grid size-11 place-items-center rounded-lg bg-accent text-accent-foreground">
-                <Icon className="size-5" />
+              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground">
+                <Icon className="size-5" strokeWidth={2} />
               </span>
-              <span className="flex-1">
-                <span className="block font-semibold text-foreground">
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-semibold text-foreground">
                   {label}
                 </span>
-                <span className="block text-sm text-muted-foreground">
+                <span className="block truncate text-[13px] text-muted-foreground">
                   {desc}
                 </span>
               </span>
-              <ChevronRight className="size-5 text-muted-foreground" />
+              <ChevronRight className="size-5 shrink-0 text-muted-foreground/60" />
             </Link>
-          ) : (
-            <div
-              key={label}
-              className="flex items-center gap-4 rounded-xl border border-border bg-card/50 p-4 opacity-60"
-            >
-              <span className="grid size-11 place-items-center rounded-lg bg-muted text-muted-foreground">
-                <Icon className="size-5" />
-              </span>
-              <span className="flex-1">
-                <span className="block font-semibold text-foreground">
-                  {label}
-                </span>
-                <span className="block text-sm text-muted-foreground">
-                  {desc}
-                </span>
-              </span>
-            </div>
-          ),
-        )}
-      </div>
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }

@@ -138,45 +138,45 @@ export default async function EntradasPage() {
   const recent = events.slice(0, 60);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
+    <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
       >
         <ChevronLeft className="size-4" />
         Panel
       </Link>
 
-      <h1 className="text-2xl font-bold tracking-tight text-foreground">
+      <h1 className="mb-7 text-3xl font-bold tracking-tight text-foreground">
         Últimas entradas
       </h1>
-      <p className="mb-5 text-sm text-muted-foreground">
-        Todo lo que han registrado, de lo más reciente a lo más antiguo.
-      </p>
 
       {recent.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
-          <p className="text-sm text-muted-foreground">
-            Aún no hay registros.
-          </p>
+        <div className="rounded-3xl bg-secondary px-6 py-16 text-center text-sm text-muted-foreground">
+          Aún no hay registros.
         </div>
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+        <ul className="overflow-hidden rounded-3xl bg-card">
           {recent.map((e, i) => {
             const Icon = ICONS[e.kind];
             return (
-              <li key={i} className="flex items-center gap-3 px-4 py-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
-                  <Icon className="size-5" />
+              <li
+                key={i}
+                className={`flex items-center gap-4 px-5 py-4 ${
+                  i > 0 ? "border-t border-border/60" : ""
+                }`}
+              >
+                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground">
+                  <Icon className="size-5" strokeWidth={2} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-foreground">
+                  <p className="truncate text-[15px] font-semibold text-foreground">
                     {e.title}
                   </p>
-                  <p className="truncate text-sm text-muted-foreground">
+                  <p className="truncate text-[13px] text-muted-foreground">
                     {e.kindLabel} · {e.detail}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-muted-foreground/70">
                     {e.who}
                     {e.date
                       ? ` · ${format(new Date(e.date), "dd/MM/yyyy")}`
