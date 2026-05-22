@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  BarChart3,
   Boxes,
   ClipboardCheck,
   History,
@@ -22,6 +23,12 @@ const SECTIONS = [
     label: "Inventario",
     desc: "Cuánto hay y su valor",
     icon: Boxes,
+  },
+  {
+    href: "/admin/analitica",
+    label: "Analítica",
+    desc: "Rendimiento, merma y promedios",
+    icon: BarChart3,
   },
   {
     href: "/admin/conteo",
