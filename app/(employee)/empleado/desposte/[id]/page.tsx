@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import type { Product } from "@/lib/catalog";
+import { getActiveProducts } from "@/lib/cache";
 import {
   DesposteProgress,
   type DesposteItem,
@@ -37,20 +37,17 @@ export default async function DesposteEnCursoPage({
   const category =
     lot?.type === "pork_carcass" ? "pork" : "beef";
 
-  const [{ data: products }, { data: items }] = await Promise.all([
-    supabase
-      .from("products")
-      .select("id, name, category, unit, origin, pos_code, active")
-      .eq("active", true)
-      .eq("origin", "from_processing")
-      .eq("category", category)
-      .order("name"),
+  const [allProducts, { data: items }] = await Promise.all([
+    getActiveProducts(),
     supabase
       .from("desposte_items")
       .select("id, product_id, weight_kg, products(name)")
       .eq("desposte_id", id)
       .order("created_at", { ascending: true }),
   ]);
+  const products = allProducts.filter(
+    (p) => p.origin === "from_processing" && p.category === category,
+  );
 
   const initialItems: DesposteItem[] = (items ?? []).map((it) => {
     const prod = it.products as unknown as { name: string } | null;
@@ -75,7 +72,7 @@ export default async function DesposteEnCursoPage({
         desposteId={desposte.id as string}
         lotCode={lot?.lot_code ?? "Lote"}
         inputWeight={Number(desposte.input_weight_kg)}
-        products={(products ?? []) as Product[]}
+        products={products}
         initialItems={initialItems}
       />
     </main>

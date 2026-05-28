@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -36,8 +37,12 @@ export type Profile = {
 /**
  * Devuelve el perfil del usuario autenticado. Si no hay sesión o la cuenta
  * está inactiva, redirige a /login. Usar en Server Components.
+ *
+ * Memoizado con React `cache()`: múltiples llamadas dentro del mismo
+ * request (layout + página) reusan el mismo resultado, eliminando consultas
+ * duplicadas a Supabase.
  */
-export async function getCurrentProfile(): Promise<Profile> {
+export const getCurrentProfile = cache(async (): Promise<Profile> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -58,4 +63,4 @@ export async function getCurrentProfile(): Promise<Profile> {
   }
 
   return profile as Profile;
-}
+});

@@ -16,6 +16,12 @@ function redirectWithCookies(
   return res;
 }
 
+/**
+ * Middleware ligero: solo refresca la sesión y bloquea rutas sin auth.
+ * La verificación de rol (admin vs employee) y las redirecciones por rol
+ * las hace cada layout (admin/empleado) con `getCurrentProfile()`. Eso
+ * evita una consulta duplicada a `profiles` en cada navegación.
+ */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -47,35 +53,19 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const onLogin = path === LOGIN_PATH;
 
-  // Sin sesión: solo puede ver /login.
+  // Sin sesión: solo /login.
   if (!user) {
     return onLogin
       ? supabaseResponse
       : redirectWithCookies(request, supabaseResponse, LOGIN_PATH);
   }
 
-  // Con sesión: leer rol.
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, active")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || !profile.active) {
-    return redirectWithCookies(request, supabaseResponse, LOGIN_PATH);
-  }
-
-  const home = profile.role === "admin" ? "/admin" : "/empleado";
-
-  // Usuario logueado en /login o en la raíz -> a su home.
+  // Con sesión en /login o en la raíz → mandar a "/" para que el server
+  // component de raíz haga la redirección por rol (única fuente de verdad).
   if (onLogin || path === "/") {
-    return redirectWithCookies(request, supabaseResponse, home);
-  }
-
-  // Protección de rutas: /admin solo admin (spec §5.3 / §7.2).
-  // /empleado es accesible para ambos roles.
-  if (path.startsWith("/admin") && profile.role !== "admin") {
-    return redirectWithCookies(request, supabaseResponse, "/empleado");
+    return path === "/"
+      ? supabaseResponse
+      : redirectWithCookies(request, supabaseResponse, "/");
   }
 
   return supabaseResponse;

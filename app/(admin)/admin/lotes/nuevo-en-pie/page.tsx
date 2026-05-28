@@ -1,18 +1,12 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import type { Provider } from "@/lib/catalog";
+import { getActiveProviders } from "@/lib/cache";
 import { LiveLotForm } from "@/components/admin/live-lot-form";
 
 export const metadata = { title: "Ganado en pie · Carnegüey OS" };
 
 export default async function NuevoEnPiePage() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("providers")
-    .select("id, name, phone, active")
-    .eq("active", true)
-    .order("name");
+  const providers = await getActiveProviders();
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
@@ -30,7 +24,7 @@ export default async function NuevoEnPiePage() {
         El lote queda pendiente hasta que la cajera registre la llegada de las
         canales.
       </p>
-      <LiveLotForm providers={(data ?? []) as Provider[]} />
+      <LiveLotForm providers={providers} />
     </main>
   );
 }

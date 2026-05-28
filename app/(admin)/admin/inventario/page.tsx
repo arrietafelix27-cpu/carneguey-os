@@ -14,13 +14,16 @@ export default async function InventarioPage() {
     supabase
       .from("v_lot_summary")
       .select("lot_id, lot_code, type, status, kg_remaining, cost_per_kg_carcass")
-      .eq("status", "active"),
+      .eq("status", "active")
+      .gt("kg_remaining", 0.5),
     // Productos con existencia.
     supabase
       .from("v_current_inventory")
       .select(
         "product_id, product_name, category, unit, active, quantity_in_stock, weighted_avg_unit_cost",
-      ),
+      )
+      .eq("active", true)
+      .gt("quantity_in_stock", 0),
   ]);
 
   const items: InvItem[] = [];

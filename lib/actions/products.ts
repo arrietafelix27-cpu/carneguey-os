@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getAdminContext } from "@/lib/auth";
 import { productSchema } from "@/lib/validations/product";
 
@@ -30,6 +30,7 @@ export async function createProduct(values: unknown): Promise<Result> {
   }
 
   revalidatePath("/admin/productos");
+  revalidateTag("products");
   return { ok: true };
 }
 
@@ -63,6 +64,7 @@ export async function updateProduct(
   }
 
   revalidatePath("/admin/productos");
+  revalidateTag("products");
   return { ok: true };
 }
 
@@ -80,5 +82,6 @@ export async function setProductActive(
   if (error) return { error: "No se pudo actualizar el producto" };
 
   revalidatePath("/admin/productos");
+  revalidateTag("products");
   return { ok: true };
 }

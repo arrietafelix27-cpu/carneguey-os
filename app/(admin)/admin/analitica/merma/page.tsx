@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ChevronLeft, TriangleAlert } from "lucide-react";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
-import { getMermaThresholds, thresholdFor } from "@/lib/analytics";
+import { thresholdFor } from "@/lib/analytics";
+import { getMermaThresholdsCached } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
 import { MermaThresholdEditor } from "@/components/admin/merma-threshold-editor";
 
@@ -10,7 +11,7 @@ export const metadata = { title: "Merma de desposte · Carnegüey OS" };
 
 export default async function MermaPage() {
   const supabase = await createClient();
-  const thresholds = await getMermaThresholds(supabase);
+  const thresholds = await getMermaThresholdsCached();
 
   const [{ data: despostes }, { data: lots }] = await Promise.all([
     supabase

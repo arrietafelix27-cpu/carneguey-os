@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getAdminContext } from "@/lib/auth";
 import { providerSchema } from "@/lib/validations/provider";
 
@@ -23,6 +23,7 @@ export async function createProvider(values: unknown): Promise<Result> {
   if (error) return { error: "No se pudo crear el proveedor" };
 
   revalidatePath("/admin/proveedores");
+  revalidateTag("providers");
   return { ok: true };
 }
 
@@ -46,6 +47,7 @@ export async function updateProvider(
   if (error) return { error: "No se pudo guardar el proveedor" };
 
   revalidatePath("/admin/proveedores");
+  revalidateTag("providers");
   return { ok: true };
 }
 
@@ -63,5 +65,6 @@ export async function setProviderActive(
   if (error) return { error: "No se pudo actualizar el proveedor" };
 
   revalidatePath("/admin/proveedores");
+  revalidateTag("providers");
   return { ok: true };
 }

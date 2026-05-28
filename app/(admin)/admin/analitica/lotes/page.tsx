@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getAllProviders } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
 
 export const metadata = { title: "Promedios por lote · Carnegüey OS" };
@@ -14,19 +15,17 @@ const TYPE_LABEL: Record<string, string> = {
 export default async function LotesAnaliticaPage() {
   const supabase = await createClient();
 
-  const [{ data: lots }, { data: providers }] = await Promise.all([
+  const [{ data: lots }, providers] = await Promise.all([
     supabase
       .from("v_lot_summary")
       .select(
         "lot_id, lot_code, type, status, provider_id, carcass_count, carcass_weight_kg, kg_despostado, created_at",
       )
       .in("status", ["active", "closed"]),
-    supabase.from("providers").select("id, name"),
+    getAllProviders(),
   ]);
 
-  const providerName = new Map(
-    (providers ?? []).map((p) => [p.id as string, p.name as string]),
-  );
+  const providerName = new Map(providers.map((p) => [p.id, p.name]));
 
   const rows = (lots ?? [])
     .map((l) => {

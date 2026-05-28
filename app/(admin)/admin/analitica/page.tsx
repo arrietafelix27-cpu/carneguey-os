@@ -9,33 +9,36 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
-import { getMermaThresholds, thresholdFor } from "@/lib/analytics";
+import { thresholdFor } from "@/lib/analytics";
+import { getAllProviders, getMermaThresholdsCached } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
 
 export const metadata = { title: "Analítica · Carnegüey OS" };
 
 export default async function AnaliticaPage() {
   const supabase = await createClient();
-  const thresholds = await getMermaThresholds(supabase);
+  const thresholds = await getMermaThresholdsCached();
 
-  const [{ data: despostes }, { data: lots }, { data: providers }] =
-    await Promise.all([
-      supabase
-        .from("v_desposte_summary")
-        .select("desposte_id, lot_id, input_weight_kg, merma_pct, finalized_at, status")
-        .eq("status", "finalized"),
-      supabase
-        .from("v_lot_summary")
-        .select("lot_id, lot_code, type, status, provider_id, slaughter_yield_pct"),
-      supabase.from("providers").select("id, name"),
-    ]);
+  // Limitar a los últimos 90 días: solo necesitamos métricas de 30 días y
+  // del mes actual; pedir todo el histórico desperdicia datos.
+  const since90 = new Date(Date.now() - 90 * 86400000).toISOString();
+
+  const [{ data: despostes }, { data: lots }, providers] = await Promise.all([
+    supabase
+      .from("v_desposte_summary")
+      .select("desposte_id, lot_id, input_weight_kg, merma_pct, finalized_at, status")
+      .eq("status", "finalized")
+      .gte("finalized_at", since90),
+    supabase
+      .from("v_lot_summary")
+      .select("lot_id, lot_code, type, status, provider_id, slaughter_yield_pct"),
+    getAllProviders(),
+  ]);
 
   const lotById = new Map(
     (lots ?? []).map((l) => [l.lot_id as string, l]),
   );
-  const providerName = new Map(
-    (providers ?? []).map((p) => [p.id as string, p.name as string]),
-  );
+  const providerName = new Map(providers.map((p) => [p.id, p.name]));
 
   const now = Date.now();
   const since30 = now - 30 * 86400000;

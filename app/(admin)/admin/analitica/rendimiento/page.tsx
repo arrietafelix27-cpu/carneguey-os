@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { statusClasses } from "@/lib/analytics";
+import { getAllProviders } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
 
 export const metadata = { title: "Rendimiento de sacrificio · Carnegüey OS" };
@@ -9,7 +10,7 @@ export const metadata = { title: "Rendimiento de sacrificio · Carnegüey OS" };
 export default async function RendimientoPage() {
   const supabase = await createClient();
 
-  const [{ data: lots }, { data: providers }] = await Promise.all([
+  const [{ data: lots }, providers] = await Promise.all([
     supabase
       .from("v_lot_summary")
       .select(
@@ -17,12 +18,10 @@ export default async function RendimientoPage() {
       )
       .eq("type", "beef_live")
       .in("status", ["active", "closed"]),
-    supabase.from("providers").select("id, name"),
+    getAllProviders(),
   ]);
 
-  const providerName = new Map(
-    (providers ?? []).map((p) => [p.id as string, p.name as string]),
-  );
+  const providerName = new Map(providers.map((p) => [p.id, p.name]));
 
   const arrived = (lots ?? [])
     .filter((l) => l.slaughter_yield_pct != null)

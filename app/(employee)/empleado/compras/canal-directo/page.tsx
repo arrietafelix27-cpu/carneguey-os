@@ -1,18 +1,12 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import type { Provider } from "@/lib/catalog";
+import { getActiveProviders } from "@/lib/cache";
 import { CarcassLotForm } from "@/components/employee/carcass-lot-form";
 
 export const metadata = { title: "Canal directo · Carnegüey" };
 
 export default async function CanalDirectoPage() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("providers")
-    .select("id, name, phone, active")
-    .eq("active", true)
-    .order("name");
+  const providers = await getActiveProviders();
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-6">
@@ -26,7 +20,7 @@ export default async function CanalDirectoPage() {
       <h1 className="mb-5 text-2xl font-bold tracking-tight text-foreground">
         Canal directo de res
       </h1>
-      <CarcassLotForm type="beef_carcass" providers={(data ?? []) as Provider[]} />
+      <CarcassLotForm type="beef_carcass" providers={providers} />
     </main>
   );
 }

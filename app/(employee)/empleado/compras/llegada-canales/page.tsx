@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getAllProviders } from "@/lib/cache";
 import {
   LlegadaCanalesManager,
   type PendingLot,
@@ -11,19 +12,17 @@ export const metadata = { title: "Llegada de canales · Carnegüey" };
 export default async function LlegadaCanalesPage() {
   const supabase = await createClient();
 
-  const [{ data: lots }, { data: providers }] = await Promise.all([
+  const [{ data: lots }, providers] = await Promise.all([
     supabase
       .from("v_purchase_lots_employee")
       .select("id, lot_code, provider_id, live_animal_count, live_purchase_date")
       .eq("type", "beef_live")
       .eq("status", "pending_arrival")
       .order("created_at", { ascending: true }),
-    supabase.from("providers").select("id, name"),
+    getAllProviders(),
   ]);
 
-  const providerName = new Map(
-    (providers ?? []).map((p) => [p.id as string, p.name as string]),
-  );
+  const providerName = new Map(providers.map((p) => [p.id, p.name]));
 
   const pending: PendingLot[] = (lots ?? []).map((l) => ({
     id: l.id as string,

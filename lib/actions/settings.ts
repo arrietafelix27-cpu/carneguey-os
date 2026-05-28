@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { getAdminContext } from "@/lib/auth";
 
@@ -34,5 +34,6 @@ export async function updateMermaThresholds(
 
   revalidatePath("/admin/analitica");
   revalidatePath("/admin/analitica/merma");
+  revalidateTag("app_settings");
   return { ok: true };
 }
