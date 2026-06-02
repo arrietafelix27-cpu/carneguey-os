@@ -3,12 +3,17 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { getAdminContext } from "@/lib/auth";
+import { coerceDecimal } from "@/lib/validations/decimal";
 
 type Result = { ok: true } | { error: string };
 
 const thresholdsSchema = z.object({
-  beef: z.coerce.number().min(0, "Inválido").max(100, "Máximo 100"),
-  pork: z.coerce.number().min(0, "Inválido").max(100, "Máximo 100"),
+  beef: coerceDecimal(
+    z.number().min(0, "Inválido").max(100, "Máximo 100"),
+  ),
+  pork: coerceDecimal(
+    z.number().min(0, "Inválido").max(100, "Máximo 100"),
+  ),
 });
 
 export async function updateMermaThresholds(

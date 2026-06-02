@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminContext } from "@/lib/auth";
+import { coerceDecimal } from "@/lib/validations/decimal";
 
 type StartResult = { ok: true; countId: string } | { error: string };
 type VoidResult = { ok: true } | { error: string };
@@ -25,9 +26,9 @@ export async function startSalesCount(): Promise<StartResult> {
   return { ok: true, countId: data as string };
 }
 
-const soldSchema = z
-  .union([z.literal(""), z.coerce.number().min(0)])
-  .transform((v) => (v === "" ? null : v));
+const soldSchema = coerceDecimal(
+  z.union([z.literal(""), z.number().min(0)]),
+).transform((v) => (v === "" ? null : v));
 
 export async function updateSalesItem(
   itemId: string,

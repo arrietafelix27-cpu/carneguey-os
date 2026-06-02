@@ -1,32 +1,19 @@
 import { z } from "zod";
+import { coerceDecimal } from "@/lib/validations/decimal";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-// Acepta strings con coma o punto como separador decimal (uso colombiano)
-// además de números nativos. Convierte la coma a punto y luego valida.
-const decimal = (errorMessage: string) =>
-  z.preprocess(
-    (v) => {
-      if (typeof v === "string") {
-        const s = v.trim().replace(",", ".");
-        if (s === "") return v;
-        const n = Number(s);
-        return Number.isNaN(n) ? v : n;
-      }
-      return v;
-    },
-    z.number({ message: errorMessage }),
-  );
-
 export const directPurchaseItemSchema = z.object({
   product_id: z.string().uuid("Selecciona un producto"),
-  quantity: decimal("Cantidad inválida").refine(
-    (n) => n > 0,
-    "La cantidad debe ser mayor a 0",
+  quantity: coerceDecimal(
+    z
+      .number({ message: "Cantidad inválida" })
+      .positive("La cantidad debe ser mayor a 0"),
   ),
-  total_cost: decimal("Costo inválido").refine(
-    (n) => n > 0,
-    "El costo debe ser mayor a 0",
+  total_cost: coerceDecimal(
+    z
+      .number({ message: "Costo inválido" })
+      .positive("El costo debe ser mayor a 0"),
   ),
 });
 
