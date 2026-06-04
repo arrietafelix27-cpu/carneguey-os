@@ -23,7 +23,7 @@ export function CarcassLotForm({
   type,
   providers,
 }: {
-  type: "beef_carcass" | "pork_carcass";
+  type: "beef_carcass" | "pork_carcass" | "poultry_carcass";
   providers: Provider[];
 }) {
   const router = useRouter();
@@ -32,7 +32,12 @@ export function CarcassLotForm({
   const [fileName, setFileName] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const noun = type === "beef_carcass" ? "canales" : "cerdos";
+  const noun =
+    type === "beef_carcass"
+      ? "canales"
+      : type === "pork_carcass"
+        ? "cerdos"
+        : "pollos";
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

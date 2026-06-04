@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { Beef, PiggyBank, Truck, Bird, ChevronRight } from "lucide-react";
+import {
+  Beef,
+  PiggyBank,
+  Truck,
+  Bird,
+  Package,
+  Scissors,
+  ChevronRight,
+} from "lucide-react";
 
 export const metadata = { title: "Compras · Carnegüey" };
 
@@ -9,28 +17,36 @@ const OPTIONS = [
     label: "Canal directo (res)",
     desc: "Canales de res compradas directamente",
     icon: Beef,
-    ready: true,
   },
   {
     href: "/empleado/compras/cerdo",
     label: "Cerdo en canal",
     desc: "Cerdos o medias canales",
     icon: PiggyBank,
-    ready: true,
   },
   {
     href: "/empleado/compras/llegada-canales",
     label: "Llegada de canales",
     desc: "Recibir canales de un lote de ganado en pie",
     icon: Truck,
-    ready: true,
   },
   {
-    href: "/empleado/compras/entrada-directa",
-    label: "Pollo y otros",
-    desc: "Productos que entran directo al inventario",
+    href: "/empleado/compras/pollo",
+    label: "Pollo",
+    desc: "Productos directos o pollo entero para desposte",
     icon: Bird,
-    ready: true,
+  },
+  {
+    href: "/empleado/compras/otros",
+    label: "Otros productos",
+    desc: "Arepas, chorizos, queso, suero, etc.",
+    icon: Package,
+  },
+  {
+    href: "/empleado/compras/corte-directo",
+    label: "Compra directa de corte",
+    desc: "Cortes que se agotaron y se compran sueltos",
+    icon: Scissors,
   },
 ];
 
@@ -41,45 +57,26 @@ export default function ComprasMenu() {
         Registrar compra
       </h1>
       <div className="grid gap-3">
-        {OPTIONS.map(({ href, label, desc, icon: Icon, ready }) =>
-          ready ? (
-            <Link
-              key={label}
-              href={href}
-              className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-transform active:scale-[0.98]"
-            >
-              <span className="grid size-11 place-items-center rounded-lg bg-accent text-accent-foreground">
-                <Icon className="size-5" />
+        {OPTIONS.map(({ href, label, desc, icon: Icon }) => (
+          <Link
+            key={label}
+            href={href}
+            className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-transform active:scale-[0.98]"
+          >
+            <span className="grid size-11 place-items-center rounded-lg bg-accent text-accent-foreground">
+              <Icon className="size-5" />
+            </span>
+            <span className="flex-1">
+              <span className="block font-semibold text-foreground">
+                {label}
               </span>
-              <span className="flex-1">
-                <span className="block font-semibold text-foreground">
-                  {label}
-                </span>
-                <span className="block text-sm text-muted-foreground">
-                  {desc}
-                </span>
+              <span className="block text-sm text-muted-foreground">
+                {desc}
               </span>
-              <ChevronRight className="size-5 text-muted-foreground" />
-            </Link>
-          ) : (
-            <div
-              key={label}
-              className="flex items-center gap-4 rounded-xl border border-border bg-card/50 p-4 opacity-60"
-            >
-              <span className="grid size-11 place-items-center rounded-lg bg-muted text-muted-foreground">
-                <Icon className="size-5" />
-              </span>
-              <span className="flex-1">
-                <span className="block font-semibold text-foreground">
-                  {label}
-                </span>
-                <span className="block text-sm text-muted-foreground">
-                  {desc}
-                </span>
-              </span>
-            </div>
-          ),
-        )}
+            </span>
+            <ChevronRight className="size-5 text-muted-foreground" />
+          </Link>
+        ))}
       </div>
     </main>
   );

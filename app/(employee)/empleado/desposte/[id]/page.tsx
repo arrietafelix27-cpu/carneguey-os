@@ -35,7 +35,11 @@ export default async function DesposteEnCursoPage({
     .single();
 
   const category =
-    lot?.type === "pork_carcass" ? "pork" : "beef";
+    lot?.type === "pork_carcass"
+      ? "pork"
+      : lot?.type === "poultry_carcass"
+        ? "poultry"
+        : "beef";
 
   const [allProducts, { data: items }] = await Promise.all([
     getActiveProducts(),
@@ -45,9 +49,7 @@ export default async function DesposteEnCursoPage({
       .eq("desposte_id", id)
       .order("created_at", { ascending: true }),
   ]);
-  const products = allProducts.filter(
-    (p) => p.origin === "from_processing" && p.category === category,
-  );
+  const products = allProducts.filter((p) => p.category === category);
 
   const initialItems: DesposteItem[] = (items ?? []).map((it) => {
     const prod = it.products as unknown as { name: string } | null;

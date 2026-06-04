@@ -14,7 +14,7 @@ export default async function DespostePage() {
     supabase
       .from("v_purchase_lots_employee")
       .select("id, lot_code, type, carcass_weight_kg, status")
-      .in("type", ["beef_live", "beef_carcass", "pork_carcass"])
+      .in("type", ["beef_live", "beef_carcass", "pork_carcass", "poultry_carcass"])
       .eq("status", "active"),
     supabase
       .from("despostes")

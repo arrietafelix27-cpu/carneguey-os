@@ -4,7 +4,7 @@ import { coerceDecimal } from "@/lib/validations/decimal";
 const today = () => new Date().toISOString().slice(0, 10);
 
 export const carcassLotSchema = z.object({
-  type: z.enum(["beef_carcass", "pork_carcass"]),
+  type: z.enum(["beef_carcass", "pork_carcass", "poultry_carcass"]),
   provider_id: z.string().uuid("Selecciona un proveedor"),
   carcass_count: coerceDecimal(
     z
