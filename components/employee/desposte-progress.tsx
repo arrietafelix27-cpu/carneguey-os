@@ -27,8 +27,12 @@ export type DesposteItem = {
   product_id: string;
   product_name: string;
   product_unit: "kg" | "unit";
-  /** Cantidad. Para productos kg = kilos; para productos unit = unidades. */
+  /** Peso real en kg del corte. Para productos unit son los kg que pesan
+   *  las unidades en total — descuentan del lote. */
   weight_kg: number;
+  /** Para productos unit: cuántas unidades salieron. Null para productos kg
+   *  o para datos creados antes de la migración 010. */
+  unit_count: number | null;
 };
 
 // Normaliza tildes y acentos para que "higado" encuentre "Hígado".
@@ -39,8 +43,15 @@ function normalize(s: string): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-function formatAmount(amount: number, unit: "kg" | "unit"): string {
-  return unit === "unit" ? `${formatQty(amount)} u` : `${formatKg(amount)} kg`;
+function displayItemAmount(it: DesposteItem): string {
+  if (it.product_unit === "unit") {
+    if (it.unit_count !== null) {
+      return `${formatQty(it.unit_count)} u · ${formatKg(it.weight_kg)} kg`;
+    }
+    // Dato viejo (antes de migración 010): weight_kg guardaba la cantidad.
+    return `${formatQty(it.weight_kg)} u`;
+  }
+  return `${formatKg(it.weight_kg)} kg`;
 }
 
 export function DesposteProgress({
@@ -61,16 +72,19 @@ export function DesposteProgress({
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<Product | null>(null);
   const [weight, setWeight] = useState("");
+  const [unitCount, setUnitCount] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  // Contador en kg: solo suma los productos en kg. Los productos en unidades
-  // no se mezclan con la merma — se cuentan aparte.
+  // Suma kg de todos los cortes. Para productos unit ahora weight_kg son los
+  // kg reales y deben descontarse del lote. Los datos viejos (unit_count
+  // null en productos unit) se saltan para no contaminar el contador.
   const registeredKg = useMemo(
     () =>
-      items
-        .filter((it) => it.product_unit === "kg")
-        .reduce((s, it) => s + it.weight_kg, 0),
+      items.reduce((s, it) => {
+        if (it.product_unit === "unit" && it.unit_count === null) return s;
+        return s + it.weight_kg;
+      }, 0),
     [items],
   );
   const remaining = Math.round((inputWeight - registeredKg) * 100) / 100;
@@ -86,18 +100,28 @@ export function DesposteProgress({
     return products.filter((p) => normalize(p.name).includes(q));
   }, [products, query]);
 
+  function openPick(p: Product) {
+    setPicked(p);
+    setWeight("");
+    setUnitCount("");
+  }
+
   function addItem() {
     if (!picked) return;
+    const isUnit = picked.unit === "unit";
     startTransition(async () => {
       const result = await addDesposteItem({
         desposte_id: desposteId,
         product_id: picked.id,
         weight_kg: weight,
+        unit_count: isUnit ? unitCount : null,
       });
       if ("error" in result) {
         toast.error(result.error);
         return;
       }
+      const parsedWeight = Number(weight.replace(",", "."));
+      const parsedUnitCount = isUnit ? Number(unitCount.replace(",", ".")) : 0;
       setItems((prev) => [
         ...prev,
         {
@@ -105,11 +129,13 @@ export function DesposteProgress({
           product_id: picked.id,
           product_name: picked.name,
           product_unit: picked.unit,
-          weight_kg: Number(weight.replace(",", ".")),
+          weight_kg: parsedWeight,
+          unit_count: isUnit ? parsedUnitCount : null,
         },
       ]);
       setPicked(null);
       setWeight("");
+      setUnitCount("");
     });
   }
 
@@ -194,10 +220,7 @@ export function DesposteProgress({
           {filtered.map((p) => (
             <button
               key={p.id}
-              onClick={() => {
-                setPicked(p);
-                setWeight("");
-              }}
+              onClick={() => openPick(p)}
               className="rounded-xl border border-border bg-card px-3 py-3 text-left text-sm font-medium text-foreground transition-transform active:scale-[0.97]"
             >
               {p.name}
@@ -224,7 +247,7 @@ export function DesposteProgress({
                   {it.product_name}
                 </span>
                 <span className="text-sm font-semibold text-foreground tabular-nums">
-                  {formatAmount(it.weight_kg, it.product_unit)}
+                  {displayItemAmount(it)}
                 </span>
                 <Button
                   variant="ghost"
@@ -253,33 +276,58 @@ export function DesposteProgress({
       <Dialog
         open={!!picked}
         onOpenChange={(o) => {
-          if (!o) setPicked(null);
+          if (!o) {
+            setPicked(null);
+            setWeight("");
+            setUnitCount("");
+          }
         }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{picked?.name}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-2">
-            <Label htmlFor="cw">
-              {pickedUnit === "unit"
-                ? "Cantidad (unidades)"
-                : "Peso del corte (kg)"}
-            </Label>
-            <Input
-              id="cw"
-              inputMode={pickedUnit === "unit" ? "numeric" : "decimal"}
-              placeholder={pickedUnit === "unit" ? "0" : "0,00"}
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              autoFocus
-            />
-            {pickedUnit === "unit" && (
-              <p className="text-xs text-muted-foreground">
-                Este producto se mide en unidades, no en kg.
-              </p>
-            )}
-          </div>
+          {pickedUnit === "unit" ? (
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="cu">Cantidad (unidades)</Label>
+                <Input
+                  id="cu"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={unitCount}
+                  onChange={(e) => setUnitCount(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="cw">Peso total (kg)</Label>
+                <Input
+                  id="cw"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Las unidades entran al inventario; los kg descuentan del
+                  lote.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <Label htmlFor="cw">Peso del corte (kg)</Label>
+              <Input
+                id="cw"
+                inputMode="decimal"
+                placeholder="0,00"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                autoFocus
+              />
+            </div>
+          )}
           <DialogFooter>
             <Button
               className="gap-2"
@@ -345,4 +393,3 @@ export function DesposteProgress({
     </div>
   );
 }
-

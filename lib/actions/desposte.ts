@@ -44,12 +44,28 @@ export async function addDesposteItem(values: unknown): Promise<ItemResult> {
   }
 
   const supabase = await createClient();
+
+  // Verificar la unidad del producto: si es 'unit', exigir unit_count.
+  const { data: prod } = await supabase
+    .from("products")
+    .select("unit")
+    .eq("id", parsed.data.product_id)
+    .single();
+  if (!prod) return { error: "Producto no encontrado" };
+  if (prod.unit === "unit") {
+    if (parsed.data.unit_count == null || parsed.data.unit_count <= 0) {
+      return { error: "La cantidad en unidades es obligatoria" };
+    }
+  }
+
   const { data, error } = await supabase
     .from("desposte_items")
     .insert({
       desposte_id: parsed.data.desposte_id,
       product_id: parsed.data.product_id,
       weight_kg: parsed.data.weight_kg,
+      unit_count:
+        prod.unit === "unit" ? (parsed.data.unit_count ?? null) : null,
     })
     .select("id")
     .single();

@@ -55,7 +55,7 @@ export default async function DesposteEnCursoPage({
       .order("name"),
     supabase
       .from("desposte_items")
-      .select("id, product_id, weight_kg, products(name, unit)")
+      .select("id, product_id, weight_kg, unit_count, products(name, unit)")
       .eq("desposte_id", id)
       .order("created_at", { ascending: true }),
   ]);
@@ -72,12 +72,17 @@ export default async function DesposteEnCursoPage({
 
   const initialItems: DesposteItem[] = (items ?? []).map((it) => {
     const prod = it.products as unknown as { name: string; unit: string } | null;
+    const rawUnitCount = (it as { unit_count?: number | null }).unit_count;
     return {
       id: it.id as string,
       product_id: it.product_id as string,
       product_name: prod?.name ?? "Producto",
       product_unit: (prod?.unit === "unit" ? "unit" : "kg") as "kg" | "unit",
       weight_kg: Number(it.weight_kg),
+      unit_count:
+        rawUnitCount === null || rawUnitCount === undefined
+          ? null
+          : Number(rawUnitCount),
     };
   });
 
