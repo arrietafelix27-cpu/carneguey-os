@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Search, Trash2, Check } from "lucide-react";
 import type { Product } from "@/lib/catalog";
-import { formatKg } from "@/lib/format";
+import { formatKg, formatQty } from "@/lib/format";
 import {
   addDesposteItem,
   removeDesposteItem,
@@ -26,8 +26,22 @@ export type DesposteItem = {
   id: string;
   product_id: string;
   product_name: string;
+  product_unit: "kg" | "unit";
+  /** Cantidad. Para productos kg = kilos; para productos unit = unidades. */
   weight_kg: number;
 };
+
+// Normaliza tildes y acentos para que "higado" encuentre "Hígado".
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function formatAmount(amount: number, unit: "kg" | "unit"): string {
+  return unit === "unit" ? `${formatQty(amount)} u` : `${formatKg(amount)} kg`;
+}
 
 export function DesposteProgress({
   desposteId,
@@ -50,20 +64,27 @@ export function DesposteProgress({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const registered = useMemo(
-    () => items.reduce((s, it) => s + it.weight_kg, 0),
+  // Contador en kg: solo suma los productos en kg. Los productos en unidades
+  // no se mezclan con la merma — se cuentan aparte.
+  const registeredKg = useMemo(
+    () =>
+      items
+        .filter((it) => it.product_unit === "kg")
+        .reduce((s, it) => s + it.weight_kg, 0),
     [items],
   );
-  const remaining = Math.round((inputWeight - registered) * 100) / 100;
+  const remaining = Math.round((inputWeight - registeredKg) * 100) / 100;
   const progress = Math.min(
     100,
-    Math.max(0, (registered / inputWeight) * 100),
+    Math.max(0, (registeredKg / inputWeight) * 100),
   );
   const mermaPct = inputWeight > 0 ? (remaining / inputWeight) * 100 : 0;
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(query.trim().toLowerCase()),
-  );
+  const filtered = useMemo(() => {
+    const q = normalize(query.trim());
+    if (!q) return products;
+    return products.filter((p) => normalize(p.name).includes(q));
+  }, [products, query]);
 
   function addItem() {
     if (!picked) return;
@@ -83,6 +104,7 @@ export function DesposteProgress({
           id: result.itemId,
           product_id: picked.id,
           product_name: picked.name,
+          product_unit: picked.unit,
           weight_kg: Number(weight.replace(",", ".")),
         },
       ]);
@@ -115,6 +137,8 @@ export function DesposteProgress({
     });
   }
 
+  const pickedUnit: "kg" | "unit" = picked?.unit === "unit" ? "unit" : "kg";
+
   return (
     <div className="grid gap-5">
       {/* Encabezado con contador en vivo */}
@@ -131,7 +155,7 @@ export function DesposteProgress({
           </div>
           <div>
             <p className="text-lg font-bold text-primary">
-              {formatKg(registered)}
+              {formatKg(registeredKg)}
             </p>
             <p className="text-xs text-muted-foreground">Registrado</p>
           </div>
@@ -177,6 +201,11 @@ export function DesposteProgress({
               className="rounded-xl border border-border bg-card px-3 py-3 text-left text-sm font-medium text-foreground transition-transform active:scale-[0.97]"
             >
               {p.name}
+              {p.unit === "unit" && (
+                <span className="ml-1 text-xs font-normal text-muted-foreground">
+                  · u
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -194,8 +223,8 @@ export function DesposteProgress({
                 <span className="flex-1 font-medium text-foreground">
                   {it.product_name}
                 </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {formatKg(it.weight_kg)} kg
+                <span className="text-sm font-semibold text-foreground tabular-nums">
+                  {formatAmount(it.weight_kg, it.product_unit)}
                 </span>
                 <Button
                   variant="ghost"
@@ -220,7 +249,7 @@ export function DesposteProgress({
         Finalizar desposte
       </Button>
 
-      {/* Dialog: ingresar peso del corte */}
+      {/* Dialog: ingresar cantidad del corte */}
       <Dialog
         open={!!picked}
         onOpenChange={(o) => {
@@ -232,15 +261,24 @@ export function DesposteProgress({
             <DialogTitle>{picked?.name}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-2">
-            <Label htmlFor="cw">Peso del corte (kg)</Label>
+            <Label htmlFor="cw">
+              {pickedUnit === "unit"
+                ? "Cantidad (unidades)"
+                : "Peso del corte (kg)"}
+            </Label>
             <Input
               id="cw"
-              inputMode="decimal"
-              placeholder="0,00"
+              inputMode={pickedUnit === "unit" ? "numeric" : "decimal"}
+              placeholder={pickedUnit === "unit" ? "0" : "0,00"}
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
               autoFocus
             />
+            {pickedUnit === "unit" && (
+              <p className="text-xs text-muted-foreground">
+                Este producto se mide en unidades, no en kg.
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button
@@ -267,7 +305,7 @@ export function DesposteProgress({
           </DialogHeader>
           <div className="grid gap-3 text-sm">
             <p className="text-muted-foreground">
-              Registraste {formatKg(registered)} kg de{" "}
+              Registraste {formatKg(registeredKg)} kg de{" "}
               {formatKg(inputWeight)} kg que entraron.
             </p>
             <div className="rounded-xl bg-secondary px-4 py-3 text-center">
@@ -307,3 +345,4 @@ export function DesposteProgress({
     </div>
   );
 }
+

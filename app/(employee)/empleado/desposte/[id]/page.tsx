@@ -2,13 +2,18 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getActiveProducts } from "@/lib/cache";
+import type { Product } from "@/lib/catalog";
 import {
   DesposteProgress,
   type DesposteItem,
 } from "@/components/employee/desposte-progress";
 
 export const metadata = { title: "Desposte en curso · Carnegüey" };
+
+// Esta pantalla debe ver SIEMPRE el catálogo más reciente — no cachea.
+// El caché global (lib/cache) no se invalida si los productos se editan
+// directo en Supabase, y eso ocultaba productos como Hígado o Galillo.
+export const dynamic = "force-dynamic";
 
 export default async function DesposteEnCursoPage({
   params,
@@ -41,22 +46,37 @@ export default async function DesposteEnCursoPage({
         ? "poultry"
         : "beef";
 
-  const [allProducts, { data: items }] = await Promise.all([
-    getActiveProducts(),
+  // Productos siempre frescos desde la base, no del caché.
+  const [{ data: allProducts }, { data: items }] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, name, category, unit, origin, pos_code, active")
+      .eq("active", true)
+      .order("name"),
     supabase
       .from("desposte_items")
-      .select("id, product_id, weight_kg, products(name)")
+      .select("id, product_id, weight_kg, products(name, unit)")
       .eq("desposte_id", id)
       .order("created_at", { ascending: true }),
   ]);
-  const products = allProducts.filter((p) => p.category === category);
+
+  // Filtro estricto por el spec:
+  //  - beef/pork: misma categoría + origin='from_processing'
+  //  - poultry: misma categoría (cualquier origen, ver migración 009)
+  // El stock NO entra en el filtro: todos los productos válidos aparecen
+  // siempre, tengan o no inventario previo.
+  const products = ((allProducts ?? []) as Product[]).filter((p) => {
+    if (lot?.type === "poultry_carcass") return p.category === "poultry";
+    return p.category === category && p.origin === "from_processing";
+  });
 
   const initialItems: DesposteItem[] = (items ?? []).map((it) => {
-    const prod = it.products as unknown as { name: string } | null;
+    const prod = it.products as unknown as { name: string; unit: string } | null;
     return {
       id: it.id as string,
       product_id: it.product_id as string,
       product_name: prod?.name ?? "Producto",
+      product_unit: (prod?.unit === "unit" ? "unit" : "kg") as "kg" | "unit",
       weight_kg: Number(it.weight_kg),
     };
   });
