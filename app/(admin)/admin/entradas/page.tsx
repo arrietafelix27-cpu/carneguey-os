@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ChevronLeft, ShoppingCart, Bird, Beef, Scissors } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+  Bird,
+  Beef,
+  Scissors,
+} from "lucide-react";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { formatQty, formatKg } from "@/lib/format";
@@ -15,6 +22,7 @@ type Event = {
   title: string;
   detail: string;
   who: string;
+  href: string;
 };
 
 const ICONS: Record<Kind, typeof ShoppingCart> = {
@@ -27,6 +35,7 @@ const LOT_LABEL: Record<string, string> = {
   beef_live: "Ganado en pie",
   beef_carcass: "Canal de res",
   pork_carcass: "Cerdo en canal",
+  poultry_carcass: "Pollo en canal",
 };
 
 export default async function EntradasPage() {
@@ -95,6 +104,7 @@ export default async function EntradasPage() {
         prod?.unit === "unit" ? "unidades" : "kg"
       }`,
       who: nameOf.get(dp.created_by as string) ?? "—",
+      href: `/admin/compras-directas/${dp.id}`,
     });
   }
 
@@ -115,6 +125,7 @@ export default async function EntradasPage() {
       title: lot.lot_code as string,
       detail,
       who: nameOf.get(lot.created_by as string) ?? "—",
+      href: `/admin/lotes/${lot.id}`,
     });
   }
 
@@ -131,6 +142,7 @@ export default async function EntradasPage() {
       title: lot?.lot_code ?? "Lote",
       detail: `entró ${formatKg(Number(d.input_weight_kg))} kg${mermaText}`,
       who: nameOf.get(d.created_by as string) ?? "—",
+      href: `/admin/despostes/${d.id}`,
     });
   }
 
@@ -162,27 +174,31 @@ export default async function EntradasPage() {
             return (
               <li
                 key={i}
-                className={`flex items-center gap-4 px-5 py-4 ${
-                  i > 0 ? "border-t border-border/60" : ""
-                }`}
+                className={i > 0 ? "border-t border-border/60" : undefined}
               >
-                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground">
-                  <Icon className="size-5" strokeWidth={2} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[15px] font-semibold text-foreground">
-                    {e.title}
-                  </p>
-                  <p className="truncate text-[13px] text-muted-foreground">
-                    {e.kindLabel} · {e.detail}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground/70">
-                    {e.who}
-                    {e.date
-                      ? ` · ${format(new Date(e.date), "dd/MM/yyyy")}`
-                      : ""}
-                  </p>
-                </div>
+                <Link
+                  href={e.href}
+                  className="flex items-center gap-4 px-5 py-4 transition-colors active:bg-secondary"
+                >
+                  <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground">
+                    <Icon className="size-5" strokeWidth={2} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[15px] font-semibold text-foreground">
+                      {e.title}
+                    </p>
+                    <p className="truncate text-[13px] text-muted-foreground">
+                      {e.kindLabel} · {e.detail}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground/70">
+                      {e.who}
+                      {e.date
+                        ? ` · ${format(new Date(e.date), "dd/MM/yyyy")}`
+                        : ""}
+                    </p>
+                  </div>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground/60" />
+                </Link>
               </li>
             );
           })}
