@@ -4,6 +4,8 @@ import { ChevronLeft, TrendingUp, TrendingDown } from "lucide-react";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { formatKg, formatCOP } from "@/lib/format";
+import { getReceiptSignedUrls } from "@/lib/receipts";
+import { ReceiptViewer } from "@/components/admin/receipt-viewer";
 
 export const metadata = { title: "Lote · Carnegüey OS" };
 
@@ -11,6 +13,7 @@ const TYPE_LABEL: Record<string, string> = {
   beef_live: "Res (ganado en pie)",
   beef_carcass: "Res en canal",
   pork_carcass: "Cerdo en canal",
+  poultry_carcass: "Pollo en canal",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -37,25 +40,30 @@ export default async function LoteDetailPage({
 
   if (!lot) redirect("/admin/inventario");
 
-  const [{ data: provider }, { data: despostes }, { data: prevLots }] =
-    await Promise.all([
-      supabase.from("providers").select("name").eq("id", lot.provider_id).single(),
-      supabase
-        .from("v_desposte_summary")
-        .select(
-          "desposte_id, desposte_date, status, input_weight_kg, total_output_kg, merma_kg, merma_pct",
-        )
-        .eq("lot_id", id),
-      supabase
-        .from("v_lot_summary")
-        .select("lot_code, carcass_count, carcass_weight_kg, created_at")
-        .eq("provider_id", lot.provider_id)
-        .eq("type", lot.type)
-        .in("status", ["active", "closed"])
-        .lt("created_at", lot.created_at)
-        .order("created_at", { ascending: false })
-        .limit(1),
-    ]);
+  const [
+    { data: provider },
+    { data: despostes },
+    { data: prevLots },
+    receiptUrls,
+  ] = await Promise.all([
+    supabase.from("providers").select("name").eq("id", lot.provider_id).single(),
+    supabase
+      .from("v_desposte_summary")
+      .select(
+        "desposte_id, desposte_date, status, input_weight_kg, total_output_kg, merma_kg, merma_pct",
+      )
+      .eq("lot_id", id),
+    supabase
+      .from("v_lot_summary")
+      .select("lot_code, carcass_count, carcass_weight_kg, created_at")
+      .eq("provider_id", lot.provider_id)
+      .eq("type", lot.type)
+      .in("status", ["active", "closed"])
+      .lt("created_at", lot.created_at)
+      .order("created_at", { ascending: false })
+      .limit(1),
+    getReceiptSignedUrls(supabase, "purchase_lot", id),
+  ]);
 
   const finalized = (despostes ?? []).filter((d) => d.status === "finalized");
   const finalizedIds = finalized.map((d) => d.desposte_id as string);
@@ -147,6 +155,14 @@ export default async function LoteDetailPage({
         Costo total {formatCOP(Number(lot.total_cost ?? 0))} ·{" "}
         {formatCOP(Number(lot.cost_per_kg_carcass ?? 0))}/kg
       </p>
+
+      {/* Comprobante */}
+      <div className="mb-6">
+        <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Comprobante
+        </h2>
+        <ReceiptViewer urls={receiptUrls} />
+      </div>
 
       {/* Comparativo con lote anterior */}
       {comparison && (
