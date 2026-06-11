@@ -1,64 +1,27 @@
 import Link from "next/link";
-import {
-  BarChart3,
-  Boxes,
-  ClipboardCheck,
-  History,
-  Package,
-  ShoppingCart,
-  Truck,
-  ChevronRight,
-} from "lucide-react";
+import { Boxes, ChevronRight } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { getAdminAlerts } from "@/lib/admin-alerts";
+import { AdminAlertsPanel } from "@/components/admin/admin-alerts-panel";
 
-const SECTIONS = [
+export const metadata = { title: "Panel · Carnegüey OS" };
+export const dynamic = "force-dynamic";
+
+const MODULES = [
   {
-    href: "/admin/entradas",
-    label: "Últimas entradas",
-    desc: "Todo lo que registran las cajeras",
-    icon: History,
-  },
-  {
-    href: "/admin/inventario",
-    label: "Inventario",
-    desc: "Cuánto hay y su valor",
+    href: "/admin/operaciones",
+    label: "Productos y procesos",
+    desc: "Inventario, compras y despostes",
     icon: Boxes,
-  },
-  {
-    href: "/admin/analitica",
-    label: "Analítica",
-    desc: "Rendimiento, merma y promedios",
-    icon: BarChart3,
-  },
-  {
-    href: "/admin/conteo",
-    label: "Conteo quincenal",
-    desc: "Ingresar ventas y verificar",
-    icon: ClipboardCheck,
-  },
-  {
-    href: "/admin/lotes/nuevo-en-pie",
-    label: "Ganado en pie",
-    desc: "Registrar res comprada viva",
-    icon: ShoppingCart,
-  },
-  {
-    href: "/admin/productos",
-    label: "Productos",
-    desc: "Catálogo de cortes y productos",
-    icon: Package,
-  },
-  {
-    href: "/admin/proveedores",
-    label: "Proveedores",
-    desc: "Lista de proveedores",
-    icon: Truck,
   },
 ];
 
-export default async function AdminHome() {
+export default async function AdminDashboard() {
   const profile = await getCurrentProfile();
   const firstName = profile.full_name.split(" ")[0];
+  const supabase = await createClient();
+  const alerts = await getAdminAlerts(supabase);
 
   return (
     <main className="mx-auto max-w-2xl px-5 py-10">
@@ -69,24 +32,29 @@ export default async function AdminHome() {
         </h1>
       </header>
 
+      <AdminAlertsPanel alerts={alerts} />
+
+      <h2 className="mb-3 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        Módulos
+      </h2>
       <ul className="overflow-hidden rounded-3xl bg-card">
-        {SECTIONS.map(({ href, label, desc, icon: Icon }, i) => (
+        {MODULES.map(({ href, label, desc, icon: Icon }, i) => (
           <li
             key={label}
             className={i > 0 ? "border-t border-border/60" : undefined}
           >
             <Link
               href={href}
-              className="flex items-center gap-4 px-5 py-4 transition-colors active:bg-secondary"
+              className="flex items-center gap-4 px-5 py-5 transition-colors active:bg-secondary"
             >
-              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground">
-                <Icon className="size-5" strokeWidth={2} />
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground">
+                <Icon className="size-6" strokeWidth={2} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold text-foreground">
+                <span className="block text-base font-semibold text-foreground">
                   {label}
                 </span>
-                <span className="block truncate text-[13px] text-muted-foreground">
+                <span className="block text-sm text-muted-foreground">
                   {desc}
                 </span>
               </span>

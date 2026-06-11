@@ -11,11 +11,11 @@ export default async function NuevoEnPiePage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
       <Link
-        href="/admin"
+        href="/admin/operaciones"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"
       >
         <ChevronLeft className="size-4" />
-        Panel
+        Operaciones
       </Link>
       <h1 className="mb-1 text-2xl font-bold tracking-tight text-foreground">
         Registrar ganado en pie

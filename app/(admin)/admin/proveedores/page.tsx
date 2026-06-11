@@ -19,11 +19,11 @@ export default async function ProveedoresPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
       <Link
-        href="/admin"
+        href="/admin/operaciones"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"
       >
         <ChevronLeft className="size-4" />
-        Panel
+        Operaciones
       </Link>
       <ProvidersManager initialProviders={providers} />
     </main>

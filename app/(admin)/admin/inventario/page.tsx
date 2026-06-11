@@ -69,11 +69,11 @@ export default async function InventarioPage() {
   return (
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
-        href="/admin"
+        href="/admin/operaciones"
         className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
       >
         <ChevronLeft className="size-4" />
-        Panel
+        Operaciones
       </Link>
 
       <h1 className="mb-7 text-3xl font-bold tracking-tight text-foreground">
