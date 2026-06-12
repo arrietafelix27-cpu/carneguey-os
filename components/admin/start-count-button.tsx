@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Plus } from "lucide-react";
-import { startSalesCount } from "@/lib/actions/conteo";
+import { startQuincenalCount } from "@/lib/actions/conteo";
 import { Button } from "@/components/ui/button";
 
 export function StartCountButton() {
@@ -17,12 +17,12 @@ export function StartCountButton() {
       disabled={isPending}
       onClick={() =>
         startTransition(async () => {
-          const result = await startSalesCount();
+          const result = await startQuincenalCount();
           if ("error" in result) {
             toast.error(result.error);
             return;
           }
-          router.push(`/admin/conteo/${result.countId}`);
+          router.push("/admin/conteo/nuevo");
         })
       }
     >
