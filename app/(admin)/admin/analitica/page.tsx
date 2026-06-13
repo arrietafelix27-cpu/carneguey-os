@@ -108,7 +108,7 @@ export default async function AnaliticaPage() {
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/operaciones"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Operaciones
@@ -157,10 +157,10 @@ export default async function AnaliticaPage() {
 
       {last && (
         <div className="mb-8">
-          <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Último desposte
           </h2>
-          <div className="rounded-2xl bg-card px-5 py-4">
+          <div className="rounded-2xl bg-card shadow-sm px-5 py-4">
             <div className="flex items-baseline justify-between">
               <p className="font-semibold text-foreground">
                 {lastLot?.lot_code ?? "—"}
@@ -184,10 +184,10 @@ export default async function AnaliticaPage() {
       )}
 
       {/* Acceso a los 3 niveles */}
-      <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         Ver en detalle
       </h2>
-      <ul className="overflow-hidden rounded-3xl bg-card">
+      <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
         <LevelLink
           href="/admin/analitica/rendimiento"
           icon={Activity}
@@ -223,7 +223,7 @@ function Metric({
   sub?: string;
 }) {
   return (
-    <div className="rounded-2xl bg-card px-4 py-4">
+    <div className="rounded-2xl bg-card shadow-sm px-4 py-4">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
         {value}

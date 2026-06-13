@@ -117,7 +117,7 @@ export function DirectPurchaseForm({
           return (
             <div
               key={i}
-              className="grid gap-3 rounded-xl border border-border bg-card p-3"
+              className="grid gap-3 rounded-2xl bg-card shadow-sm p-3"
             >
               <div className="flex items-center gap-2">
                 <Select

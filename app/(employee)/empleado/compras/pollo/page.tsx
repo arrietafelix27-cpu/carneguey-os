@@ -23,7 +23,7 @@ export default function PolloMenu() {
     <main className="mx-auto max-w-2xl px-4 py-6">
       <Link
         href="/empleado/compras"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-4 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Compras
@@ -39,7 +39,7 @@ export default function PolloMenu() {
           <Link
             key={label}
             href={href}
-            className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-transform active:scale-[0.98]"
+            className="flex items-center gap-4 rounded-2xl bg-card shadow-sm p-4 transition-transform active:scale-[0.98]"
           >
             <span className="grid size-11 place-items-center rounded-lg bg-accent text-accent-foreground">
               <Icon className="size-5" />

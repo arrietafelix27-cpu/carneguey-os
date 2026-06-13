@@ -96,20 +96,22 @@ export function InventoryView({ items }: { items: InvItem[] }) {
   return (
     <div>
       {/* Valor total — titular */}
-      <div className="mb-8 rounded-3xl bg-primary px-6 py-6 text-primary-foreground">
-        <p className="text-sm opacity-75">Valor del inventario</p>
-        <p className="mt-1 text-4xl font-bold tracking-tight tabular-nums">
+      <div className="mb-7 rounded-3xl bg-primary px-6 py-6 text-primary-foreground shadow-[var(--shadow-brand)]">
+        <p className="text-xs font-semibold uppercase tracking-wide opacity-80">
+          Valor del inventario
+        </p>
+        <p className="mt-1.5 text-[34px] font-bold leading-none tracking-tight tabular-nums">
           {formatCOP(grandTotal)}
         </p>
       </div>
 
       <div className="relative mb-4">
-        <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-text-tertiary" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar"
-          className="h-11 pl-10"
+          className="pl-11"
           inputMode="search"
         />
       </div>
@@ -119,10 +121,10 @@ export function InventoryView({ items }: { items: InvItem[] }) {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            className={`rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all active:scale-95 ${
               filter === f.key
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-muted-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-[var(--bg-tertiary)] text-secondary-foreground"
             }`}
           >
             {f.label}
@@ -130,15 +132,15 @@ export function InventoryView({ items }: { items: InvItem[] }) {
         ))}
       </div>
 
-      <div className="mb-7 flex gap-1">
+      <div className="mb-7 flex gap-1.5">
         {SORTS.map((s) => (
           <button
             key={s.key}
             onClick={() => setSort(s.key)}
-            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
               sort === s.key
-                ? "text-primary"
-                : "text-muted-foreground"
+                ? "bg-[var(--brand-red-soft)] text-primary"
+                : "text-text-tertiary"
             }`}
           >
             {s.label}
@@ -147,27 +149,29 @@ export function InventoryView({ items }: { items: InvItem[] }) {
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-16 text-center">
-          <Boxes className="mx-auto mb-4 size-9 text-muted-foreground" />
-          <p className="font-semibold text-foreground">Inventario vacío</p>
-          <p className="mx-auto mt-1 max-w-xs text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-16 text-center">
+          <Boxes className="mx-auto mb-4 size-12 text-text-tertiary" />
+          <p className="text-[17px] font-semibold text-foreground">
+            Inventario vacío
+          </p>
+          <p className="mx-auto mt-1 max-w-xs text-[15px] text-secondary-foreground">
             Aparecerá aquí cuando las cajeras registren compras y despostes.
           </p>
         </div>
       ) : visible.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-12 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-12 text-center text-[15px] text-secondary-foreground">
           Nada coincide con el filtro o la búsqueda.
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-7">
           {groups.map((g, gi) => (
             <section key={gi}>
               {g.label && (
-                <h2 className="mb-3 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <h2 className="mb-2.5 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
                   {g.label}
                 </h2>
               )}
-              <ul className="overflow-hidden rounded-3xl bg-card">
+              <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
                 {g.items.map((it, i) => {
                   const u = it.unit === "kg" ? "kg" : "u";
                   const inner = (

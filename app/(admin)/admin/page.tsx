@@ -24,41 +24,43 @@ export default async function AdminDashboard() {
   const alerts = await getAdminAlerts(supabase);
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-10">
+    <main className="mx-auto max-w-2xl px-4 py-9">
       <header className="mb-8">
-        <p className="text-sm text-muted-foreground">Panel de administración</p>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
+          Panel de administración
+        </p>
+        <h1 className="mt-1 text-[34px] font-bold leading-tight tracking-tight text-foreground">
           Hola, {firstName}
         </h1>
       </header>
 
       <AdminAlertsPanel alerts={alerts} />
 
-      <h2 className="mb-3 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <h2 className="mb-2.5 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         Módulos
       </h2>
-      <ul className="overflow-hidden rounded-3xl bg-card">
+      <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
         {MODULES.map(({ href, label, desc, icon: Icon }, i) => (
           <li
             key={label}
-            className={i > 0 ? "border-t border-border/60" : undefined}
+            className={i > 0 ? "border-t border-border" : undefined}
           >
             <Link
               href={href}
-              className="flex items-center gap-4 px-5 py-5 transition-colors active:bg-secondary"
+              className="flex items-center gap-4 px-4 py-4 transition-colors active:bg-secondary"
             >
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground">
+              <span className="grid size-12 shrink-0 place-items-center rounded-[var(--radius-lg)] bg-[var(--brand-red-soft)] text-primary">
                 <Icon className="size-6" strokeWidth={2} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-base font-semibold text-foreground">
+                <span className="block text-[17px] font-semibold text-foreground">
                   {label}
                 </span>
-                <span className="block text-sm text-muted-foreground">
+                <span className="block text-[14px] text-secondary-foreground">
                   {desc}
                 </span>
               </span>
-              <ChevronRight className="size-5 shrink-0 text-muted-foreground/60" />
+              <ChevronRight className="size-5 shrink-0 text-text-tertiary" />
             </Link>
           </li>
         ))}

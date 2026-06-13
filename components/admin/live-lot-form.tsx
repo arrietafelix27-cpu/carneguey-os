@@ -108,7 +108,7 @@ export function LiveLotForm({ providers }: { providers: Provider[] }) {
         />
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4">
+      <div className="rounded-2xl bg-card shadow-sm p-4">
         <p className="mb-1 text-sm font-semibold text-foreground">
           Costos adicionales
         </p>

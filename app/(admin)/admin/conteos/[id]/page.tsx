@@ -128,13 +128,13 @@ export default async function ConteoDetailPage({
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/conteos"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Conteos
       </Link>
 
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         Conteo quincenal
       </p>
       <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -153,16 +153,16 @@ export default async function ConteoDetailPage({
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-card px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-2xl bg-card shadow-sm px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Inició
           </p>
           <p className="mt-0.5 text-sm font-semibold text-foreground tabular-nums">
             {format(new Date(conteo.created_at as string), "dd/MM/yyyy HH:mm")}
           </p>
         </div>
-        <div className="rounded-2xl bg-card px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-2xl bg-card shadow-sm px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             {isCancelled ? "Cancelado" : "Finalizó"}
           </p>
           <p className="mt-0.5 text-sm font-semibold text-foreground tabular-nums">
@@ -208,17 +208,17 @@ export default async function ConteoDetailPage({
       )}
 
       {groups.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-16 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-16 text-center text-sm text-muted-foreground">
           Sin productos en este conteo.
         </div>
       ) : (
         <div className="space-y-6">
           {groups.map(({ cat, items: group }) => (
             <section key={cat}>
-              <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
                 {CATEGORY_LABELS[cat]}
               </h2>
-              <ul className="overflow-hidden rounded-3xl bg-card">
+              <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
                 {group.map((r, i) => {
                   const u = r.unit === "kg" ? "kg" : "u";
                   const style = r.band ? BAND_STYLES[r.band] : null;
@@ -275,8 +275,8 @@ export default async function ConteoDetailPage({
       )}
 
       {conteo.notes && (
-        <div className="mt-6 rounded-2xl bg-card px-5 py-4">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="mt-6 rounded-2xl bg-card shadow-sm px-5 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Notas
           </p>
           <p className="mt-1 text-sm text-foreground">

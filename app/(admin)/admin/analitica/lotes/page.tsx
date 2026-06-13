@@ -48,7 +48,7 @@ export default async function LotesAnaliticaPage() {
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/analitica"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Analítica
@@ -63,7 +63,7 @@ export default async function LotesAnaliticaPage() {
       </p>
 
       {rows.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-16 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-16 text-center text-sm text-muted-foreground">
           Aún no hay lotes recibidos.
         </div>
       ) : (
@@ -72,7 +72,7 @@ export default async function LotesAnaliticaPage() {
             <li key={l.lotId}>
               <Link
                 href={`/admin/lotes/${l.lotId}`}
-                className="block rounded-2xl bg-card px-5 py-4 transition-colors active:bg-secondary"
+                className="block rounded-2xl bg-card shadow-sm px-5 py-4 transition-colors active:bg-secondary"
               >
                 <div className="flex items-center justify-between">
                   <div>

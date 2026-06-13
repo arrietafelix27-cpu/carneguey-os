@@ -112,7 +112,7 @@ export function ProvidersManager({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+        <div className="rounded-2xl bg-card shadow-sm px-6 py-12 text-center">
           <p className="text-sm text-muted-foreground">
             {initialProviders.length === 0
               ? "Aún no hay proveedores. Agrega el primero."
@@ -120,7 +120,7 @@ export function ProvidersManager({
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+        <ul className="divide-y divide-border overflow-hidden rounded-2xl bg-card shadow-sm">
           {filtered.map((p) => (
             <li
               key={p.id}

@@ -54,7 +54,7 @@ export function DesposteStart({
     <div className="grid gap-6">
       {ongoing.length > 0 && (
         <section>
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Despostes en curso
           </h2>
           <ul className="grid gap-3">
@@ -62,7 +62,7 @@ export function DesposteStart({
               <li key={d.id}>
                 <button
                   onClick={() => router.push(`/empleado/desposte/${d.id}`)}
-                  className="flex w-full items-center gap-3 rounded-xl border border-warning/40 bg-card p-4 text-left transition-transform active:scale-[0.98]"
+                  className="flex w-full items-center gap-3 rounded-2xl bg-card shadow-sm ring-1 ring-warning/40 p-4 text-left transition-transform active:scale-[0.98]"
                 >
                   <span className="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground">
                     <Scissors className="size-5" />
@@ -84,11 +84,11 @@ export function DesposteStart({
       )}
 
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Lotes disponibles para despostar
         </h2>
         {lots.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+          <div className="rounded-2xl bg-card shadow-sm px-6 py-12 text-center">
             <p className="text-sm text-muted-foreground">
               No hay lotes activos con peso disponible.
             </p>
@@ -98,7 +98,7 @@ export function DesposteStart({
             {lots.map((lot) => (
               <li
                 key={lot.id}
-                className="rounded-xl border border-border bg-card p-4"
+                className="rounded-2xl bg-card shadow-sm p-4"
               >
                 <div className="flex items-center justify-between">
                   <div>

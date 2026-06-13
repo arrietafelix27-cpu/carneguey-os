@@ -60,7 +60,7 @@ export default async function RendimientoPage() {
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/analitica"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Analítica
@@ -74,15 +74,15 @@ export default async function RendimientoPage() {
       </p>
 
       {arrived.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-16 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-16 text-center text-sm text-muted-foreground">
           Aún no hay lotes de ganado en pie con canales recibidas.
         </div>
       ) : (
         <>
-          <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Promedio por proveedor
           </h2>
-          <ul className="mb-8 overflow-hidden rounded-3xl bg-card">
+          <ul className="mb-8 overflow-hidden rounded-3xl bg-card shadow-sm">
             {providerRows.map((p, i) => (
               <li
                 key={p.name}
@@ -103,7 +103,7 @@ export default async function RendimientoPage() {
             ))}
           </ul>
 
-          <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Cada lote
           </h2>
           <ul className="space-y-3">
@@ -115,7 +115,7 @@ export default async function RendimientoPage() {
                 <li key={l.lotId}>
                   <Link
                     href={`/admin/lotes/${l.lotId}`}
-                    className="block rounded-2xl bg-card px-5 py-4 transition-colors active:bg-secondary"
+                    className="block rounded-2xl bg-card shadow-sm px-5 py-4 transition-colors active:bg-secondary"
                   >
                     <div className="flex items-center justify-between">
                       <div>

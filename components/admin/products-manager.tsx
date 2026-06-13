@@ -180,7 +180,7 @@ export function ProductsManager({
       </div>
 
       {grouped.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+        <div className="rounded-2xl bg-card shadow-sm px-6 py-12 text-center">
           <p className="text-sm text-muted-foreground">
             Ningún producto coincide.
           </p>
@@ -189,10 +189,10 @@ export function ProductsManager({
         <div className="space-y-6">
           {grouped.map(({ cat, items }) => (
             <section key={cat}>
-              <h2 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
                 {CATEGORY_LABELS[cat]} · {items.length}
               </h2>
-              <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+              <ul className="divide-y divide-border overflow-hidden rounded-2xl bg-card shadow-sm">
                 {items.map((p) => (
                   <li
                     key={p.id}

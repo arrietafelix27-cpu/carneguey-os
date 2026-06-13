@@ -87,13 +87,13 @@ export default async function DesposteDetailPage({
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/entradas"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Últimas entradas
       </Link>
 
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         Desposte · {STATUS_LABEL[desp.status as string] ?? desp.status}
       </p>
       <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -132,7 +132,7 @@ export default async function DesposteDetailPage({
             <CheckCircle2 className="size-6 shrink-0 text-success" />
           )}
           <div className="flex-1">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
               Merma {isHigh ? "alta" : "normal"}
             </p>
             <p
@@ -151,15 +151,15 @@ export default async function DesposteDetailPage({
       )}
 
       {/* Cortes */}
-      <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         Cortes que salieron ({(items ?? []).length})
       </h2>
       {!items || items.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-10 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-10 text-center text-sm text-muted-foreground">
           Sin cortes registrados.
         </div>
       ) : (
-        <ul className="overflow-hidden rounded-3xl bg-card">
+        <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
           {items.map((it, i) => {
             const prod = it.products as unknown as {
               name: string;
@@ -199,8 +199,8 @@ export default async function DesposteDetailPage({
       )}
 
       {desp.notes && (
-        <div className="mt-6 rounded-2xl bg-card px-5 py-4">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="mt-6 rounded-2xl bg-card shadow-sm px-5 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Notas
           </p>
           <p className="mt-1 text-sm text-foreground">{desp.notes as string}</p>
@@ -221,7 +221,7 @@ export default async function DesposteDetailPage({
 
 function Big({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-card px-5 py-4">
+    <div className="rounded-2xl bg-card shadow-sm px-5 py-4">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-2xl font-bold tracking-tight text-foreground tabular-nums">
         {value}

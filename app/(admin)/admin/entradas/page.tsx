@@ -153,7 +153,7 @@ export default async function EntradasPage() {
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/operaciones"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Operaciones
@@ -164,11 +164,11 @@ export default async function EntradasPage() {
       </h1>
 
       {recent.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-16 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-16 text-center text-sm text-muted-foreground">
           Aún no hay registros.
         </div>
       ) : (
-        <ul className="overflow-hidden rounded-3xl bg-card">
+        <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
           {recent.map((e, i) => {
             const Icon = ICONS[e.kind];
             return (

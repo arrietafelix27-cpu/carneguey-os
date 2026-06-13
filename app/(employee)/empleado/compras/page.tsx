@@ -52,32 +52,39 @@ const OPTIONS = [
 
 export default function ComprasMenu() {
   return (
-    <main className="mx-auto max-w-2xl px-4 py-6">
-      <h1 className="mb-5 text-2xl font-bold tracking-tight text-foreground">
+    <main className="mx-auto max-w-2xl px-4 py-9">
+      <p className="text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
+        Compras
+      </p>
+      <h1 className="mb-6 mt-1 text-[28px] font-bold leading-tight tracking-tight text-foreground">
         Registrar compra
       </h1>
-      <div className="grid gap-3">
-        {OPTIONS.map(({ href, label, desc, icon: Icon }) => (
-          <Link
+      <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
+        {OPTIONS.map(({ href, label, desc, icon: Icon }, i) => (
+          <li
             key={label}
-            href={href}
-            className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-transform active:scale-[0.98]"
+            className={i > 0 ? "border-t border-border" : undefined}
           >
-            <span className="grid size-11 place-items-center rounded-lg bg-accent text-accent-foreground">
-              <Icon className="size-5" />
-            </span>
-            <span className="flex-1">
-              <span className="block font-semibold text-foreground">
-                {label}
+            <Link
+              href={href}
+              className="flex items-center gap-4 px-4 py-4 transition-colors active:bg-secondary"
+            >
+              <span className="grid size-11 shrink-0 place-items-center rounded-[var(--radius-lg)] bg-[var(--brand-red-soft)] text-primary">
+                <Icon className="size-[22px]" strokeWidth={2} />
               </span>
-              <span className="block text-sm text-muted-foreground">
-                {desc}
+              <span className="min-w-0 flex-1">
+                <span className="block text-[16px] font-semibold text-foreground">
+                  {label}
+                </span>
+                <span className="block text-[13px] text-secondary-foreground">
+                  {desc}
+                </span>
               </span>
-            </span>
-            <ChevronRight className="size-5 text-muted-foreground" />
-          </Link>
+              <ChevronRight className="size-5 shrink-0 text-text-tertiary" />
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
     </main>
   );
 }

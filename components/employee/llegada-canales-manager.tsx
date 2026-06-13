@@ -54,7 +54,7 @@ export function LlegadaCanalesManager({ lots }: { lots: PendingLot[] }) {
 
   if (lots.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+      <div className="rounded-2xl bg-card shadow-sm px-6 py-12 text-center">
         <Truck className="mx-auto mb-3 size-8 text-muted-foreground" />
         <p className="text-sm text-muted-foreground">
           No hay lotes de ganado en pie pendientes de llegada.
@@ -69,7 +69,7 @@ export function LlegadaCanalesManager({ lots }: { lots: PendingLot[] }) {
         {lots.map((lot) => (
           <li
             key={lot.id}
-            className="rounded-xl border border-border bg-card p-4"
+            className="rounded-2xl bg-card shadow-sm p-4"
           >
             <p className="font-semibold text-foreground">{lot.lot_code}</p>
             <p className="text-sm text-muted-foreground">

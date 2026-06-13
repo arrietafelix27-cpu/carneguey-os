@@ -23,44 +23,46 @@ export function AdminAlertsPanel({ alerts }: { alerts: Alert[] }) {
 
   return (
     <section className="mb-8">
-      <div className="mb-3 flex items-center gap-2 px-1">
-        <TriangleAlert className="size-4 text-warning" />
-        <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="mb-2.5 flex items-center gap-2 px-1">
+        <TriangleAlert className="size-3.5 text-primary" />
+        <h2 className="text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Alertas activas
         </h2>
       </div>
-      <ul className="overflow-hidden rounded-3xl bg-card">
+      <ul className="overflow-hidden rounded-3xl bg-[var(--brand-red-soft)] shadow-sm">
         {alerts.map((a, i) => {
           const Icon = ICONS[a.icon] ?? TriangleAlert;
           const tint =
             a.severity === "danger"
-              ? "bg-danger/10 text-danger"
-              : "bg-warning/10 text-warning";
+              ? "bg-danger/12 text-danger"
+              : "bg-warning/15 text-warning";
           return (
             <li
               key={a.id}
-              className={i > 0 ? "border-t border-border/60" : undefined}
+              className={
+                i > 0 ? "border-t border-[var(--brand-red)]/10" : undefined
+              }
             >
               <Link
                 href={a.href}
-                className="flex items-center gap-3 px-5 py-3.5 transition-colors active:bg-secondary"
+                className="flex items-center gap-3 px-4 py-3.5 transition-colors active:bg-[var(--brand-red)]/8"
               >
                 <span
-                  className={`grid size-9 shrink-0 place-items-center rounded-xl ${tint}`}
+                  className={`grid size-10 shrink-0 place-items-center rounded-[var(--radius-md)] ${tint}`}
                 >
-                  <Icon className="size-4" strokeWidth={2} />
+                  <Icon className="size-[18px]" strokeWidth={2} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14px] font-semibold text-foreground">
+                  <span className="block text-[15px] font-semibold text-foreground">
                     {a.title}
                   </span>
                   {a.description && (
-                    <span className="block truncate text-[12px] text-muted-foreground">
+                    <span className="block truncate text-[13px] text-secondary-foreground">
                       {a.description}
                     </span>
                   )}
                 </span>
-                <ChevronRight className="size-4 shrink-0 text-muted-foreground/60" />
+                <ChevronRight className="size-4 shrink-0 text-[var(--brand-red)]/40" />
               </Link>
             </li>
           );

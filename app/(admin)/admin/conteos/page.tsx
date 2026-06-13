@@ -55,7 +55,7 @@ export default async function ConteosListPage() {
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/operaciones"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Operaciones
@@ -72,7 +72,7 @@ export default async function ConteosListPage() {
         {inProgress ? (
           <Link
             href="/admin/conteo/nuevo"
-            className="flex items-center gap-4 rounded-2xl border border-warning/40 bg-card p-4 transition-colors active:bg-secondary"
+            className="flex items-center gap-4 rounded-2xl bg-card shadow-sm ring-1 ring-warning/40 p-4 transition-colors active:bg-secondary"
           >
             <span className="grid size-11 place-items-center rounded-xl bg-accent text-accent-foreground">
               <ClipboardCheck className="size-5" />
@@ -92,15 +92,15 @@ export default async function ConteosListPage() {
         )}
       </div>
 
-      <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         Historial
       </h2>
       {list.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-10 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-10 text-center text-sm text-muted-foreground">
           Aún no hay conteos registrados.
         </div>
       ) : (
-        <ul className="overflow-hidden rounded-3xl bg-card">
+        <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
           {list.map((c, i) => {
             const status = c.status as string;
             const meta = STATUS_META[status] ?? STATUS_META.cancelled;

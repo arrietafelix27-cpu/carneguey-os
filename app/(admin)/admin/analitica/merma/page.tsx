@@ -56,7 +56,7 @@ export default async function MermaPage() {
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/analitica"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Analítica
@@ -70,7 +70,7 @@ export default async function MermaPage() {
       </p>
 
       {/* Promedio del negocio + umbrales */}
-      <div className="mb-6 rounded-3xl bg-card px-6 py-5">
+      <div className="mb-6 rounded-3xl bg-card shadow-sm px-6 py-5">
         <p className="text-sm text-muted-foreground">
           Merma promedio del negocio
         </p>
@@ -99,7 +99,7 @@ export default async function MermaPage() {
       )}
 
       {rows.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-16 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-16 text-center text-sm text-muted-foreground">
           Aún no hay despostes finalizados.
         </div>
       ) : (

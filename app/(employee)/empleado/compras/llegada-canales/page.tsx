@@ -36,7 +36,7 @@ export default async function LlegadaCanalesPage() {
     <main className="mx-auto max-w-2xl px-4 py-6">
       <Link
         href="/empleado/compras"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-4 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Compras

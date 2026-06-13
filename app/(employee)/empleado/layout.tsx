@@ -11,12 +11,12 @@ export default async function EmployeeLayout({
 
   return (
     <div className="min-h-[100dvh] bg-secondary pb-20">
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card/95 px-4 py-3 backdrop-blur">
-        <span className="flex items-center gap-2">
-          <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border/70 bg-card/80 px-4 py-3 backdrop-blur-xl">
+        <span className="flex items-center gap-2.5">
+          <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-[var(--shadow-brand)]">
             CG
           </span>
-          <span className="text-base font-bold tracking-tight text-primary">
+          <span className="text-[15px] font-bold tracking-tight text-foreground">
             Carnegüey
           </span>
         </span>

@@ -8,6 +8,15 @@ del spec) se anotan aquí en lugar de implementarlas.
 
 ## Decisiones tomadas
 
+### D-015 · Rediseño visual 2026 (App Store / Uber) — desviaciones por la regla "solo estética"
+**Fecha:** 2026-06-12
+**Decisión:** Rediseño visual completo dirigido por Félix (referencias App Store + Uber, solo modo claro). Se reemplazaron los tokens de `globals.css` (paleta, radios más redondeados, sombras `--shadow-sm/md/brand`, escala tipográfica) y se reestilizaron los componentes base (`button`, `input`, `textarea`, `label`, `card`, `select`, `dialog`, `sonner`, `skeleton`) más todas las pantallas. La regla del encargo fue **cero cambios de lógica, rutas, queries, acciones o posiciones**.
+**Desviaciones del brief que NO se implementaron para no romper esa regla:**
+1. **Home de cajera — grid 2×2 de 4 acciones:** el brief pedía 4 botones de acción en cuadrícula, pero la pantalla actual solo tiene **una** acción real (Compras) más una nota de "próximamente". Agregar acciones sería tocar estructura/funcionalidad. Se reestilizó la única tarjeta existente; cuando se habiliten Desposte/Inventario para cajera se podrá montar el grid.
+2. **Toasts:** el brief pedía fondo oscuro uniforme con ícono de color; se quitó la prop `richColors` del `Toaster` (cosmético) y se fijó fondo `#1C1C1E` con íconos verde/rojo. No se tocó la posición (sigue `top-center`).
+3. **Modales tipo "sheet desde abajo":** se mantuvieron centrados (con una animación sutil de entrada desde abajo) en vez de convertirlos en bottom-sheets, porque reanclar la posición del `Dialog` de base-ui es un cambio de comportamiento, no solo de estilo.
+**Nota:** `globals.css` está en la lista de archivos protegidos del CLAUDE.md; se editó con autorización explícita de Félix en este encargo.
+
 ### D-014 · Conteo quincenal reusa physical_counts con semántica de ventas
 **Fecha:** 2026-05-20
 **Decisión:** El módulo de conteo quincenal (alcance redefinido, [[project_carneguey_os_v1]]) reusa las tablas `physical_counts` / `physical_count_items` en vez de tablas nuevas. Semántica: `theoretical_quantity` = stock teórico al iniciar; `physical_quantity` = cantidad VENDIDA en el período (la digita Félix); el "esperado" = `theoretical_quantity − physical_quantity` se calcula, no se almacena. Migración `003_sales_count.sql`: `fn_start_sales_count` (snapshot de productos con stock > 0) y `fn_complete_sales_count` (crea movimientos `adjustment_out` por las ventas y cierra el conteo).

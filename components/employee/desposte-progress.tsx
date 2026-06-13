@@ -167,40 +167,74 @@ export function DesposteProgress({
 
   return (
     <div className="grid gap-5">
-      {/* Encabezado con contador en vivo */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+      {/* Encabezado con medidor circular en vivo */}
+      <div className="rounded-3xl bg-card p-6 shadow-sm">
+        <p className="text-center text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Desposte · {lotCode}
         </p>
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+
+        {(() => {
+          const over = remaining < 0;
+          const ring = over ? "var(--danger)" : "var(--success)";
+          const r = 52;
+          const c = 2 * Math.PI * r;
+          const offset = c * (1 - Math.min(100, Math.max(0, progress)) / 100);
+          return (
+            <div className="mx-auto mt-4 grid size-[150px] place-items-center">
+              <svg
+                viewBox="0 0 120 120"
+                className="col-start-1 row-start-1 size-[150px] -rotate-90"
+              >
+                <circle
+                  cx="60"
+                  cy="60"
+                  r={r}
+                  fill="none"
+                  stroke="var(--bg-tertiary)"
+                  strokeWidth="10"
+                />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r={r}
+                  fill="none"
+                  stroke={ring}
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  strokeDasharray={c}
+                  strokeDashoffset={offset}
+                  className="transition-all duration-300"
+                />
+              </svg>
+              <div className="col-start-1 row-start-1 text-center">
+                <p
+                  className="text-[28px] font-bold leading-none tracking-tight tabular-nums"
+                  style={{ color: ring }}
+                >
+                  {formatKg(remaining)}
+                </p>
+                <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">
+                  kg sin registrar
+                </p>
+              </div>
+            </div>
+          );
+        })()}
+
+        <div className="mt-4 flex items-center justify-center gap-6 text-center">
           <div>
-            <p className="text-lg font-bold text-foreground">
+            <p className="text-[17px] font-bold text-foreground tabular-nums">
               {formatKg(inputWeight)}
             </p>
-            <p className="text-xs text-muted-foreground">Entró (kg)</p>
+            <p className="text-[11px] text-secondary-foreground">Entró (kg)</p>
           </div>
+          <div className="h-8 w-px bg-border" />
           <div>
-            <p className="text-lg font-bold text-primary">
+            <p className="text-[17px] font-bold text-primary tabular-nums">
               {formatKg(registeredKg)}
             </p>
-            <p className="text-xs text-muted-foreground">Registrado</p>
+            <p className="text-[11px] text-secondary-foreground">Registrado</p>
           </div>
-          <div>
-            <p
-              className={`text-lg font-bold ${
-                remaining < 0 ? "text-destructive" : "text-foreground"
-              }`}
-            >
-              {formatKg(remaining)}
-            </p>
-            <p className="text-xs text-muted-foreground">Merma potencial</p>
-          </div>
-        </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: `${progress}%` }}
-          />
         </div>
       </div>
 
@@ -221,7 +255,7 @@ export function DesposteProgress({
             <button
               key={p.id}
               onClick={() => openPick(p)}
-              className="rounded-xl border border-border bg-card px-3 py-3 text-left text-sm font-medium text-foreground transition-transform active:scale-[0.97]"
+              className="rounded-2xl bg-card shadow-sm px-3 py-3 text-left text-sm font-medium text-foreground transition-transform active:scale-[0.97]"
             >
               {p.name}
               {p.unit === "unit" && (
@@ -237,10 +271,10 @@ export function DesposteProgress({
       {/* Cortes registrados */}
       {items.length > 0 && (
         <div>
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Cortes registrados ({items.length})
           </h2>
-          <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+          <ul className="divide-y divide-border overflow-hidden rounded-2xl bg-card shadow-sm">
             {items.map((it) => (
               <li key={it.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="flex-1 font-medium text-foreground">

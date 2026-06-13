@@ -60,13 +60,13 @@ export default async function CompraDirectaDetailPage({
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/entradas"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Últimas entradas
       </Link>
 
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         Compra directa
       </p>
       <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -85,8 +85,8 @@ export default async function CompraDirectaDetailPage({
       </p>
 
       {/* Cantidad destacada */}
-      <div className="mb-6 rounded-3xl bg-card px-6 py-5 text-center">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+      <div className="mb-6 rounded-3xl bg-card shadow-sm px-6 py-5 text-center">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Entró al inventario
         </p>
         <p className="mt-1 text-4xl font-bold tracking-tight text-foreground tabular-nums">
@@ -102,15 +102,15 @@ export default async function CompraDirectaDetailPage({
 
       {/* Comprobante */}
       <div className="mb-6">
-        <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Comprobante
         </h2>
         <ReceiptViewer urls={urls} />
       </div>
 
       {dp.notes && (
-        <div className="rounded-2xl bg-card px-5 py-4">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-2xl bg-card shadow-sm px-5 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Notas
           </p>
           <p className="mt-1 text-sm text-foreground">{dp.notes as string}</p>

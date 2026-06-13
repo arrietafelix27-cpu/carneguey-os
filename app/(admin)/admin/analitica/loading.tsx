@@ -12,7 +12,7 @@ export default function Loading() {
         ))}
       </div>
       <Skeleton className="mb-8 h-24 w-full rounded-2xl" />
-      <div className="space-y-2 rounded-3xl bg-card p-2">
+      <div className="space-y-2 rounded-3xl bg-card shadow-sm p-2">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="flex items-center gap-4 px-3 py-3">
             <Skeleton className="size-11 rounded-2xl" />

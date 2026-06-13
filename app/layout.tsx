@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="es-CO">
       <body className="antialiased">
         {children}
-        <Toaster richColors position="top-center" />
+        <Toaster position="top-center" />
         <PointerEventsGuard />
       </body>
     </html>

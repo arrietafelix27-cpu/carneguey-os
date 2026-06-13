@@ -124,13 +124,13 @@ export default async function LoteDetailPage({
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link
         href="/admin/analitica/lotes"
-        className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
         Lotes
       </Link>
 
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         {TYPE_LABEL[lot.type as string] ?? "Lote"} ·{" "}
         {STATUS_LABEL[lot.status as string] ?? lot.status}
       </p>
@@ -158,7 +158,7 @@ export default async function LoteDetailPage({
 
       {/* Comprobante */}
       <div className="mb-6">
-        <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Comprobante
         </h2>
         <ReceiptViewer urls={receiptUrls} />
@@ -166,7 +166,7 @@ export default async function LoteDetailPage({
 
       {/* Comparativo con lote anterior */}
       {comparison && (
-        <div className="mb-6 flex items-center gap-3 rounded-2xl bg-card px-5 py-4">
+        <div className="mb-6 flex items-center gap-3 rounded-2xl bg-card shadow-sm px-5 py-4">
           {comparison.better ? (
             <TrendingUp className="size-5 shrink-0 text-success" />
           ) : (
@@ -184,8 +184,8 @@ export default async function LoteDetailPage({
       )}
 
       {/* Merma acumulada */}
-      <div className="mb-6 rounded-3xl bg-secondary px-6 py-5 text-center">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+      <div className="mb-6 rounded-3xl bg-card shadow-sm px-6 py-5 text-center">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Merma acumulada del lote
         </p>
         <p className="mt-1 text-3xl font-bold text-foreground tabular-nums">
@@ -199,10 +199,10 @@ export default async function LoteDetailPage({
       {/* Cortes que salieron */}
       {cuts.length > 0 && (
         <div className="mb-6">
-          <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
             Cortes que salieron
           </h2>
-          <ul className="overflow-hidden rounded-3xl bg-card">
+          <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
             {cuts.map((c, i) => (
               <li
                 key={c.name}
@@ -236,15 +236,15 @@ export default async function LoteDetailPage({
       )}
 
       {/* Despostes */}
-      <h2 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         Despostes de este lote
       </h2>
       {finalized.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-10 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-10 text-center text-sm text-muted-foreground">
           Este lote aún no tiene despostes finalizados.
         </div>
       ) : (
-        <ul className="overflow-hidden rounded-3xl bg-card">
+        <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
           {finalized
             .sort((a, b) =>
               (a.desposte_date as string) < (b.desposte_date as string)
@@ -281,7 +281,7 @@ export default async function LoteDetailPage({
 
 function Big({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-card px-5 py-4">
+    <div className="rounded-2xl bg-card shadow-sm px-5 py-4">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-3xl font-bold tracking-tight text-foreground tabular-nums">
         {value}
@@ -292,7 +292,7 @@ function Big({ label, value }: { label: string; value: string }) {
 
 function Small({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-card px-3 py-2.5">
+    <div className="rounded-2xl bg-card shadow-sm px-3 py-2.5">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-sm font-semibold text-foreground tabular-nums">
         {value}

@@ -155,7 +155,7 @@ export function ConteoPhysicalEditor({
   return (
     <div>
       <div className="mb-5">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Paso 2 de 2
         </p>
         <h2 className="text-xl font-bold text-foreground">
@@ -170,7 +170,7 @@ export function ConteoPhysicalEditor({
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-3xl bg-secondary px-6 py-16 text-center text-sm text-muted-foreground">
+        <div className="rounded-3xl bg-card shadow-sm px-6 py-16 text-center text-sm text-muted-foreground">
           No hay productos para contar.
         </div>
       ) : (
@@ -189,10 +189,10 @@ export function ConteoPhysicalEditor({
           <div className="space-y-6 pb-40">
             {groups.map(({ cat, items: group }) => (
               <section key={cat}>
-                <h3 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <h3 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
                   {CATEGORY_LABELS[cat]}
                 </h3>
-                <ul className="overflow-hidden rounded-3xl bg-card">
+                <ul className="overflow-hidden rounded-3xl bg-card shadow-sm">
                   {group.map((it, i) => {
                     const u = it.unit === "kg" ? "kg" : "u";
                     const shouldBe =
