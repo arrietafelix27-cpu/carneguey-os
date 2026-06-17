@@ -5,6 +5,7 @@ import {
   Calendar,
   Package,
   Bird,
+  ArrowLeftRight,
   TriangleAlert,
   ChevronRight,
 } from "lucide-react";
@@ -16,6 +17,7 @@ const ICONS: Record<AlertIcon, typeof Clock> = {
   calendar: Calendar,
   package: Package,
   bird: Bird,
+  transfer: ArrowLeftRight,
 };
 
 export function AdminAlertsPanel({ alerts }: { alerts: Alert[] }) {

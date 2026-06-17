@@ -6,7 +6,8 @@ export type AlertIcon =
   | "trending-down"
   | "calendar"
   | "package"
-  | "bird";
+  | "bird"
+  | "transfer";
 
 export type AlertSeverity = "warning" | "danger";
 
@@ -39,6 +40,7 @@ export async function getAdminAlerts(
     lastCountResult,
     recentPoultryResult,
     recentMovsResult,
+    pendingTransfersResult,
   ] = await Promise.all([
     supabase
       .from("v_lot_summary")
@@ -70,6 +72,10 @@ export async function getAdminAlerts(
       .from("inventory_movements")
       .select("product_id")
       .gte("created_at", since30),
+    supabase
+      .from("cut_transfers")
+      .select("id")
+      .eq("status", "pending"),
   ]);
 
   const activeLots = activeLotsResult.data ?? [];
@@ -78,9 +84,23 @@ export async function getAdminAlerts(
   const lastCount = lastCountResult.data?.[0];
   const recentDPs = recentPoultryResult.data ?? [];
   const recentMovs = recentMovsResult.data ?? [];
+  const pendingTransfers = pendingTransfersResult.data ?? [];
 
   const alerts: Alert[] = [];
   const lotById = new Map(allLots.map((l) => [l.lot_id as string, l]));
+
+  // 0) Transferencias de cortes pendientes de aprobación
+  if (pendingTransfers.length > 0) {
+    const n = pendingTransfers.length;
+    alerts.push({
+      id: "transferencias-pendientes",
+      severity: "warning",
+      icon: "transfer",
+      title: `${n} ${n === 1 ? "transferencia pendiente" : "transferencias pendientes"}`,
+      description: "Revísalas para aplicar al inventario",
+      href: "/admin/transferencias",
+    });
+  }
 
   // 1) Lotes activos sin desposte hace más de 10 días
   const lastFinalizedByLot = new Map<string, string>();

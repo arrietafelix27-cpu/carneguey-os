@@ -8,6 +8,7 @@ import {
   Package,
   ShoppingCart,
   Truck,
+  ArrowLeftRight,
   ChevronRight,
 } from "lucide-react";
 
@@ -25,6 +26,12 @@ const SECTIONS = [
     label: "Inventario",
     desc: "Cuánto hay y su valor",
     icon: Boxes,
+  },
+  {
+    href: "/admin/transferencias",
+    label: "Transferencias de cortes",
+    desc: "Aprobar movimientos entre cortes",
+    icon: ArrowLeftRight,
   },
   {
     href: "/admin/analitica",
