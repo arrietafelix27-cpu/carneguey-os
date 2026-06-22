@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShoppingCart, ArrowLeftRight, ChevronRight } from "lucide-react";
+import { ShoppingCart, ArrowLeftRight, Split, ChevronRight } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 
 const ACTIONS = [
@@ -14,6 +14,12 @@ const ACTIONS = [
     label: "Transferencia de cortes",
     desc: "Mover kg de un corte a otro",
     icon: ArrowLeftRight,
+  },
+  {
+    href: "/empleado/sub-desposte",
+    label: "Sub-desposte",
+    desc: "Transformar un corte en otros",
+    icon: Split,
   },
 ];
 

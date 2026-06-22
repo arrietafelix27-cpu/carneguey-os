@@ -9,6 +9,7 @@ import {
   ShoppingCart,
   Truck,
   ArrowLeftRight,
+  Split,
   ChevronRight,
 } from "lucide-react";
 
@@ -32,6 +33,12 @@ const SECTIONS = [
     label: "Transferencias de cortes",
     desc: "Aprobar movimientos entre cortes",
     icon: ArrowLeftRight,
+  },
+  {
+    href: "/admin/sub-despostes",
+    label: "Sub-despostes",
+    desc: "Aprobar transformaciones de cortes",
+    icon: Split,
   },
   {
     href: "/admin/analitica",

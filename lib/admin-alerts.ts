@@ -7,7 +7,8 @@ export type AlertIcon =
   | "calendar"
   | "package"
   | "bird"
-  | "transfer";
+  | "transfer"
+  | "split";
 
 export type AlertSeverity = "warning" | "danger";
 
@@ -41,6 +42,7 @@ export async function getAdminAlerts(
     recentPoultryResult,
     recentMovsResult,
     pendingTransfersResult,
+    pendingSubDespostesResult,
   ] = await Promise.all([
     supabase
       .from("v_lot_summary")
@@ -76,6 +78,10 @@ export async function getAdminAlerts(
       .from("cut_transfers")
       .select("id")
       .eq("status", "pending"),
+    supabase
+      .from("sub_despostes")
+      .select("id")
+      .eq("status", "pending"),
   ]);
 
   const activeLots = activeLotsResult.data ?? [];
@@ -85,6 +91,7 @@ export async function getAdminAlerts(
   const recentDPs = recentPoultryResult.data ?? [];
   const recentMovs = recentMovsResult.data ?? [];
   const pendingTransfers = pendingTransfersResult.data ?? [];
+  const pendingSubDespostes = pendingSubDespostesResult.data ?? [];
 
   const alerts: Alert[] = [];
   const lotById = new Map(allLots.map((l) => [l.lot_id as string, l]));
@@ -99,6 +106,19 @@ export async function getAdminAlerts(
       title: `${n} ${n === 1 ? "transferencia pendiente" : "transferencias pendientes"}`,
       description: "Revísalas para aplicar al inventario",
       href: "/admin/transferencias",
+    });
+  }
+
+  // 0b) Sub-despostes pendientes de aprobación
+  if (pendingSubDespostes.length > 0) {
+    const n = pendingSubDespostes.length;
+    alerts.push({
+      id: "sub-despostes-pendientes",
+      severity: "warning",
+      icon: "split",
+      title: `${n} ${n === 1 ? "sub-desposte pendiente" : "sub-despostes pendientes"}`,
+      description: "Revísalos para aplicar al inventario",
+      href: "/admin/sub-despostes",
     });
   }
 
