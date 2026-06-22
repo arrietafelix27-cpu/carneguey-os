@@ -57,6 +57,7 @@ export function SubDesposteForm({
   const [rows, setRows] = useState<Row[]>([]);
 
   // Dialog para agregar un producto resultante
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<OutputProduct | null>(null);
   const [weight, setWeight] = useState("");
@@ -101,6 +102,7 @@ export function SubDesposteForm({
         unit_count: picked.unit === "unit" ? num(unitCount) : null,
       },
     ]);
+    setPickerOpen(false);
     setPicked(null);
     setWeight("");
     setUnitCount("");
@@ -235,6 +237,9 @@ export function SubDesposteForm({
           onClick={() => {
             setPicked(null);
             setQuery("");
+            setWeight("");
+            setUnitCount("");
+            setPickerOpen(true);
           }}
         >
           <Plus className="size-4" />
@@ -264,8 +269,9 @@ export function SubDesposteForm({
 
       {/* Selector de producto resultante */}
       <Dialog
-        open={query !== "" || picked !== null}
+        open={pickerOpen}
         onOpenChange={(o) => {
+          setPickerOpen(o);
           if (!o) {
             setPicked(null);
             setQuery("");
