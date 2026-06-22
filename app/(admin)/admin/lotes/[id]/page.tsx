@@ -44,6 +44,7 @@ export default async function LoteDetailPage({
     { data: provider },
     { data: despostes },
     { data: prevLots },
+    { data: lotRow },
     receiptUrls,
   ] = await Promise.all([
     supabase.from("providers").select("name").eq("id", lot.provider_id).single(),
@@ -62,8 +63,18 @@ export default async function LoteDetailPage({
       .lt("created_at", lot.created_at)
       .order("created_at", { ascending: false })
       .limit(1),
+    supabase
+      .from("purchase_lots")
+      .select("final_merma_kg, closed_at")
+      .eq("id", id)
+      .single(),
     getReceiptSignedUrls(supabase, "purchase_lot", id),
   ]);
+
+  const finalMermaKg =
+    lotRow?.final_merma_kg === null || lotRow?.final_merma_kg === undefined
+      ? null
+      : Number(lotRow.final_merma_kg);
 
   const finalized = (despostes ?? []).filter((d) => d.status === "finalized");
   const finalizedIds = finalized.map((d) => d.desposte_id as string);
@@ -195,6 +206,21 @@ export default async function LoteDetailPage({
           {mermaPctTotal.toFixed(1)}% de lo despostado
         </p>
       </div>
+
+      {/* Merma final por cierre manual del lote */}
+      {finalMermaKg !== null && finalMermaKg > 0 && (
+        <div className="mb-6 rounded-3xl bg-warning/10 px-6 py-5 text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
+            Merma final al cerrar el lote
+          </p>
+          <p className="mt-1 text-3xl font-bold text-warning tabular-nums">
+            {formatKg(finalMermaKg)} kg
+          </p>
+          <p className="text-xs text-muted-foreground">
+            kg que quedaban sin despostar y se enviaron a merma
+          </p>
+        </div>
+      )}
 
       {/* Cortes que salieron */}
       {cuts.length > 0 && (

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/auth";
 import {
   carcassLotSchema,
   liveLotSchema,
@@ -10,6 +11,25 @@ import {
 
 type Result = { ok: true; lotCode: string } | { error: string };
 type VoidResult = { ok: true } | { error: string };
+
+/** Félix finaliza un lote activo: el remanente se va a merma y se cierra. */
+export async function closeLotWithMerma(lotId: string): Promise<VoidResult> {
+  const { supabase, isAdmin } = await getAdminContext();
+  if (!isAdmin) return { error: "No autorizado" };
+
+  const { error } = await supabase.rpc("fn_close_lot_with_merma", {
+    p_lot_id: lotId,
+  });
+  if (error) {
+    return { error: `No se pudo finalizar el lote: ${error.message}` };
+  }
+
+  revalidatePath("/admin/lotes/activos");
+  revalidatePath("/admin/inventario");
+  revalidatePath("/admin/analitica");
+  revalidatePath(`/admin/lotes/${lotId}`);
+  return { ok: true };
+}
 
 export async function createCarcassLot(formData: FormData): Promise<Result> {
   const raw = {

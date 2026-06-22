@@ -10,6 +10,7 @@ import {
   Truck,
   ArrowLeftRight,
   Split,
+  PackageCheck,
   ChevronRight,
 } from "lucide-react";
 
@@ -39,6 +40,12 @@ const SECTIONS = [
     label: "Sub-despostes",
     desc: "Aprobar transformaciones de cortes",
     icon: Split,
+  },
+  {
+    href: "/admin/lotes/activos",
+    label: "Lotes activos",
+    desc: "Finalizar lotes y enviar a merma",
+    icon: PackageCheck,
   },
   {
     href: "/admin/analitica",
