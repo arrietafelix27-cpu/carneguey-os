@@ -36,4 +36,6 @@ export type Product = {
   origin: Origin;
   pos_code: string | null;
   active: boolean;
+  /** Si true, el producto aparece en el desposte de cualquier especie. */
+  shared_across_species: boolean;
 };

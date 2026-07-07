@@ -65,6 +65,7 @@ export function ProductsManager({
       unit: "kg",
       origin: "from_processing",
       pos_code: "",
+      shared_across_species: false,
     },
   });
 
@@ -92,6 +93,7 @@ export function ProductsManager({
       unit: "kg",
       origin: "from_processing",
       pos_code: "",
+      shared_across_species: false,
     });
     setDialogOpen(true);
   }
@@ -104,6 +106,7 @@ export function ProductsManager({
       unit: p.unit,
       origin: p.origin,
       pos_code: p.pos_code ?? "",
+      shared_across_species: p.shared_across_species ?? false,
     });
     setDialogOpen(true);
   }
@@ -201,6 +204,11 @@ export function ProductsManager({
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium text-foreground">
                         {p.name}
+                        {p.shared_across_species && (
+                          <span className="ml-2 rounded-full bg-[var(--brand-red-soft)] px-2 py-0.5 text-xs font-medium text-primary">
+                            Compartido
+                          </span>
+                        )}
                         {!p.active && (
                           <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
                             Inactivo
@@ -345,6 +353,38 @@ export function ProductsManager({
                 </p>
               )}
             </div>
+
+            <Controller
+              control={control}
+              name="shared_across_species"
+              render={({ field }) => (
+                <button
+                  type="button"
+                  onClick={() => field.onChange(!field.value)}
+                  className="flex items-center gap-3 rounded-2xl bg-secondary px-4 py-3 text-left"
+                >
+                  <span
+                    className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${
+                      field.value ? "bg-primary" : "bg-[var(--bg-tertiary)]"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 size-5 rounded-full bg-white shadow-sm transition-transform ${
+                        field.value ? "translate-x-[18px]" : "translate-x-0.5"
+                      }`}
+                    />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-medium text-foreground">
+                      Compartido entre especies
+                    </span>
+                    <span className="block text-[13px] text-secondary-foreground">
+                      Aparece en el desposte de res, cerdo y pollo
+                    </span>
+                  </span>
+                </button>
+              )}
+            />
 
             <DialogFooter>
               <Button type="submit" disabled={isPending} className="gap-2">

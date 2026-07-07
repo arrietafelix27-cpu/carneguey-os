@@ -19,6 +19,7 @@ export const productSchema = z.object({
     .max(60, "Código demasiado largo")
     .optional()
     .or(z.literal("")),
+  shared_across_species: z.boolean().optional(),
 });
 
 export type ProductInput = z.infer<typeof productSchema>;

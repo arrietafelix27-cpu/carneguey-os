@@ -10,7 +10,9 @@ export default async function ProductosPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("products")
-    .select("id, name, category, unit, origin, pos_code, active")
+    .select(
+      "id, name, category, unit, origin, pos_code, active, shared_across_species",
+    )
     .order("name", { ascending: true });
 
   const products = (data ?? []) as Product[];

@@ -50,7 +50,9 @@ export default async function DesposteEnCursoPage({
   const [{ data: allProducts }, { data: items }] = await Promise.all([
     supabase
       .from("products")
-      .select("id, name, category, unit, origin, pos_code, active")
+      .select(
+        "id, name, category, unit, origin, pos_code, active, shared_across_species",
+      )
       .eq("active", true)
       .order("name"),
     supabase
@@ -60,12 +62,14 @@ export default async function DesposteEnCursoPage({
       .order("created_at", { ascending: true }),
   ]);
 
-  // Filtro estricto por el spec:
+  // Filtro por el spec:
   //  - beef/pork: misma categoría + origin='from_processing'
   //  - poultry: misma categoría (cualquier origen, ver migración 009)
+  //  - shared_across_species: aparece en cualquier especie (migración 016)
   // El stock NO entra en el filtro: todos los productos válidos aparecen
   // siempre, tengan o no inventario previo.
   const products = ((allProducts ?? []) as Product[]).filter((p) => {
+    if (p.shared_across_species) return true;
     if (lot?.type === "poultry_carcass") return p.category === "poultry";
     return p.category === category && p.origin === "from_processing";
   });

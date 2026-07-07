@@ -19,6 +19,7 @@ export async function createProduct(values: unknown): Promise<Result> {
     unit: parsed.data.unit,
     origin: parsed.data.origin,
     pos_code: parsed.data.pos_code ? parsed.data.pos_code : null,
+    shared_across_species: parsed.data.shared_across_species ?? false,
   });
   if (error) {
     return {
@@ -52,6 +53,7 @@ export async function updateProduct(
       unit: parsed.data.unit,
       origin: parsed.data.origin,
       pos_code: parsed.data.pos_code ? parsed.data.pos_code : null,
+      shared_across_species: parsed.data.shared_across_species ?? false,
     })
     .eq("id", id);
   if (error) {

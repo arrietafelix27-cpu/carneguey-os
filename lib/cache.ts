@@ -51,7 +51,9 @@ export const getActiveProducts = unstable_cache(
     const db = serviceClient();
     const { data } = await db
       .from("products")
-      .select("id, name, category, unit, origin, pos_code, active")
+      .select(
+        "id, name, category, unit, origin, pos_code, active, shared_across_species",
+      )
       .eq("active", true)
       .order("name");
     return (data ?? []) as Product[];
