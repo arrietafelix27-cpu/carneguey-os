@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, Scissors, Package } from "lucide-react";
+import { ScanLine, ShoppingCart, Scissors, Package } from "lucide-react";
 
 const ITEMS = [
+  { href: "/empleado/pos", label: "POS", icon: ScanLine, ready: true },
   { href: "/empleado/compras", label: "Compras", icon: ShoppingCart, ready: true },
   { href: "/empleado/desposte", label: "Desposte", icon: Scissors, ready: true },
   { href: "/empleado/inventario", label: "Inventario", icon: Package, ready: false },
