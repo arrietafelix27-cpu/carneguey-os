@@ -33,7 +33,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export type PosProduct = {
   id: string;
@@ -95,6 +97,10 @@ export function PosTerminal({ products }: { products: PosProduct[] }) {
   const [scanValue, setScanValue] = useState("");
   const [scanFocused, setScanFocused] = useState(false);
 
+  // Entrada manual: producto elegido por código corto + cantidad.
+  const [manualProduct, setManualProduct] = useState<PosProduct | null>(null);
+  const [manualQty, setManualQty] = useState("");
+
   const total = useMemo(
     () => items.reduce((s, it) => s + it.totalPrice, 0),
     [items],
@@ -126,11 +132,28 @@ export function PosTerminal({ products }: { products: PosProduct[] }) {
     return () => document.removeEventListener("mousedown", onDown);
   }, [mounted, isDesktop, focusScan]);
 
+  // Agrega un producto al carrito con una cantidad ya definida (kg o unidades).
+  const pushItem = useCallback((product: PosProduct, quantity: number) => {
+    const totalPrice = Math.round(product.price * quantity);
+    setItems((prev) => [
+      ...prev,
+      {
+        key: crypto.randomUUID(),
+        productId: product.id,
+        name: product.name,
+        unit: product.unit,
+        quantity,
+        unitPrice: product.price,
+        totalPrice,
+      },
+    ]);
+  }, []);
+
+  // EAN-13 de la báscula: char1='2', 2-6 = pos_code, 7-11 = peso (gramos).
   const addScan = useCallback(
     (raw: string) => {
       const code = digitsOnly(raw);
       if (code.length < 6) return;
-      // EAN-13 de la báscula: char1='2', 2-6 = pos_code, 7-11 = peso (gramos).
       const posCode = String(parseInt(code.slice(1, 6) || "0", 10));
       const grams = parseInt(code.slice(6, 11) || "0", 10);
       const kg = Math.round((grams / 1000) * 1000) / 1000;
@@ -140,25 +163,22 @@ export function PosTerminal({ products }: { products: PosProduct[] }) {
         toast.error(`Producto no encontrado (código ${posCode})`);
         return;
       }
+      pushItem(product, product.unit === "unit" ? 1 : kg);
+    },
+    [cache, pushItem],
+  );
 
-      const isUnit = product.unit === "unit";
-      const quantity = isUnit ? 1 : kg;
-      const totalPrice = isUnit
-        ? Math.round(product.price)
-        : Math.round(product.price * kg);
-
-      setItems((prev) => [
-        ...prev,
-        {
-          key: crypto.randomUUID(),
-          productId: product.id,
-          name: product.name,
-          unit: product.unit,
-          quantity,
-          unitPrice: product.price,
-          totalPrice,
-        },
-      ]);
+  // Código manual corto (ej. "301"): busca el producto y abre el modal.
+  const openManual = useCallback(
+    (raw: string) => {
+      const posCode = String(parseInt(digitsOnly(raw) || "0", 10));
+      const product = cache.get(posCode);
+      if (!product) {
+        toast.error(`Producto no encontrado (código ${posCode})`);
+        return;
+      }
+      setManualQty("");
+      setManualProduct(product);
     },
     [cache],
   );
@@ -168,8 +188,40 @@ export function PosTerminal({ products }: { products: PosProduct[] }) {
       e.preventDefault();
       const v = scanValue;
       setScanValue("");
-      if (v.trim()) addScan(v);
+      const d = digitsOnly(v);
+      if (d.length === 0) return;
+      // 11-13 dígitos → EAN-13 de báscula; más corto → código manual.
+      if (d.length >= 11) addScan(v);
+      else openManual(v);
     }
+  }
+
+  // Cantidad del modal manual → número (acepta coma o punto).
+  const manualQtyNum = (() => {
+    const n = Number(manualQty.replace(",", "."));
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  })();
+  const manualTotal =
+    manualProduct != null ? Math.round(manualProduct.price * manualQtyNum) : 0;
+
+  function closeManual() {
+    setManualProduct(null);
+    setManualQty("");
+    focusScan();
+  }
+
+  function confirmManual() {
+    if (!manualProduct) return;
+    if (manualQtyNum <= 0) {
+      toast.error("Ingresa la cantidad");
+      return;
+    }
+    const qty =
+      manualProduct.unit === "unit"
+        ? Math.round(manualQtyNum)
+        : Math.round(manualQtyNum * 1000) / 1000;
+    pushItem(manualProduct, qty);
+    closeManual();
   }
 
   function removeItem(key: string) {
@@ -444,6 +496,64 @@ export function PosTerminal({ products }: { products: PosProduct[] }) {
           </Button>
         </aside>
       </div>
+
+      {/* Entrada manual: cantidad de un producto por código corto */}
+      <Dialog
+        open={manualProduct !== null}
+        onOpenChange={(o) => !o && closeManual()}
+      >
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle>{manualProduct?.name ?? "Producto"}</DialogTitle>
+          </DialogHeader>
+          {manualProduct && (
+            <div className="grid gap-3">
+              <div className="grid gap-2">
+                <Label htmlFor="manual-qty">
+                  {manualProduct.unit === "unit"
+                    ? "Cantidad (unidades)"
+                    : "Peso (kg)"}
+                </Label>
+                <Input
+                  id="manual-qty"
+                  autoFocus
+                  inputMode={
+                    manualProduct.unit === "unit" ? "numeric" : "decimal"
+                  }
+                  placeholder={manualProduct.unit === "unit" ? "0" : "0,00"}
+                  value={manualQty}
+                  onChange={(e) => setManualQty(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      confirmManual();
+                    }
+                  }}
+                  className="text-right text-[18px] font-semibold"
+                />
+                <p className="text-[13px] text-secondary-foreground">
+                  {formatCOP(manualProduct.price)}
+                  {manualProduct.unit === "unit" ? "/u" : "/kg"}
+                </p>
+              </div>
+              <div className="flex items-center justify-between rounded-xl bg-secondary px-4 py-2.5">
+                <span className="text-[13px] text-secondary-foreground">
+                  Total
+                </span>
+                <span className="text-[17px] font-bold text-foreground tabular-nums">
+                  {formatCOP(manualTotal)}
+                </span>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="secondary" onClick={closeManual}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmManual}>Agregar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Cambio a devolver (solo efectivo) */}
       <Dialog open={changeOpen} onOpenChange={(o) => !o && finishCashSale()}>
