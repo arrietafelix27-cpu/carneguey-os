@@ -93,6 +93,7 @@ export function PosTerminal({ products }: { products: PosProduct[] }) {
 
   const scanRef = useRef<HTMLInputElement>(null);
   const [scanValue, setScanValue] = useState("");
+  const [scanFocused, setScanFocused] = useState(false);
 
   const total = useMemo(
     () => items.reduce((s, it) => s + it.totalPrice, 0),
@@ -271,36 +272,40 @@ export function PosTerminal({ products }: { products: PosProduct[] }) {
       <div className="grid grid-cols-[1fr_360px] gap-4">
         {/* ZONA IZQUIERDA — productos */}
         <section className="flex flex-col">
-          {/* Barra de escaneo */}
-          <div
-            className="relative mb-3 flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-sm ring-1 ring-border"
-            onClick={focusScan}
-          >
-            <ScanLine className="size-5 shrink-0 text-primary" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold text-foreground">
-                Listo para escanear
-              </p>
-              <p className="text-[13px] text-secondary-foreground">
-                Escanea el ticket de la báscula
-              </p>
-            </div>
-            <span className="relative flex size-3 shrink-0">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-success/60" />
-              <span className="relative inline-flex size-3 rounded-full bg-success" />
+          {/* Barra de escaneo (input visible, siempre enfocado) */}
+          <div className="relative mb-3 flex items-center gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[var(--brand-red-soft)] text-primary">
+              <ScanLine className="size-5" />
             </span>
-            {/* input invisible, siempre enfocado */}
-            <input
-              ref={scanRef}
-              value={scanValue}
-              onChange={(e) => setScanValue(e.target.value)}
-              onKeyDown={onScanKey}
-              onBlur={() => setTimeout(focusScan, 0)}
-              inputMode="none"
-              autoComplete="off"
-              aria-label="Entrada del lector de código de barras"
-              className="absolute inset-0 size-full cursor-default rounded-2xl bg-transparent text-transparent caret-transparent outline-none"
-            />
+            <div className="relative flex-1">
+              <input
+                ref={scanRef}
+                value={scanValue}
+                onChange={(e) => setScanValue(e.target.value)}
+                onKeyDown={onScanKey}
+                onFocus={() => setScanFocused(true)}
+                onBlur={() => setScanFocused(false)}
+                autoComplete="off"
+                aria-label="Entrada del lector de código de barras"
+                placeholder="Escanea el ticket o escribe un código…"
+                className={`h-14 w-full rounded-2xl bg-card px-4 pr-11 text-[15px] text-foreground shadow-sm outline-none transition-shadow placeholder:text-text-tertiary ${
+                  scanFocused
+                    ? "ring-2 ring-danger"
+                    : "ring-1 ring-border"
+                }`}
+              />
+              {/* Indicador de escáner activo (verde = con foco) */}
+              <span className="pointer-events-none absolute right-4 top-1/2 flex size-3 -translate-y-1/2">
+                {scanFocused && (
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-success/60" />
+                )}
+                <span
+                  className={`relative inline-flex size-3 rounded-full ${
+                    scanFocused ? "bg-success" : "bg-text-tertiary"
+                  }`}
+                />
+              </span>
+            </div>
           </div>
 
           {/* Lista de items */}
