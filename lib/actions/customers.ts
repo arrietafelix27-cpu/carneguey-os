@@ -123,5 +123,6 @@ export async function registerCreditPayment(values: unknown): Promise<Result> {
 
   revalidatePath("/admin/clientes");
   revalidatePath(`/admin/clientes/${parsed.data.customer_id}`);
+  revalidatePath("/empleado/clientes");
   return { ok: true };
 }

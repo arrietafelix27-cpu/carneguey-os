@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { ShoppingCart, ArrowLeftRight, Split, ChevronRight } from "lucide-react";
+import {
+  ShoppingCart,
+  ArrowLeftRight,
+  Split,
+  Users,
+  ChevronRight,
+} from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 
 const ACTIONS = [
@@ -20,6 +26,12 @@ const ACTIONS = [
     label: "Sub-desposte",
     desc: "Transformar un corte en otros",
     icon: Split,
+  },
+  {
+    href: "/empleado/clientes",
+    label: "Clientes",
+    desc: "Ver saldos y registrar abonos",
+    icon: Users,
   },
 ];
 
