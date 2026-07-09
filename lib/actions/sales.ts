@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 const itemSchema = z.object({
@@ -10,14 +11,21 @@ const itemSchema = z.object({
   total_price: z.number().min(0),
 });
 
-const saleSchema = z.object({
-  payment_method: z.enum(["cash", "card", "transfer"]),
-  subtotal: z.number().min(0),
-  total: z.number().min(0),
-  amount_paid: z.number().min(0).nullable().optional(),
-  change_given: z.number().nullable().optional(),
-  items: z.array(itemSchema).min(1, "La venta no tiene productos"),
-});
+const saleSchema = z
+  .object({
+    payment_method: z.enum(["cash", "card", "transfer", "credit"]),
+    customer_id: z.string().uuid().nullable().optional(),
+    subtotal: z.number().min(0),
+    discount_total: z.number().min(0),
+    total: z.number().min(0),
+    amount_paid: z.number().min(0).nullable().optional(),
+    change_given: z.number().nullable().optional(),
+    items: z.array(itemSchema).min(1, "La venta no tiene productos"),
+  })
+  .refine((v) => v.payment_method !== "credit" || !!v.customer_id, {
+    message: "Una venta a crédito requiere un cliente",
+    path: ["customer_id"],
+  });
 
 type Result = { ok: true; saleId: string } | { error: string };
 
@@ -25,14 +33,18 @@ type Result = { ok: true; saleId: string } | { error: string };
 export async function completeSale(values: unknown): Promise<Result> {
   const parsed = saleSchema.safeParse(values);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Datos de venta inválidos" };
+    return {
+      error: parsed.error.issues[0]?.message ?? "Datos de venta inválidos",
+    };
   }
   const d = parsed.data;
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("fn_complete_sale", {
     p_payment_method: d.payment_method,
+    p_customer_id: d.customer_id ?? null,
     p_subtotal: d.subtotal,
+    p_discount_total: d.discount_total,
     p_total: d.total,
     p_amount_paid: d.amount_paid ?? null,
     p_change_given: d.change_given ?? null,
@@ -47,5 +59,6 @@ export async function completeSale(values: unknown): Promise<Result> {
     };
   }
 
+  revalidatePath("/admin/clientes");
   return { ok: true, saleId: data as string };
 }

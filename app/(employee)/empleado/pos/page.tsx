@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { PosTerminal, type PosProduct } from "@/components/employee/pos-terminal";
+import {
+  PosTerminal,
+  type PosProduct,
+  type PosCustomer,
+} from "@/components/employee/pos-terminal";
 
 export const metadata = { title: "POS · Carnegüey" };
 export const dynamic = "force-dynamic";
@@ -7,13 +11,20 @@ export const dynamic = "force-dynamic";
 export default async function PosPage() {
   const supabase = await createClient();
 
-  // Caché de productos activos con precio de venta (v_pos_products, definer).
-  const { data } = await supabase
-    .from("v_pos_products")
-    .select("id, pos_code, name, category, unit, price")
-    .order("name", { ascending: true });
+  // Caché en memoria: productos activos con precio de venta y clientes activos.
+  // Ambas vistas son definer y no exponen costos, cupo de crédito ni notas.
+  const [{ data: products }, { data: customers }] = await Promise.all([
+    supabase
+      .from("v_pos_products")
+      .select("id, pos_code, name, category, unit, price")
+      .order("name", { ascending: true }),
+    supabase
+      .from("v_pos_customers")
+      .select("id, name, discount_type, discount_value")
+      .order("name", { ascending: true }),
+  ]);
 
-  const products: PosProduct[] = (data ?? [])
+  const productList: PosProduct[] = (products ?? [])
     .filter((p) => p.pos_code != null)
     .map((p) => ({
       id: p.id as string,
@@ -23,5 +34,13 @@ export default async function PosPage() {
       price: p.price === null || p.price === undefined ? 0 : Number(p.price),
     }));
 
-  return <PosTerminal products={products} />;
+  const customerList: PosCustomer[] = (customers ?? []).map((c) => ({
+    id: c.id as string,
+    name: c.name as string,
+    discount_type:
+      (c.discount_type as "percentage" | "fixed_per_product" | null) ?? null,
+    discount_value: Number(c.discount_value ?? 0),
+  }));
+
+  return <PosTerminal products={productList} customers={customerList} />;
 }

@@ -11,6 +11,7 @@ import {
   ArrowLeftRight,
   Split,
   PackageCheck,
+  Users,
   ChevronRight,
 } from "lucide-react";
 
@@ -76,6 +77,12 @@ const SECTIONS = [
     label: "Proveedores",
     desc: "Lista de proveedores",
     icon: Truck,
+  },
+  {
+    href: "/admin/clientes",
+    label: "Clientes",
+    desc: "Descuentos, crédito y abonos",
+    icon: Users,
   },
 ];
 
