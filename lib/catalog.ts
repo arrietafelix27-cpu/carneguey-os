@@ -38,4 +38,6 @@ export type Product = {
   active: boolean;
   /** Si true, el producto aparece en el desposte de cualquier especie. */
   shared_across_species: boolean;
+  /** Precio en COP. Solo lo lee el admin (vía v_products_admin). */
+  price: number | null;
 };

@@ -14,6 +14,7 @@ import {
   type Product,
   type Category,
 } from "@/lib/catalog";
+import { formatCOP } from "@/lib/format";
 import { productSchema, type ProductInput } from "@/lib/validations/product";
 import {
   createProduct,
@@ -94,6 +95,7 @@ export function ProductsManager({
       origin: "from_processing",
       pos_code: "",
       shared_across_species: false,
+      price: "",
     });
     setDialogOpen(true);
   }
@@ -107,6 +109,7 @@ export function ProductsManager({
       origin: p.origin,
       pos_code: p.pos_code ?? "",
       shared_across_species: p.shared_across_species ?? false,
+      price: p.price != null ? String(p.price) : "",
     });
     setDialogOpen(true);
   }
@@ -217,7 +220,14 @@ export function ProductsManager({
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {UNIT_LABELS[p.unit]} · {ORIGIN_LABELS[p.origin]}
+                        {p.pos_code ? ` · POS ${p.pos_code}` : ""}
                       </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="font-semibold text-foreground tabular-nums">
+                        {p.price != null ? formatCOP(p.price) : "—"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">precio</p>
                     </div>
                     <Button
                       variant="ghost"
@@ -344,14 +354,25 @@ export function ProductsManager({
               </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="pos">Código POS (opcional)</Label>
-              <Input id="pos" {...register("pos_code")} />
-              {errors.pos_code && (
-                <p className="text-sm text-destructive">
-                  {errors.pos_code.message}
-                </p>
-              )}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label htmlFor="pos">Código POS (opcional)</Label>
+                <Input id="pos" {...register("pos_code")} />
+                {errors.pos_code && (
+                  <p className="text-sm text-destructive">
+                    {errors.pos_code.message}
+                  </p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="price">Precio (COP)</Label>
+                <Input
+                  id="price"
+                  inputMode="numeric"
+                  placeholder="$"
+                  {...register("price")}
+                />
+              </div>
             </div>
 
             <Controller

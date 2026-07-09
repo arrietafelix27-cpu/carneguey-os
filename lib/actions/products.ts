@@ -6,6 +6,12 @@ import { productSchema } from "@/lib/validations/product";
 
 type Result = { ok: true } | { error: string };
 
+/** Convierte el precio de texto ("$54.000", "54000") a número o null. */
+function parsePrice(raw: string | undefined): number | null {
+  const digits = (raw ?? "").replace(/[^\d]/g, "");
+  return digits === "" ? null : Number(digits);
+}
+
 export async function createProduct(values: unknown): Promise<Result> {
   const parsed = productSchema.safeParse(values);
   if (!parsed.success) return { error: "Revisa los datos del producto" };
@@ -20,6 +26,7 @@ export async function createProduct(values: unknown): Promise<Result> {
     origin: parsed.data.origin,
     pos_code: parsed.data.pos_code ? parsed.data.pos_code : null,
     shared_across_species: parsed.data.shared_across_species ?? false,
+    price: parsePrice(parsed.data.price),
   });
   if (error) {
     return {
@@ -54,6 +61,7 @@ export async function updateProduct(
       origin: parsed.data.origin,
       pos_code: parsed.data.pos_code ? parsed.data.pos_code : null,
       shared_across_species: parsed.data.shared_across_species ?? false,
+      price: parsePrice(parsed.data.price),
     })
     .eq("id", id);
   if (error) {

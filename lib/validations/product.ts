@@ -20,6 +20,8 @@ export const productSchema = z.object({
     .optional()
     .or(z.literal("")),
   shared_across_species: z.boolean().optional(),
+  // El precio llega como texto desde el formulario; se limpia en la acción.
+  price: z.string().optional(),
 });
 
 export type ProductInput = z.infer<typeof productSchema>;
