@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, TriangleAlert } from "lucide-react";
+import { Loader2, CheckCircle2, TriangleAlert, Clock } from "lucide-react";
 import { formatCOP } from "@/lib/format";
 import { closeDay } from "@/lib/actions/closing";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ export type DaySummary = {
   cpTransfer: number;
   outflowsApproved: number;
   outflowsPending: number;
+  outflowsPendingCount: number;
   expectedCash: number;
 };
 
@@ -51,6 +52,16 @@ export function DayClosing({
   const hasCount = counted.trim() !== "";
   const diff = countedNum - summary.expectedCash;
   const ok = Math.abs(diff) <= TOLERANCE;
+
+  const blocked = summary.outflowsPendingCount > 0;
+
+  // Mientras haya egresos pendientes, refresca solo para detectar cuando
+  // Félix aprueba o rechaza el último y habilitar el botón.
+  useEffect(() => {
+    if (alreadyClosed || !blocked) return;
+    const id = setInterval(() => router.refresh(), 15000);
+    return () => clearInterval(id);
+  }, [alreadyClosed, blocked, router]);
 
   function submit() {
     startTransition(async () => {
@@ -81,6 +92,32 @@ export function DayClosing({
 
   return (
     <div className="grid gap-5">
+      {/* Bloqueo por egresos pendientes */}
+      {blocked && (
+        <div className="flex gap-3 rounded-3xl bg-danger/10 px-5 py-4">
+          <Clock className="mt-0.5 size-5 shrink-0 text-danger" />
+          <div>
+            <p className="text-[15px] font-semibold text-danger">
+              No puedes cerrar el día todavía
+            </p>
+            <p className="mt-0.5 text-[14px] text-foreground">
+              Hay{" "}
+              <span className="font-semibold">
+                {summary.outflowsPendingCount}{" "}
+                {summary.outflowsPendingCount === 1
+                  ? "egreso pendiente"
+                  : "egresos pendientes"}
+              </span>{" "}
+              de aprobación por {formatCOP(summary.outflowsPending)}. Félix debe
+              aprobarlos o rechazarlos antes de cerrar la caja.
+            </p>
+            <p className="mt-1 text-[12px] text-secondary-foreground">
+              Esta pantalla se actualiza sola cuando él los revise.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Ingresos */}
       <section className="rounded-3xl bg-card p-5 shadow-sm">
         <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
@@ -101,11 +138,16 @@ export function DayClosing({
         <h2 className="mb-3 mt-5 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Egresos de efectivo
         </h2>
-        <Row label="Aprobados" value={-summary.outflowsApproved} strong />
         <Row
-          label="Pendientes (no cuentan)"
+          label="Egresos aprobados"
+          value={summary.outflowsApproved}
+          negative
+          strong
+        />
+        <Row
+          label="Egresos pendientes (no restan)"
           value={summary.outflowsPending}
-          muted
+          warn={summary.outflowsPendingCount > 0}
         />
       </section>
 
@@ -180,11 +222,20 @@ export function DayClosing({
 
         <Button
           className="h-12 w-full text-base font-semibold"
-          disabled={isPending || !hasCount}
+          disabled={isPending || !hasCount || blocked}
           onClick={() => setConfirmOpen(true)}
         >
           Cerrar día
         </Button>
+        {blocked && (
+          <p className="text-center text-[13px] text-danger">
+            Bloqueado: hay {summary.outflowsPendingCount}{" "}
+            {summary.outflowsPendingCount === 1
+              ? "egreso pendiente"
+              : "egresos pendientes"}{" "}
+            de aprobación.
+          </p>
+        )}
       </section>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -227,12 +278,26 @@ function Row({
   value,
   strong,
   muted,
+  negative,
+  warn,
 }: {
   label: string;
   value: number;
   strong?: boolean;
   muted?: boolean;
+  /** Muestra el monto como salida: -$X.XXX */
+  negative?: boolean;
+  /** Resalta en naranja (pendiente de aprobación). */
+  warn?: boolean;
 }) {
+  const amountCls = warn
+    ? "text-[14px] font-semibold text-warning"
+    : strong
+      ? "text-[16px] font-semibold text-foreground"
+      : muted
+        ? "text-[14px] text-text-tertiary"
+        : "text-[14px] text-foreground";
+
   return (
     <div className="flex items-center justify-between py-1">
       <span
@@ -242,16 +307,10 @@ function Row({
       >
         {label}
       </span>
-      <span
-        className={`tabular-nums ${
-          strong
-            ? "text-[16px] font-semibold text-foreground"
-            : muted
-              ? "text-[14px] text-text-tertiary"
-              : "text-[14px] text-foreground"
-        }`}
-      >
-        {formatCOP(value)}
+      <span className={`tabular-nums ${amountCls}`}>
+        {negative && value > 0 ? "−" : ""}
+        {formatCOP(Math.abs(value))}
+        {warn ? " ⚠️" : ""}
       </span>
     </div>
   );

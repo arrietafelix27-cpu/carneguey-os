@@ -33,6 +33,7 @@ export default async function CierreCajeraPage() {
     cpTransfer: Number(s?.cp_transfer ?? 0),
     outflowsApproved: Number(s?.outflows_approved ?? 0),
     outflowsPending: Number(s?.outflows_pending ?? 0),
+    outflowsPendingCount: Number(s?.outflows_pending_count ?? 0),
     expectedCash: Number(s?.expected_cash ?? 0),
   };
 

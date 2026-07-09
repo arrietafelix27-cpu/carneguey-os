@@ -185,14 +185,15 @@ export default async function CuadreDetailPage({
 
       <Section title="Egresos de efectivo">
         <Row
-          label="Aprobados (restan)"
-          value={-amountOf("cash_outflows_approved")}
+          label="Egresos aprobados"
+          value={amountOf("cash_outflows_approved")}
+          negative
           strong
         />
         <Row
-          label="Pendientes (no cuentan)"
+          label="Egresos pendientes (no restan)"
           value={amountOf("cash_outflows_pending")}
-          muted
+          warn={amountOf("cash_outflows_pending") > 0}
         />
       </Section>
 
@@ -341,12 +342,24 @@ function Row({
   value,
   strong,
   muted,
+  negative,
+  warn,
 }: {
   label: string;
   value: number;
   strong?: boolean;
   muted?: boolean;
+  negative?: boolean;
+  warn?: boolean;
 }) {
+  const amountCls = warn
+    ? "text-[14px] font-semibold text-warning"
+    : strong
+      ? "text-[16px] font-semibold text-foreground"
+      : muted
+        ? "text-[14px] text-text-tertiary"
+        : "text-[14px] text-foreground";
+
   return (
     <div className="flex items-center justify-between py-1">
       <span
@@ -356,16 +369,10 @@ function Row({
       >
         {label}
       </span>
-      <span
-        className={`tabular-nums ${
-          strong
-            ? "text-[16px] font-semibold text-foreground"
-            : muted
-              ? "text-[14px] text-text-tertiary"
-              : "text-[14px] text-foreground"
-        }`}
-      >
-        {formatCOP(value)}
+      <span className={`tabular-nums ${amountCls}`}>
+        {negative && value > 0 ? "−" : ""}
+        {formatCOP(Math.abs(value))}
+        {warn ? " ⚠️" : ""}
       </span>
     </div>
   );
