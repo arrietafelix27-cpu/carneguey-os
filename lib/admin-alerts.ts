@@ -8,7 +8,8 @@ export type AlertIcon =
   | "package"
   | "bird"
   | "transfer"
-  | "split";
+  | "split"
+  | "banknote";
 
 export type AlertSeverity = "warning" | "danger";
 
@@ -43,6 +44,7 @@ export async function getAdminAlerts(
     recentMovsResult,
     pendingTransfersResult,
     pendingSubDespostesResult,
+    pendingOutflowsResult,
   ] = await Promise.all([
     supabase
       .from("v_lot_summary")
@@ -82,6 +84,10 @@ export async function getAdminAlerts(
       .from("sub_despostes")
       .select("id")
       .eq("status", "pending"),
+    supabase
+      .from("cash_outflows")
+      .select("id")
+      .eq("status", "pending"),
   ]);
 
   const activeLots = activeLotsResult.data ?? [];
@@ -92,6 +98,7 @@ export async function getAdminAlerts(
   const recentMovs = recentMovsResult.data ?? [];
   const pendingTransfers = pendingTransfersResult.data ?? [];
   const pendingSubDespostes = pendingSubDespostesResult.data ?? [];
+  const pendingOutflows = pendingOutflowsResult.data ?? [];
 
   const alerts: Alert[] = [];
   const lotById = new Map(allLots.map((l) => [l.lot_id as string, l]));
@@ -106,6 +113,19 @@ export async function getAdminAlerts(
       title: `${n} ${n === 1 ? "transferencia pendiente" : "transferencias pendientes"}`,
       description: "Revísalas para aplicar al inventario",
       href: "/admin/transferencias",
+    });
+  }
+
+  // 0a) Egresos de efectivo pendientes de aprobación
+  if (pendingOutflows.length > 0) {
+    const n = pendingOutflows.length;
+    alerts.push({
+      id: "egresos-pendientes",
+      severity: "danger",
+      icon: "banknote",
+      title: `${n} ${n === 1 ? "egreso pendiente" : "egresos pendientes"}`,
+      description: "Apruébalos para que cuenten en el cuadre",
+      href: "/admin/egresos",
     });
   }
 

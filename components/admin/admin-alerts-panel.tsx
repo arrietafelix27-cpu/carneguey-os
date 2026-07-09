@@ -7,6 +7,7 @@ import {
   Bird,
   ArrowLeftRight,
   Split,
+  Banknote,
   TriangleAlert,
   ChevronRight,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const ICONS: Record<AlertIcon, typeof Clock> = {
   bird: Bird,
   transfer: ArrowLeftRight,
   split: Split,
+  banknote: Banknote,
 };
 
 export function AdminAlertsPanel({ alerts }: { alerts: Alert[] }) {

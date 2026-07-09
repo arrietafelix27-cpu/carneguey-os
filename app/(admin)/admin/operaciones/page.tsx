@@ -12,6 +12,8 @@ import {
   Split,
   PackageCheck,
   Users,
+  Banknote,
+  CalendarCheck,
   ChevronRight,
 } from "lucide-react";
 
@@ -83,6 +85,18 @@ const SECTIONS = [
     label: "Clientes",
     desc: "Descuentos, crédito y abonos",
     icon: Users,
+  },
+  {
+    href: "/admin/egresos",
+    label: "Egresos de efectivo",
+    desc: "Aprobar salidas de caja",
+    icon: Banknote,
+  },
+  {
+    href: "/admin/cuadre",
+    label: "Cuadre de caja",
+    desc: "Cierre diario y diferencias",
+    icon: CalendarCheck,
   },
 ];
 

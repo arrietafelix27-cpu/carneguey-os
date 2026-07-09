@@ -4,6 +4,8 @@ import {
   ArrowLeftRight,
   Split,
   Users,
+  Banknote,
+  CalendarCheck,
   ChevronRight,
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
@@ -32,6 +34,18 @@ const ACTIONS = [
     label: "Clientes",
     desc: "Ver saldos y registrar abonos",
     icon: Users,
+  },
+  {
+    href: "/empleado/egresos",
+    label: "Egresos",
+    desc: "Registrar salidas de efectivo",
+    icon: Banknote,
+  },
+  {
+    href: "/empleado/cierre",
+    label: "Cerrar día",
+    desc: "Cuadre de caja del día",
+    icon: CalendarCheck,
   },
 ];
 
