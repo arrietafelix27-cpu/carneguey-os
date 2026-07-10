@@ -223,14 +223,16 @@ export function PosTerminal({
     ]);
   }, []);
 
-  // EAN-13 de la báscula: char1='2', 2-6 = pos_code, 7-11 = peso (gramos).
+  // EAN-13 de la báscula DIBAL: prefijo '2' + pos_code (6 díg, posiciones 2-7)
+  // + peso en diezmilésimas de kg (6 díg, posiciones 8-13).
+  // Ej: "2 000302 004452" → pos_code 302, peso 4452/10000 = 0,4452 kg.
   const addScan = useCallback(
     (raw: string) => {
       const code = digitsOnly(raw);
-      if (code.length < 6) return;
-      const posCode = String(parseInt(code.slice(1, 6) || "0", 10));
-      const grams = parseInt(code.slice(6, 11) || "0", 10);
-      const kg = Math.round((grams / 1000) * 1000) / 1000;
+      if (code.length < 7) return;
+      const posCode = String(parseInt(code.slice(1, 7) || "0", 10));
+      const weightRaw = parseInt(code.slice(7, 13) || "0", 10);
+      const kg = Math.round((weightRaw / 10000) * 1000) / 1000;
 
       const product = cache.get(posCode);
       if (!product) {
