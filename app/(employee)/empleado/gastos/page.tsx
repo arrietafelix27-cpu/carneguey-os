@@ -4,28 +4,37 @@ import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import type { OutflowCategory } from "@/lib/validations/cash-outflow";
 import {
-  CashOutflowForm,
-  type TodayOutflow,
-} from "@/components/employee/cash-outflow-form";
+  GastosForm,
+  type Employee,
+  type TodayGasto,
+} from "@/components/employee/gastos-form";
 
-export const metadata = { title: "Egresos · Carnegüey" };
+export const metadata = { title: "Gastos y salidas · Carnegüey" };
 export const dynamic = "force-dynamic";
 
-export default async function EgresosCajeraPage() {
+export default async function GastosCajeraPage() {
   const supabase = await createClient();
 
-  // La RLS ya limita a los egresos propios del día actual.
-  const { data } = await supabase
-    .from("cash_outflows")
-    .select("id, amount, category, recipient, status, created_at")
-    .order("created_at", { ascending: false });
+  const [{ data: employees }, { data: outflows }] = await Promise.all([
+    supabase.from("v_employees_active").select("id, name").order("name"),
+    // La RLS limita a los egresos propios del día actual.
+    supabase
+      .from("cash_outflows")
+      .select("id, amount, category, subcategory, status, created_at")
+      .order("created_at", { ascending: false }),
+  ]);
 
-  const today: TodayOutflow[] = (data ?? []).map((o) => ({
+  const employeeList: Employee[] = (employees ?? []).map((e) => ({
+    id: e.id as string,
+    name: e.name as string,
+  }));
+
+  const today: TodayGasto[] = (outflows ?? []).map((o) => ({
     id: o.id as string,
     amount: Number(o.amount ?? 0),
     category: o.category as OutflowCategory,
-    recipient: (o.recipient as string | null) ?? null,
-    status: o.status as TodayOutflow["status"],
+    subcategory: (o.subcategory as string | null) ?? null,
+    status: o.status as TodayGasto["status"],
     createdAt: format(new Date(o.created_at as string), "HH:mm"),
   }));
 
@@ -43,10 +52,10 @@ export default async function EgresosCajeraPage() {
         Caja
       </p>
       <h1 className="mb-6 mt-1 text-[28px] font-bold leading-tight tracking-tight text-foreground">
-        Egresos de efectivo
+        Gastos y salidas
       </h1>
 
-      <CashOutflowForm today={today} />
+      <GastosForm employees={employeeList} today={today} />
     </main>
   );
 }

@@ -14,6 +14,7 @@ import {
   Users,
   Banknote,
   CalendarCheck,
+  IdCard,
   ChevronRight,
 } from "lucide-react";
 
@@ -91,6 +92,12 @@ const SECTIONS = [
     label: "Egresos de efectivo",
     desc: "Aprobar salidas de caja",
     icon: Banknote,
+  },
+  {
+    href: "/admin/empleados",
+    label: "Nómina",
+    desc: "Empleados y préstamos",
+    icon: IdCard,
   },
   {
     href: "/admin/cuadre",

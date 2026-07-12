@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatCOP } from "@/lib/format";
 import {
   OUTFLOW_LABELS,
+  SUBCATEGORY_LABELS,
   type OutflowCategory,
 } from "@/lib/validations/cash-outflow";
 
@@ -78,7 +79,7 @@ export default async function CuadreDetailPage({
         .order("created_at", { ascending: true }),
       supabase
         .from("cash_outflows")
-        .select("id, created_at, amount, category, recipient, status")
+        .select("id, created_at, amount, category, subcategory, recipient, status")
         .gte("created_at", dayStart)
         .lte("created_at", dayEnd)
         .order("created_at", { ascending: true }),
@@ -258,7 +259,9 @@ export default async function CuadreDetailPage({
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[15px] font-medium text-foreground">
-                      {OUTFLOW_LABELS[o.category as OutflowCategory]}
+                      {o.category === "expense" && o.subcategory
+                        ? `Gasto: ${SUBCATEGORY_LABELS[o.subcategory as keyof typeof SUBCATEGORY_LABELS]}`
+                        : OUTFLOW_LABELS[o.category as OutflowCategory]}
                     </p>
                     <p className="truncate text-[13px] text-secondary-foreground">
                       {o.recipient ? `${o.recipient} · ` : ""}

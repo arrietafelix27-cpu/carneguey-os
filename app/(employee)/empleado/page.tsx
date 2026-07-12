@@ -4,7 +4,7 @@ import {
   ArrowLeftRight,
   Split,
   Users,
-  Banknote,
+  Wallet,
   CalendarCheck,
   ChevronRight,
 } from "lucide-react";
@@ -36,10 +36,10 @@ const ACTIONS = [
     icon: Users,
   },
   {
-    href: "/empleado/egresos",
-    label: "Egresos",
-    desc: "Registrar salidas de efectivo",
-    icon: Banknote,
+    href: "/empleado/gastos",
+    label: "Gastos y salidas",
+    desc: "Entregas SF, préstamos y gastos",
+    icon: Wallet,
   },
   {
     href: "/empleado/cierre",

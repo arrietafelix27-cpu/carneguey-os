@@ -21,6 +21,26 @@ export const OUTFLOW_LABELS: Record<OutflowCategory, string> = {
 /** Categorías que quedan pendientes de aprobación de Félix. */
 export const NEEDS_APPROVAL: OutflowCategory[] = ["sf", "employee_advance"];
 
+export const EXPENSE_SUBCATEGORIES = [
+  "utilities",
+  "fuel",
+  "supplies",
+  "maintenance",
+  "food",
+  "other",
+] as const;
+
+export type ExpenseSubcategory = (typeof EXPENSE_SUBCATEGORIES)[number];
+
+export const SUBCATEGORY_LABELS: Record<ExpenseSubcategory, string> = {
+  utilities: "Servicios públicos",
+  fuel: "Gasolina",
+  supplies: "Insumos y bolsas",
+  maintenance: "Mantenimiento",
+  food: "Alimentación",
+  other: "Otro",
+};
+
 export const cashOutflowSchema = z.object({
   category: z.enum(OUTFLOW_CATEGORIES, { message: "Elige la categoría" }),
   amount: z.string().min(1, "Ingresa el monto"),

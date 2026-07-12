@@ -8,7 +8,7 @@ const ONE_HOUR = 3600;
  */
 export async function getReceiptSignedUrls(
   supabase: SupabaseClient,
-  entityType: "purchase_lot" | "direct_purchase",
+  entityType: "purchase_lot" | "direct_purchase" | "cash_outflow",
   entityId: string,
 ): Promise<string[]> {
   const { data: receipts } = await supabase

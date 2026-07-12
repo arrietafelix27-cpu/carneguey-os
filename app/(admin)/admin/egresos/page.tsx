@@ -5,9 +5,12 @@ import { createClient } from "@/lib/supabase/server";
 import { formatCOP } from "@/lib/format";
 import {
   OUTFLOW_LABELS,
+  SUBCATEGORY_LABELS,
   type OutflowCategory,
 } from "@/lib/validations/cash-outflow";
+import { getReceiptSignedUrls } from "@/lib/receipts";
 import { OutflowReview } from "@/components/admin/outflow-review";
+import { ReceiptViewer } from "@/components/admin/receipt-viewer";
 
 export const metadata = { title: "Egresos · Carnegüey OS" };
 export const dynamic = "force-dynamic";
@@ -28,7 +31,7 @@ export default async function EgresosAdminPage() {
   const { data: outflows } = await supabase
     .from("cash_outflows")
     .select(
-      "id, amount, category, recipient, notes, status, created_at, created_by, approved_at",
+      "id, amount, category, subcategory, recipient, notes, status, created_at, created_by, approved_at",
     )
     .order("created_at", { ascending: false })
     .limit(120);
@@ -49,6 +52,56 @@ export default async function EgresosAdminPage() {
 
   const pending = all.filter((o) => o.status === "pending");
   const history = all.filter((o) => o.status !== "pending");
+
+  // Nombre del empleado (para préstamos) por cash_outflow_id.
+  const pendingIds = pending.map((o) => o.id as string);
+  const { data: loans } =
+    pendingIds.length > 0
+      ? await supabase
+          .from("employee_loans")
+          .select("cash_outflow_id, employee_id")
+          .in("cash_outflow_id", pendingIds)
+      : { data: [] as { cash_outflow_id: string; employee_id: string }[] };
+
+  const loanEmployeeIds = Array.from(
+    new Set((loans ?? []).map((l) => l.employee_id as string)),
+  );
+  const { data: loanEmployees } =
+    loanEmployeeIds.length > 0
+      ? await supabase
+          .from("employees")
+          .select("id, name")
+          .in("id", loanEmployeeIds)
+      : { data: [] as { id: string; name: string }[] };
+  const empNameById = new Map(
+    (loanEmployees ?? []).map((e) => [e.id as string, e.name as string]),
+  );
+
+  const loanEmployeeBy = new Map<string, string>();
+  for (const l of loans ?? []) {
+    loanEmployeeBy.set(
+      l.cash_outflow_id as string,
+      empNameById.get(l.employee_id as string) ?? "Empleado",
+    );
+  }
+
+  // Foto (URL firmada) de cada egreso pendiente.
+  const photoBy = new Map<string, string[]>();
+  await Promise.all(
+    pending.map(async (o) => {
+      const urls = await getReceiptSignedUrls(
+        supabase,
+        "cash_outflow",
+        o.id as string,
+      );
+      photoBy.set(o.id as string, urls);
+    }),
+  );
+
+  const catLabel = (o: { category: string; subcategory: string | null }) =>
+    o.category === "expense" && o.subcategory
+      ? `Gasto: ${SUBCATEGORY_LABELS[o.subcategory as keyof typeof SUBCATEGORY_LABELS]}`
+      : OUTFLOW_LABELS[o.category as OutflowCategory];
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-9">
@@ -78,7 +131,13 @@ export default async function EgresosAdminPage() {
       ) : (
         <ul className="grid gap-3">
           {pending.map((o) => {
-            const cat = OUTFLOW_LABELS[o.category as OutflowCategory];
+            const cat = catLabel(
+              o as { category: string; subcategory: string | null },
+            );
+            const employeeName =
+              o.category === "employee_advance"
+                ? loanEmployeeBy.get(o.id as string)
+                : null;
             return (
               <li
                 key={o.id as string}
@@ -89,6 +148,11 @@ export default async function EgresosAdminPage() {
                     <p className="text-[17px] font-semibold text-foreground">
                       {cat}
                     </p>
+                    {employeeName && (
+                      <p className="text-[14px] font-medium text-primary">
+                        Empleado: {employeeName}
+                      </p>
+                    )}
                     <p className="text-[13px] text-secondary-foreground">
                       {o.recipient ? `Para ${o.recipient} · ` : ""}
                       {personBy.get(o.created_by as string) ?? "—"} ·{" "}
@@ -107,6 +171,9 @@ export default async function EgresosAdminPage() {
                     {o.notes as string}
                   </p>
                 )}
+                <div className="mt-3">
+                  <ReceiptViewer urls={photoBy.get(o.id as string) ?? []} />
+                </div>
                 <div className="mt-4">
                   <OutflowReview
                     outflowId={o.id as string}
