@@ -24,10 +24,9 @@ export async function createGasto(formData: FormData): Promise<Result> {
   const amount = parseMoney(String(formData.get("amount") ?? ""));
   if (amount <= 0) return { error: "El monto debe ser mayor a 0" };
 
-  const photo = formData.get("photo");
-  if (!(photo instanceof File) || photo.size === 0) {
-    return { error: "La foto del soporte es obligatoria" };
-  }
+  // La foto ya se subió desde el navegador; aquí llega solo la ruta.
+  const photoPath = String(formData.get("photo_path") ?? "").trim();
+  if (!photoPath) return { error: "La foto del soporte es obligatoria" };
 
   const notes = String(formData.get("notes") ?? "").trim() || null;
 
@@ -93,25 +92,11 @@ export async function createGasto(formData: FormData): Promise<Result> {
     return { error: "Categoría inválida" };
   }
 
-  // Foto obligatoria al bucket receipts.
-  const safeName = photo.name.replace(/[^\w.\-]/g, "_");
-  const path = `cash_outflow/${outflowId}/${Date.now()}_${safeName}`;
-  const { error: uploadError } = await supabase.storage
-    .from("receipts")
-    .upload(path, await photo.arrayBuffer(), {
-      contentType: photo.type || "image/jpeg",
-      upsert: false,
-    });
-  if (uploadError) {
-    return {
-      error:
-        "El egreso se registró pero la foto no se pudo subir. Avísale a Félix.",
-    };
-  }
+  // Indexa la foto (ya subida) en receipts.
   await supabase.from("receipts").insert({
     entity_type: "cash_outflow",
     entity_id: outflowId,
-    file_path: path,
+    file_path: photoPath,
     uploaded_by: user.id,
   });
 

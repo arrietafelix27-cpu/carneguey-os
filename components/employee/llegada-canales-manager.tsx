@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Camera, Truck } from "lucide-react";
+import { Loader2, Camera, Truck, CheckCircle2 } from "lucide-react";
 import { registerLotArrival } from "@/lib/actions/lots";
+import { compressImage } from "@/lib/compress-image";
+import {
+  uploadReceiptPhoto,
+  PHASE_LABEL,
+  type UploadPhase,
+} from "@/lib/upload-receipt";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,27 +35,50 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 export function LlegadaCanalesManager({ lots }: { lots: PendingLot[] }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [phase, setPhase] = useState<UploadPhase>("idle");
+  const busy = phase !== "idle";
   const [active, setActive] = useState<PendingLot | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!active) return;
+    if (!active || busy) return;
     const fd = new FormData(e.currentTarget);
     fd.set("lot_id", active.id);
+    const lotCode = active.lot_code;
+    const file = fd.get("photo");
 
-    startTransition(async () => {
-      const result = await registerLotArrival(fd);
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
+    (async () => {
+      try {
+        if (file instanceof File && file.size > 0) {
+          setPhase("compressing");
+          const compressed = await compressImage(file);
+          setPhase("uploading");
+          const path = await uploadReceiptPhoto(compressed, "purchase_lot");
+          fd.set("photo_path", path);
+        }
+        fd.delete("photo");
+
+        setPhase("saving");
+        const result = await registerLotArrival(fd);
+        if ("error" in result) {
+          toast.error(result.error);
+          setPhase("idle");
+          return;
+        }
+        setPhase("done");
+        toast.success(`Llegada del lote ${lotCode} registrada`);
+        setTimeout(() => {
+          setActive(null);
+          setFileName(null);
+          setPhase("idle");
+          router.refresh();
+        }, 600);
+      } catch {
+        toast.error("No se pudo subir la foto. Intenta de nuevo.");
+        setPhase("idle");
       }
-      toast.success(`Llegada del lote ${active.lot_code} registrada`);
-      setActive(null);
-      setFileName(null);
-      router.refresh();
-    });
+    })();
   }
 
   if (lots.length === 0) {
@@ -166,9 +195,13 @@ export function LlegadaCanalesManager({ lots }: { lots: PendingLot[] }) {
             </div>
 
             <DialogFooter>
-              <Button type="submit" disabled={isPending} className="gap-2">
-                {isPending && <Loader2 className="size-4 animate-spin" />}
-                Confirmar llegada
+              <Button type="submit" disabled={busy} className="gap-2">
+                {phase === "done" ? (
+                  <CheckCircle2 className="size-5" />
+                ) : busy ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : null}
+                {busy ? PHASE_LABEL[phase] : "Confirmar llegada"}
               </Button>
             </DialogFooter>
           </form>

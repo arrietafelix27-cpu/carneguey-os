@@ -46,8 +46,9 @@ export async function createCarcassLot(formData: FormData): Promise<Result> {
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
-  const photo = formData.get("photo");
-  if (!(photo instanceof File) || photo.size === 0) {
+  // La foto ya se subió desde el navegador; aquí llega solo la ruta.
+  const photoPath = String(formData.get("photo_path") ?? "").trim();
+  if (!photoPath) {
     return { error: "La foto del comprobante es obligatoria" };
   }
 
@@ -83,28 +84,11 @@ export async function createCarcassLot(formData: FormData): Promise<Result> {
 
   const { lot_id: lotId, lot_code: lotCode } = lotRows[0];
 
-  // Subir comprobante a Storage e indexarlo en receipts.
-  const safeName = photo.name.replace(/[^\w.\-]/g, "_");
-  const path = `purchase_lot/${lotId}/${Date.now()}_${safeName}`;
-  const { error: uploadError } = await supabase.storage
-    .from("receipts")
-    .upload(path, await photo.arrayBuffer(), {
-      contentType: photo.type || "image/jpeg",
-      upsert: false,
-    });
-
-  if (uploadError) {
-    // El lote ya quedó creado; avisamos que falta el comprobante.
-    return {
-      error:
-        "El lote se registró pero la foto no se pudo subir. Avísale a Félix.",
-    };
-  }
-
+  // Indexa el comprobante (ya subido) en receipts.
   await supabase.from("receipts").insert({
     entity_type: "purchase_lot",
     entity_id: lotId,
-    file_path: path,
+    file_path: photoPath,
     uploaded_by: user.id,
   });
 
@@ -178,25 +162,15 @@ export async function registerLotArrival(
     return { error: `No se pudo registrar la llegada: ${error.message}` };
   }
 
-  // Foto del comprobante (opcional para llegada de canales).
-  const photo = formData.get("photo");
-  if (photo instanceof File && photo.size > 0) {
-    const safeName = photo.name.replace(/[^\w.\-]/g, "_");
-    const path = `purchase_lot/${d.lot_id}/${Date.now()}_${safeName}`;
-    const { error: uploadError } = await supabase.storage
-      .from("receipts")
-      .upload(path, await photo.arrayBuffer(), {
-        contentType: photo.type || "image/jpeg",
-        upsert: false,
-      });
-    if (!uploadError) {
-      await supabase.from("receipts").insert({
-        entity_type: "purchase_lot",
-        entity_id: d.lot_id,
-        file_path: path,
-        uploaded_by: user.id,
-      });
-    }
+  // Foto del comprobante (opcional). Ya subida desde el navegador.
+  const photoPath = String(formData.get("photo_path") ?? "").trim();
+  if (photoPath) {
+    await supabase.from("receipts").insert({
+      entity_type: "purchase_lot",
+      entity_id: d.lot_id,
+      file_path: photoPath,
+      uploaded_by: user.id,
+    });
   }
 
   revalidatePath("/empleado/compras");

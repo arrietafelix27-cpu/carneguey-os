@@ -1,11 +1,24 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Camera, HandCoins, UserPlus, Receipt } from "lucide-react";
+import {
+  Loader2,
+  Camera,
+  HandCoins,
+  UserPlus,
+  Receipt,
+  CheckCircle2,
+} from "lucide-react";
 import { formatCOP } from "@/lib/format";
 import { createGasto } from "@/lib/actions/gastos";
+import { compressImage } from "@/lib/compress-image";
+import {
+  uploadReceiptPhoto,
+  PHASE_LABEL,
+  type UploadPhase,
+} from "@/lib/upload-receipt";
 import {
   EXPENSE_SUBCATEGORIES,
   SUBCATEGORY_LABELS,
@@ -69,7 +82,8 @@ export function GastosForm({
   const [employeeId, setEmployeeId] = useState("");
   const [fileName, setFileName] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const [isPending, startTransition] = useTransition();
+  const [phase, setPhase] = useState<UploadPhase>("idle");
+  const busy = phase !== "idle";
 
   function resetFields() {
     setAmount("");
@@ -83,40 +97,60 @@ export function GastosForm({
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy) return;
     const file = fileRef.current?.files?.[0];
     if (!file) {
       toast.error("La foto del soporte es obligatoria");
       return;
     }
 
-    const fd = new FormData();
-    fd.set("category", tab);
-    fd.set("amount", amount);
-    fd.set("photo", file);
-    if (tab === "sf") fd.set("notes", notes);
-    if (tab === "employee_advance") {
-      fd.set("employee_id", employeeId);
-      fd.set("notes", notes);
-    }
-    if (tab === "expense") {
-      fd.set("subcategory", subcategory);
-      fd.set("description", description);
-    }
+    // Captura los valores al enviar (la UI queda bloqueada mientras sube).
+    const snapshot = { tab, amount, notes, employeeId, subcategory, description };
 
-    startTransition(async () => {
-      const r = await createGasto(fd);
-      if ("error" in r) {
-        toast.error(r.error);
-        return;
+    (async () => {
+      try {
+        setPhase("compressing");
+        const compressed = await compressImage(file);
+        setPhase("uploading");
+        const path = await uploadReceiptPhoto(compressed, "cash_outflow");
+
+        const fd = new FormData();
+        fd.set("category", snapshot.tab);
+        fd.set("amount", snapshot.amount);
+        fd.set("photo_path", path);
+        if (snapshot.tab === "sf") fd.set("notes", snapshot.notes);
+        if (snapshot.tab === "employee_advance") {
+          fd.set("employee_id", snapshot.employeeId);
+          fd.set("notes", snapshot.notes);
+        }
+        if (snapshot.tab === "expense") {
+          fd.set("subcategory", snapshot.subcategory);
+          fd.set("description", snapshot.description);
+        }
+
+        setPhase("saving");
+        const r = await createGasto(fd);
+        if ("error" in r) {
+          toast.error(r.error);
+          setPhase("idle");
+          return;
+        }
+        setPhase("done");
+        toast.success(
+          tab === "expense"
+            ? "Gasto registrado"
+            : "Registrado. Queda pendiente de aprobación.",
+        );
+        setTimeout(() => {
+          resetFields();
+          setPhase("idle");
+          router.refresh();
+        }, 700);
+      } catch {
+        toast.error("No se pudo subir la foto. Intenta de nuevo.");
+        setPhase("idle");
       }
-      toast.success(
-        tab === "expense"
-          ? "Gasto registrado"
-          : "Registrado. Queda pendiente de aprobación.",
-      );
-      resetFields();
-      router.refresh();
-    });
+    })();
   }
 
   const photoLabel: Record<Tab, string> = {
@@ -132,8 +166,10 @@ export function GastosForm({
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
+            type="button"
+            disabled={busy}
             onClick={() => setTab(key)}
-            className={`flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-center transition-colors ${
+            className={`flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-center transition-colors disabled:opacity-60 ${
               tab === key
                 ? "bg-primary text-primary-foreground shadow-[var(--shadow-brand)]"
                 : "bg-card text-secondary-foreground shadow-sm"
@@ -268,11 +304,15 @@ export function GastosForm({
 
         <Button
           type="submit"
-          disabled={isPending}
+          disabled={busy}
           className="h-12 w-full gap-2 text-base font-semibold"
         >
-          {isPending && <Loader2 className="size-4 animate-spin" />}
-          Registrar
+          {phase === "done" ? (
+            <CheckCircle2 className="size-5" />
+          ) : busy ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : null}
+          {busy ? PHASE_LABEL[phase] : "Registrar"}
         </Button>
       </form>
 

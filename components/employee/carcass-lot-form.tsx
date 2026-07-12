@@ -1,11 +1,17 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Camera } from "lucide-react";
+import { Loader2, Camera, CheckCircle2 } from "lucide-react";
 import type { Provider } from "@/lib/catalog";
 import { createCarcassLot } from "@/lib/actions/lots";
+import { compressImage } from "@/lib/compress-image";
+import {
+  uploadReceiptPhoto,
+  PHASE_LABEL,
+  type UploadPhase,
+} from "@/lib/upload-receipt";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,10 +33,10 @@ export function CarcassLotForm({
   providers: Provider[];
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [phase, setPhase] = useState<UploadPhase>("idle");
+  const busy = phase !== "idle";
   const [providerId, setProviderId] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
 
   const noun =
     type === "beef_carcass"
@@ -41,25 +47,47 @@ export function CarcassLotForm({
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (busy) return;
     const fd = new FormData(e.currentTarget);
     fd.set("type", type);
     fd.set("provider_id", providerId);
 
-    startTransition(async () => {
-      const result = await createCarcassLot(fd);
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
+    const file = fd.get("photo");
+    if (!(file instanceof File) || file.size === 0) {
+      toast.error("La foto del comprobante es obligatoria");
+      return;
+    }
+
+    (async () => {
+      try {
+        setPhase("compressing");
+        const compressed = await compressImage(file);
+        setPhase("uploading");
+        const path = await uploadReceiptPhoto(compressed, "purchase_lot");
+        fd.delete("photo");
+        fd.set("photo_path", path);
+
+        setPhase("saving");
+        const result = await createCarcassLot(fd);
+        if ("error" in result) {
+          toast.error(result.error);
+          setPhase("idle");
+          return;
+        }
+        setPhase("done");
+        toast.success(`Lote ${result.lotCode} registrado`);
+        setTimeout(() => router.push("/empleado/compras"), 600);
+      } catch {
+        toast.error("No se pudo subir la foto. Intenta de nuevo.");
+        setPhase("idle");
       }
-      toast.success(`Lote ${result.lotCode} registrado`);
-      router.push("/empleado/compras");
-    });
+    })();
   }
 
   const selectedProvider = providers.find((p) => p.id === providerId);
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className="grid gap-5" noValidate>
+    <form onSubmit={onSubmit} className="grid gap-5" noValidate>
       <div className="grid gap-2">
         <Label>Proveedor</Label>
         <Select
@@ -155,11 +183,15 @@ export function CarcassLotForm({
 
       <Button
         type="submit"
-        disabled={isPending}
+        disabled={busy}
         className="h-12 w-full gap-2 text-base font-semibold transition-transform active:scale-[0.98]"
       >
-        {isPending && <Loader2 className="size-4 animate-spin" />}
-        Guardar lote
+        {phase === "done" ? (
+          <CheckCircle2 className="size-5" />
+        ) : busy ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : null}
+        {busy ? PHASE_LABEL[phase] : "Guardar lote"}
       </Button>
     </form>
   );
