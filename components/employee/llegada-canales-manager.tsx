@@ -74,8 +74,10 @@ export function LlegadaCanalesManager({ lots }: { lots: PendingLot[] }) {
           setPhase("idle");
           router.refresh();
         }, 600);
-      } catch {
-        toast.error("No se pudo subir la foto. Intenta de nuevo.");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Error desconocido";
+        console.error("Llegada: fallo al subir/guardar:", err);
+        toast.error(`No se pudo guardar: ${msg}`);
         setPhase("idle");
       }
     })();

@@ -93,12 +93,17 @@ export async function createGasto(formData: FormData): Promise<Result> {
   }
 
   // Indexa la foto (ya subida) en receipts.
-  await supabase.from("receipts").insert({
+  const { error: receiptError } = await supabase.from("receipts").insert({
     entity_type: "cash_outflow",
     entity_id: outflowId,
     file_path: photoPath,
     uploaded_by: user.id,
   });
+  if (receiptError) {
+    return {
+      error: `El registro se guardó pero la foto no quedó indexada: ${receiptError.message}`,
+    };
+  }
 
   revalidatePath("/empleado/gastos");
   revalidatePath("/empleado/cierre");

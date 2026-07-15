@@ -77,8 +77,10 @@ export function CarcassLotForm({
         setPhase("done");
         toast.success(`Lote ${result.lotCode} registrado`);
         setTimeout(() => router.push("/empleado/compras"), 600);
-      } catch {
-        toast.error("No se pudo subir la foto. Intenta de nuevo.");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Error desconocido";
+        console.error("Lote: fallo al subir/guardar:", err);
+        toast.error(`No se pudo guardar: ${msg}`);
         setPhase("idle");
       }
     })();
