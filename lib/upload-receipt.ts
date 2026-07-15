@@ -23,7 +23,7 @@ export const PHASE_LABEL: Record<Exclude<UploadPhase, "idle">, string> = {
  */
 export async function uploadReceiptPhoto(
   file: File,
-  entityType: "purchase_lot" | "cash_outflow",
+  entityType: "purchase_lot" | "cash_outflow" | "payroll_payment",
 ): Promise<string> {
   const supabase = createClient();
   const safe = file.name.replace(/[^\w.\-]/g, "_");

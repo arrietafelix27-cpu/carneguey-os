@@ -32,3 +32,15 @@ export async function getReceiptSignedUrls(
 
   return urls.filter((u): u is string => u !== null);
 }
+
+/** URL firmada (1 hora) para una sola ruta del bucket receipts. */
+export async function getSignedUrl(
+  supabase: SupabaseClient,
+  path: string | null,
+): Promise<string | null> {
+  if (!path) return null;
+  const { data } = await supabase.storage
+    .from("receipts")
+    .createSignedUrl(path, ONE_HOUR);
+  return data?.signedUrl ?? null;
+}

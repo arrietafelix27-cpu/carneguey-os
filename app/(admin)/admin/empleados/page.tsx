@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, HandCoins, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
   EmployeesManager,
@@ -37,6 +37,25 @@ export default async function EmpleadosPage() {
       <p className="text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
         Nómina
       </p>
+
+      <Link
+        href="/admin/nomina/pago"
+        className="mb-6 mt-3 flex items-center gap-4 rounded-3xl bg-card p-4 shadow-sm transition-colors active:bg-secondary"
+      >
+        <span className="grid size-12 shrink-0 place-items-center rounded-[var(--radius-lg)] bg-[var(--brand-red-soft)] text-primary">
+          <HandCoins className="size-6" strokeWidth={2} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[17px] font-semibold text-foreground">
+            Realizar pago
+          </span>
+          <span className="block text-[14px] text-secondary-foreground">
+            Pagar la quincena y descontar préstamos
+          </span>
+        </span>
+        <ChevronRight className="size-5 shrink-0 text-text-tertiary" />
+      </Link>
+
       <EmployeesManager initialEmployees={rows} />
     </main>
   );

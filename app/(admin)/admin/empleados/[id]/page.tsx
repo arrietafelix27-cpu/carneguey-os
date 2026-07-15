@@ -4,6 +4,13 @@ import { ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { formatCOP } from "@/lib/format";
+import { getSignedUrl } from "@/lib/receipts";
+import { ReceiptViewer } from "@/components/admin/receipt-viewer";
+
+const PERIOD_LABEL: Record<string, string> = {
+  first: "1ª quincena",
+  second: "2ª quincena",
+};
 
 export const metadata = { title: "Empleado · Carnegüey OS" };
 export const dynamic = "force-dynamic";
@@ -44,12 +51,52 @@ export default async function EmpleadoDetailPage({
   const all = loans ?? [];
   const approved = all.filter((l) => l.status === "approved");
   const pending = all.filter((l) => l.status === "pending");
-  // Total descontable = préstamos aprobados.
+
+  // Cuánto se ha descontado de cada préstamo aprobado (deducciones de nómina).
+  const approvedIds = approved.map((l) => l.id as string);
+  const { data: deductions } =
+    approvedIds.length > 0
+      ? await supabase
+          .from("payroll_deductions")
+          .select("employee_loan_id, amount")
+          .in("employee_loan_id", approvedIds)
+      : { data: [] as { employee_loan_id: string; amount: number }[] };
+  const deductedByLoan = new Map<string, number>();
+  for (const d of deductions ?? []) {
+    const lid = d.employee_loan_id as string;
+    deductedByLoan.set(lid, (deductedByLoan.get(lid) ?? 0) + Number(d.amount ?? 0));
+  }
+  const remainingOf = (loanId: string, amount: number) =>
+    Math.max(0, Math.round((amount - (deductedByLoan.get(loanId) ?? 0)) * 100) / 100);
+
+  // Total descontable = saldo restante de los préstamos aprobados.
   const totalDeductible = approved.reduce(
-    (s, l) => s + Number(l.amount ?? 0),
+    (s, l) => s + remainingOf(l.id as string, Number(l.amount ?? 0)),
     0,
   );
   const totalPending = pending.reduce((s, l) => s + Number(l.amount ?? 0), 0);
+
+  // Historial de pagos de nómina (con foto del soporte).
+  const { data: payments } = await supabase
+    .from("payroll_payments")
+    .select(
+      "id, payment_date, period, gross_amount, total_deductions, net_amount, receipt_url",
+    )
+    .eq("employee_id", id)
+    .order("payment_date", { ascending: false })
+    .limit(40);
+
+  const payrollHistory = await Promise.all(
+    (payments ?? []).map(async (p) => ({
+      id: p.id as string,
+      date: p.payment_date as string,
+      period: p.period as string,
+      gross: Number(p.gross_amount ?? 0),
+      deductions: Number(p.total_deductions ?? 0),
+      net: Number(p.net_amount ?? 0),
+      photoUrl: await getSignedUrl(supabase, (p.receipt_url as string) ?? null),
+    })),
+  );
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-9">
@@ -102,11 +149,13 @@ export default async function EmpleadoDetailPage({
                   <p className="text-[15px] font-medium text-foreground">
                     {format(new Date(l.created_at as string), "dd/MM/yyyy")}
                   </p>
-                  {l.notes && (
-                    <p className="truncate text-[13px] text-secondary-foreground">
-                      {l.notes as string}
-                    </p>
-                  )}
+                  <p className="truncate text-[13px] text-secondary-foreground">
+                    {l.status === "approved" &&
+                    remainingOf(l.id as string, Number(l.amount ?? 0)) <
+                      Number(l.amount ?? 0)
+                      ? `Saldo ${formatCOP(remainingOf(l.id as string, Number(l.amount ?? 0)))}`
+                      : (l.notes as string | null) ?? ""}
+                  </p>
                 </div>
                 <span
                   className={`shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold ${meta.bg} ${meta.text}`}
@@ -120,6 +169,49 @@ export default async function EmpleadoDetailPage({
             );
           })}
         </ul>
+      )}
+
+      {/* Historial de pagos de nómina */}
+      <h2 className="mb-2.5 mt-8 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
+        Pagos de nómina ({payrollHistory.length})
+      </h2>
+      {payrollHistory.length === 0 ? (
+        <div className="rounded-3xl bg-card px-6 py-10 text-center text-[15px] text-secondary-foreground shadow-sm">
+          Aún no hay pagos de nómina registrados.
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {payrollHistory.map((p) => (
+            <div key={p.id} className="rounded-3xl bg-card p-5 shadow-sm">
+              <div className="flex items-baseline justify-between gap-3">
+                <div>
+                  <p className="text-[16px] font-semibold text-foreground">
+                    {format(new Date(`${p.date}T12:00:00`), "dd/MM/yyyy")}
+                  </p>
+                  <p className="text-[13px] text-secondary-foreground">
+                    {PERIOD_LABEL[p.period] ?? p.period}
+                  </p>
+                </div>
+                <p className="text-[19px] font-bold text-foreground tabular-nums">
+                  {formatCOP(p.net)}
+                </p>
+              </div>
+              <div className="mt-2 flex gap-4 text-[13px] tabular-nums">
+                <span className="text-secondary-foreground">
+                  Bruto {formatCOP(p.gross)}
+                </span>
+                {p.deductions > 0 && (
+                  <span className="text-danger">
+                    Deducciones −{formatCOP(p.deductions)}
+                  </span>
+                )}
+              </div>
+              <div className="mt-3">
+                <ReceiptViewer urls={p.photoUrl ? [p.photoUrl] : []} />
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </main>
   );
