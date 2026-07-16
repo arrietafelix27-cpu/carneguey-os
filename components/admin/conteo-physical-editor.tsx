@@ -260,7 +260,7 @@ export function ConteoPhysicalEditor({
         </>
       )}
 
-      <div className="sticky bottom-0 -mx-5 mt-6 border-t border-border bg-card/95 px-5 py-3 backdrop-blur">
+      <div className="sticky bottom-20 lg:bottom-0 -mx-5 mt-6 border-t border-border bg-card/95 px-5 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-2xl flex-col gap-2">
           <Button
             className="h-12 text-base font-semibold"
