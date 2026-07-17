@@ -27,6 +27,7 @@ import {
   Menu,
   LogOut,
   Loader2,
+  Receipt,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -46,6 +47,7 @@ const ADMIN_DESKTOP: Item[] = [
   { href: "/admin/inventario", label: "Inventario", icon: Boxes },
   { href: "/admin/analitica", label: "Analítica", icon: BarChart3 },
   { href: "/empleado/pos", label: "POS", icon: ScanLine },
+  { href: "/admin/ventas", label: "Historial de ventas", icon: Receipt },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/proveedores", label: "Proveedores", icon: Truck },
   { href: "/admin/cuadre", label: "Cuadre de caja", icon: CalendarCheck },
@@ -63,6 +65,7 @@ const ADMIN_MOBILE: Section[] = [
       { href: "/admin/clientes", label: "Clientes", icon: Users },
       { href: "/admin/empleados", label: "Nómina", icon: IdCard },
       { href: "/empleado/pos", label: "POS", icon: ScanLine },
+      { href: "/admin/ventas", label: "Historial de ventas", icon: Receipt },
     ],
   },
   {
@@ -88,6 +91,7 @@ const ADMIN_MOBILE: Section[] = [
 
 const CASHIER_DESKTOP: Item[] = [
   { href: "/empleado/pos", label: "POS", icon: ScanLine },
+  { href: "/empleado/ventas-dia", label: "Ventas del día", icon: Receipt },
   { href: "/empleado/clientes", label: "Clientes", icon: Users },
   { href: "/empleado/cierre", label: "Cerrar día", icon: CalendarCheck },
 ];
@@ -97,6 +101,7 @@ const CASHIER_MOBILE: Section[] = [
     items: [
       { href: "/empleado", label: "Inicio", icon: Home },
       { href: "/empleado/compras", label: "Compras", icon: ShoppingCart },
+      { href: "/empleado/ventas-dia", label: "Ventas del día", icon: Receipt },
     ],
   },
   {
