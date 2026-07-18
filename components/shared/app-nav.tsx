@@ -93,6 +93,7 @@ const CASHIER_DESKTOP: Item[] = [
   { href: "/empleado/pos", label: "POS", icon: ScanLine },
   { href: "/empleado/ventas-dia", label: "Ventas del día", icon: Receipt },
   { href: "/empleado/clientes", label: "Clientes", icon: Users },
+  { href: "/empleado/proveedores", label: "Proveedores", icon: Truck },
   { href: "/empleado/cierre", label: "Cerrar día", icon: CalendarCheck },
 ];
 
@@ -120,6 +121,7 @@ const CASHIER_MOBILE: Section[] = [
     items: [
       { href: "/empleado/gastos", label: "Gastos y salidas", icon: Wallet },
       { href: "/empleado/clientes", label: "Clientes", icon: Users },
+      { href: "/empleado/proveedores", label: "Proveedores", icon: Truck },
     ],
   },
 ];

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Loader2, Search } from "lucide-react";
+import { Plus, Pencil, Loader2, Search, ChevronRight } from "lucide-react";
+import { formatCOP } from "@/lib/format";
 import type { Provider } from "@/lib/catalog";
 import { providerSchema, type ProviderInput } from "@/lib/validations/provider";
 import {
@@ -26,8 +28,10 @@ import {
 
 export function ProvidersManager({
   initialProviders,
+  balances,
 }: {
   initialProviders: Provider[];
+  balances: Record<string, number>;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -121,42 +125,57 @@ export function ProvidersManager({
         </div>
       ) : (
         <ul className="divide-y divide-border overflow-hidden rounded-2xl bg-card shadow-sm">
-          {filtered.map((p) => (
-            <li
-              key={p.id}
-              className="flex items-center gap-3 px-4 py-3.5"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-foreground">
-                  {p.name}
-                  {!p.active && (
-                    <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
-                      Inactivo
-                    </span>
-                  )}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {p.phone || "Sin teléfono"}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => openEdit(p)}
-                aria-label={`Editar ${p.name}`}
-              >
-                <Pencil className="size-4" />
-              </Button>
-              <Button
-                variant={p.active ? "secondary" : "default"}
-                size="sm"
-                disabled={isPending}
-                onClick={() => toggleActive(p)}
-              >
-                {p.active ? "Desactivar" : "Activar"}
-              </Button>
-            </li>
-          ))}
+          {filtered.map((p) => {
+            const pending = balances[p.id] ?? 0;
+            return (
+              <li key={p.id} className="flex items-center gap-3 px-4 py-3.5">
+                <Link href={`/admin/proveedores/${p.id}`} className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-foreground">
+                    {p.name}
+                    {!p.active && (
+                      <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
+                        Inactivo
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {p.phone || "Sin teléfono"}
+                  </p>
+                </Link>
+                {pending > 0 && (
+                  <div className="shrink-0 text-right">
+                    <p className="font-semibold text-danger tabular-nums">
+                      {formatCOP(pending)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">pendiente</p>
+                  </div>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => openEdit(p)}
+                  aria-label={`Editar ${p.name}`}
+                >
+                  <Pencil className="size-4" />
+                </Button>
+                <Button
+                  variant={p.active ? "secondary" : "default"}
+                  size="sm"
+                  disabled={isPending}
+                  onClick={() => toggleActive(p)}
+                >
+                  {p.active ? "Desactivar" : "Activar"}
+                </Button>
+                <Link
+                  href={`/admin/proveedores/${p.id}`}
+                  aria-label={`Ver cuenta de ${p.name}`}
+                  className="grid size-8 place-items-center text-text-tertiary"
+                >
+                  <ChevronRight className="size-4" />
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
 
