@@ -28,6 +28,8 @@ export async function createDirectPurchase(values: unknown): Promise<Result> {
       total_cost: i.total_cost,
     })),
     p_notes: d.notes || null,
+    p_payment_method: d.payment_method,
+    p_due_date: d.due_date || null,
   });
 
   if (error) {

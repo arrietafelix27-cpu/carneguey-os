@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import type { Product, Provider } from "@/lib/catalog";
 import { createDirectPurchase } from "@/lib/actions/direct-purchases";
+import { PaymentMethodField } from "@/components/shared/payment-method-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,10 @@ export function DirectPurchaseForm({
   const [date, setDate] = useState(today());
   const [rows, setRows] = useState<Row[]>([emptyRow()]);
   const [notes, setNotes] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "credit">(
+    "cash",
+  );
+  const [dueDate, setDueDate] = useState("");
 
   const selectedProvider = providers.find((p) => p.id === providerId);
 
@@ -65,6 +70,8 @@ export function DirectPurchaseForm({
           quantity: r.quantity,
           total_cost: r.total_cost,
         })),
+        payment_method: paymentMethod,
+        due_date: paymentMethod === "credit" ? dueDate : "",
       });
       if ("error" in result) {
         toast.error(result.error);
@@ -209,6 +216,13 @@ export function DirectPurchaseForm({
           onChange={(e) => setNotes(e.target.value)}
         />
       </div>
+
+      <PaymentMethodField
+        value={paymentMethod}
+        onChange={setPaymentMethod}
+        dueDate={dueDate}
+        onDueDateChange={setDueDate}
+      />
 
       <Button
         type="submit"

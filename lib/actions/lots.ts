@@ -40,6 +40,8 @@ export async function createCarcassLot(formData: FormData): Promise<Result> {
     carcass_purchase_cost: formData.get("carcass_purchase_cost"),
     arrival_date: formData.get("arrival_date"),
     notes: formData.get("notes") ?? "",
+    payment_method: formData.get("payment_method") ?? "cash",
+    due_date: formData.get("due_date") ?? "",
   };
   const parsed = carcassLotSchema.safeParse(raw);
   if (!parsed.success) {
@@ -71,6 +73,8 @@ export async function createCarcassLot(formData: FormData): Promise<Result> {
       p_carcass_transport_cost: 0,
       p_arrival_date: d.arrival_date,
       p_notes: d.notes || null,
+      p_payment_method: d.payment_method,
+      p_due_date: d.due_date || null,
     },
   );
 
@@ -116,6 +120,8 @@ export async function createLiveLot(values: unknown): Promise<Result> {
     p_other_costs: d.other_costs,
     p_live_purchase_date: d.live_purchase_date,
     p_notes: d.notes || null,
+    p_payment_method: d.payment_method,
+    p_due_date: d.due_date || null,
   });
 
   if (error || !lotRows || lotRows.length === 0) {

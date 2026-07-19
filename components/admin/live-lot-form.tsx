@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { Provider } from "@/lib/catalog";
 import { createLiveLot } from "@/lib/actions/lots";
+import { PaymentMethodField } from "@/components/shared/payment-method-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,10 @@ export function LiveLotForm({ providers }: { providers: Provider[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [providerId, setProviderId] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "credit">(
+    "cash",
+  );
+  const [dueDate, setDueDate] = useState("");
 
   const selectedProvider = providers.find((p) => p.id === providerId);
 
@@ -41,6 +46,8 @@ export function LiveLotForm({ providers }: { providers: Provider[] }) {
       other_costs: fd.get("other_costs") || 0,
       live_purchase_date: fd.get("live_purchase_date"),
       notes: fd.get("notes") ?? "",
+      payment_method: paymentMethod,
+      due_date: paymentMethod === "credit" ? dueDate : "",
     };
 
     startTransition(async () => {
@@ -162,6 +169,13 @@ export function LiveLotForm({ providers }: { providers: Provider[] }) {
         <Label htmlFor="notes">Notas (opcional)</Label>
         <Textarea id="notes" name="notes" rows={2} />
       </div>
+
+      <PaymentMethodField
+        value={paymentMethod}
+        onChange={setPaymentMethod}
+        dueDate={dueDate}
+        onDueDateChange={setDueDate}
+      />
 
       <Button
         type="submit"

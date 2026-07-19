@@ -27,6 +27,8 @@ export const directPurchaseSchema = z.object({
     .array(directPurchaseItemSchema)
     .min(1, "Agrega al menos un producto"),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
+  payment_method: z.enum(["cash", "credit"]).default("cash"),
+  due_date: z.string().trim().optional().or(z.literal("")),
 });
 
 export type DirectPurchaseInput = z.infer<typeof directPurchaseSchema>;

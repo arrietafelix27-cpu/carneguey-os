@@ -27,6 +27,8 @@ export const carcassLotSchema = z.object({
     .min(1, "La fecha es obligatoria")
     .refine((d) => d <= today(), "La fecha no puede ser futura"),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
+  payment_method: z.enum(["cash", "credit"]).default("cash"),
+  due_date: z.string().trim().optional().or(z.literal("")),
 });
 
 export type CarcassLotInput = z.infer<typeof carcassLotSchema>;
@@ -64,6 +66,8 @@ export const liveLotSchema = z.object({
     .min(1, "La fecha es obligatoria")
     .refine((d) => d <= today(), "La fecha no puede ser futura"),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
+  payment_method: z.enum(["cash", "credit"]).default("cash"),
+  due_date: z.string().trim().optional().or(z.literal("")),
 });
 
 export type LiveLotInput = z.infer<typeof liveLotSchema>;

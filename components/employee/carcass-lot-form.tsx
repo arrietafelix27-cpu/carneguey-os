@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2, Camera, CheckCircle2 } from "lucide-react";
 import type { Provider } from "@/lib/catalog";
 import { createCarcassLot } from "@/lib/actions/lots";
+import { PaymentMethodField } from "@/components/shared/payment-method-field";
 import { compressImage } from "@/lib/compress-image";
 import {
   uploadReceiptPhoto,
@@ -37,6 +38,10 @@ export function CarcassLotForm({
   const busy = phase !== "idle";
   const [providerId, setProviderId] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "credit">(
+    "cash",
+  );
+  const [dueDate, setDueDate] = useState("");
 
   const noun =
     type === "beef_carcass"
@@ -51,6 +56,8 @@ export function CarcassLotForm({
     const fd = new FormData(e.currentTarget);
     fd.set("type", type);
     fd.set("provider_id", providerId);
+    fd.set("payment_method", paymentMethod);
+    fd.set("due_date", paymentMethod === "credit" ? dueDate : "");
 
     const file = fd.get("photo");
     if (!(file instanceof File) || file.size === 0) {
@@ -182,6 +189,13 @@ export function CarcassLotForm({
         <Label htmlFor="notes">Notas (opcional)</Label>
         <Textarea id="notes" name="notes" rows={2} />
       </div>
+
+      <PaymentMethodField
+        value={paymentMethod}
+        onChange={setPaymentMethod}
+        dueDate={dueDate}
+        onDueDateChange={setDueDate}
+      />
 
       <Button
         type="submit"
