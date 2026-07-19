@@ -18,7 +18,7 @@ export default async function ProveedorDetailPage({
 
   const { data: provider } = await supabase
     .from("providers")
-    .select("id, name, phone, active")
+    .select("id, name, phone, active, is_private")
     .eq("id", id)
     .single();
 
@@ -49,10 +49,11 @@ export default async function ProveedorDetailPage({
 
       <SupplierAccountView
         providerId={id}
+        providerIsPrivate={provider.is_private as boolean}
         invoices={invoices}
         payments={payments}
         pendingTotal={pendingTotal}
-        canCreateInvoice
+        isAdmin
       />
     </main>
   );

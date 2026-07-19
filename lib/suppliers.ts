@@ -33,7 +33,7 @@ export async function getSupplierAccount(
       ? await supabase
           .from("supplier_payments")
           .select(
-            "id, created_at, supplier_invoice_id, amount, payment_method, notes",
+            "id, created_at, supplier_invoice_id, amount, payment_source, notes",
           )
           .in("supplier_invoice_id", invoiceIds)
           .order("created_at", { ascending: false })
@@ -74,7 +74,7 @@ export async function getSupplierAccount(
     invoiceDescription:
       descByInvoice.get(p.supplier_invoice_id as string) ?? "Factura",
     amount: Number(p.amount),
-    paymentMethod: p.payment_method as string,
+    source: p.payment_source as PaymentRow["source"],
     notes: (p.notes as string | null) ?? null,
   }));
 

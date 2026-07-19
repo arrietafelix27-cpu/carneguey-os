@@ -17,7 +17,7 @@ export type SupplierInvoiceInput = z.infer<typeof supplierInvoiceSchema>;
 export const supplierPaymentSchema = z.object({
   invoice_id: z.string().uuid(),
   amount: z.string().min(1, "Ingresa el monto"),
-  payment_method: z.enum(["cash", "card", "transfer"]),
+  source: z.enum(["cash", "owner_contribution"]),
   notes: z.string().trim().max(200).optional(),
 });
 

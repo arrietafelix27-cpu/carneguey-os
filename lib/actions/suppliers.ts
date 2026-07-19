@@ -63,10 +63,58 @@ export async function registerSupplierPayment(
   const { error } = await supabase.rpc("fn_register_supplier_payment", {
     p_invoice_id: parsed.data.invoice_id,
     p_amount: amount,
-    p_payment_method: parsed.data.payment_method,
+    p_payment_source: parsed.data.source,
     p_notes: parsed.data.notes ? parsed.data.notes : null,
   });
   if (error) return { error: `No se pudo registrar el pago: ${error.message}` };
+
+  revalidatePath(`/admin/proveedores/${providerId}`);
+  revalidatePath("/admin/proveedores");
+  revalidatePath(`/empleado/proveedores/${providerId}`);
+  revalidatePath("/empleado/proveedores");
+  return { ok: true };
+}
+
+/** Félix marca/desmarca una factura como privada — la cajera deja de verla. */
+export async function setSupplierInvoicePrivate(
+  invoiceId: string,
+  isPrivate: boolean,
+): Promise<Result> {
+  const { supabase, isAdmin } = await getAdminContext();
+  if (!isAdmin) return { error: "No autorizado" };
+
+  const { data, error } = await supabase
+    .from("supplier_invoices")
+    .update({ is_private: isPrivate })
+    .eq("id", invoiceId)
+    .select("provider_id")
+    .single();
+  if (error) return { error: `No se pudo actualizar la factura: ${error.message}` };
+
+  revalidatePath(`/admin/proveedores/${data.provider_id}`);
+  revalidatePath("/admin/proveedores");
+  revalidatePath(`/empleado/proveedores/${data.provider_id}`);
+  revalidatePath("/empleado/proveedores");
+  return { ok: true };
+}
+
+/**
+ * Félix marca/desmarca TODO un proveedor como privado — oculta todas sus
+ * deudas y pagos de la cajera de una sola vez (se suma a la privacidad por
+ * factura, no la reemplaza).
+ */
+export async function setProviderPrivate(
+  providerId: string,
+  isPrivate: boolean,
+): Promise<Result> {
+  const { supabase, isAdmin } = await getAdminContext();
+  if (!isAdmin) return { error: "No autorizado" };
+
+  const { error } = await supabase
+    .from("providers")
+    .update({ is_private: isPrivate })
+    .eq("id", providerId);
+  if (error) return { error: `No se pudo actualizar el proveedor: ${error.message}` };
 
   revalidatePath(`/admin/proveedores/${providerId}`);
   revalidatePath("/admin/proveedores");
