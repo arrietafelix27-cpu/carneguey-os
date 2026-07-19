@@ -53,37 +53,90 @@ export default async function CuadreDetailPage({
   const dayStart = `${day}T00:00:00-05:00`;
   const dayEnd = `${day}T23:59:59.999-05:00`;
 
-  const [{ data: items }, { data: prof }, { data: sales }, { data: payments }, { data: outflows }] =
-    await Promise.all([
-      supabase
-        .from("daily_closing_items")
-        .select("category, amount")
-        .eq("daily_closing_id", id),
-      supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", closing.created_by)
-        .single(),
-      supabase
-        .from("sales")
-        .select("id, created_at, payment_method, total, status, customer_id")
-        .gte("created_at", dayStart)
-        .lte("created_at", dayEnd)
-        .neq("status", "cancelled")
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("credit_payments")
-        .select("id, created_at, amount, payment_method, customer_id")
-        .gte("created_at", dayStart)
-        .lte("created_at", dayEnd)
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("cash_outflows")
-        .select("id, created_at, amount, category, subcategory, recipient, status")
-        .gte("created_at", dayStart)
-        .lte("created_at", dayEnd)
-        .order("created_at", { ascending: true }),
-    ]);
+  const [
+    { data: items },
+    { data: prof },
+    { data: sales },
+    { data: payments },
+    { data: outflows },
+    { data: supplierPayments },
+  ] = await Promise.all([
+    supabase
+      .from("daily_closing_items")
+      .select("category, amount")
+      .eq("daily_closing_id", id),
+    supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", closing.created_by)
+      .single(),
+    supabase
+      .from("sales")
+      .select("id, created_at, payment_method, total, status, customer_id")
+      .gte("created_at", dayStart)
+      .lte("created_at", dayEnd)
+      .neq("status", "cancelled")
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("credit_payments")
+      .select("id, created_at, amount, payment_method, customer_id")
+      .gte("created_at", dayStart)
+      .lte("created_at", dayEnd)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("cash_outflows")
+      .select("id, created_at, amount, category, subcategory, recipient, status")
+      .gte("created_at", dayStart)
+      .lte("created_at", dayEnd)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("supplier_payments")
+      .select("id, created_at, amount, supplier_invoice_id")
+      .eq("payment_source", "cash")
+      .gte("created_at", dayStart)
+      .lte("created_at", dayEnd),
+  ]);
+
+  // Pagos a proveedores del día, agrupados por proveedor (solo admin ve esto).
+  const spInvoiceIds = Array.from(
+    new Set((supplierPayments ?? []).map((p) => p.supplier_invoice_id as string)),
+  );
+  const { data: spInvoices } =
+    spInvoiceIds.length > 0
+      ? await supabase
+          .from("supplier_invoices")
+          .select("id, provider_id")
+          .in("id", spInvoiceIds)
+      : { data: [] as { id: string; provider_id: string }[] };
+  const providerIdByInvoice = new Map(
+    (spInvoices ?? []).map((i) => [i.id as string, i.provider_id as string]),
+  );
+
+  const spProviderIds = Array.from(
+    new Set((spInvoices ?? []).map((i) => i.provider_id as string)),
+  );
+  const { data: spProviders } =
+    spProviderIds.length > 0
+      ? await supabase.from("providers").select("id, name").in("id", spProviderIds)
+      : { data: [] as { id: string; name: string }[] };
+  const providerNameById = new Map(
+    (spProviders ?? []).map((p) => [p.id as string, p.name as string]),
+  );
+
+  const supplierTotalsByProvider = new Map<string, number>();
+  for (const p of supplierPayments ?? []) {
+    const providerId = providerIdByInvoice.get(p.supplier_invoice_id as string);
+    const name = providerId
+      ? (providerNameById.get(providerId) ?? "Proveedor")
+      : "Proveedor";
+    supplierTotalsByProvider.set(
+      name,
+      (supplierTotalsByProvider.get(name) ?? 0) + Number(p.amount),
+    );
+  }
+  const supplierRows = Array.from(supplierTotalsByProvider.entries())
+    .map(([name, total]) => ({ name, total }))
+    .sort((a, b) => b.total - a.total);
 
   const amountOf = (cat: string) =>
     Number((items ?? []).find((i) => i.category === cat)?.amount ?? 0);
@@ -198,6 +251,15 @@ export default async function CuadreDetailPage({
         />
       </Section>
 
+      <Section title="Pagos a proveedores">
+        <Row
+          label="Pagado de caja"
+          value={amountOf("supplier_payments_cash")}
+          negative
+          strong
+        />
+      </Section>
+
       {closing.notes && (
         <div className="mb-6 rounded-2xl bg-card px-5 py-4 shadow-sm">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
@@ -279,6 +341,32 @@ export default async function CuadreDetailPage({
                 </li>
               );
             })}
+          </ul>
+        </>
+      )}
+
+      {/* Detalle: pagos a proveedores, agrupados por proveedor */}
+      {supplierRows.length > 0 && (
+        <>
+          <h2 className="mb-2.5 mt-8 px-1 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
+            Pagos a proveedores ({supplierRows.length})
+          </h2>
+          <ul className="mb-2 overflow-hidden rounded-3xl bg-card shadow-sm">
+            {supplierRows.map((r, i) => (
+              <li
+                key={r.name}
+                className={`flex items-center gap-3 px-4 py-3 ${
+                  i > 0 ? "border-t border-border" : ""
+                }`}
+              >
+                <p className="min-w-0 flex-1 truncate text-[15px] font-medium text-foreground">
+                  {r.name}
+                </p>
+                <p className="shrink-0 font-semibold text-foreground tabular-nums">
+                  {formatCOP(r.total)}
+                </p>
+              </li>
+            ))}
           </ul>
         </>
       )}

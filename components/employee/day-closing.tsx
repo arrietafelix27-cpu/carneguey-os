@@ -29,6 +29,7 @@ export type DaySummary = {
   outflowsApproved: number;
   outflowsPending: number;
   outflowsPendingCount: number;
+  supplierPaymentsCash: number;
   expectedCash: number;
 };
 
@@ -149,6 +150,16 @@ export function DayClosing({
           value={summary.outflowsPending}
           warn={summary.outflowsPendingCount > 0}
         />
+
+        <h2 className="mb-3 mt-5 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
+          Pagos a proveedores
+        </h2>
+        <Row
+          label="Pagado de caja"
+          value={summary.supplierPaymentsCash}
+          negative
+          strong
+        />
       </section>
 
       {/* Efectivo esperado */}
@@ -160,7 +171,8 @@ export function DayClosing({
           {formatCOP(summary.expectedCash)}
         </p>
         <p className="mt-2 text-[12px] opacity-80">
-          ventas en efectivo + abonos en efectivo − egresos aprobados
+          ventas en efectivo + abonos en efectivo − egresos aprobados − pagos
+          a proveedores
         </p>
       </section>
 
