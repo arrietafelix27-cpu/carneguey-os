@@ -45,11 +45,11 @@ export default async function ClientesPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-9">
       <Link
-        href="/admin/operaciones"
+        href="/admin"
         className="mb-5 inline-flex items-center gap-1 text-[15px] font-medium text-primary transition-opacity active:opacity-60"
       >
         <ChevronLeft className="size-4" />
-        Operaciones
+        Panel
       </Link>
       <CustomersManager initialCustomers={rows} />
     </main>

@@ -93,6 +93,7 @@ const ADMIN_NAV: Entry[] = [
       { href: "/admin/productos", label: "Productos", icon: Package },
     ],
   },
+  { href: "/empleado/pos", label: "POS", icon: ScanLine },
 ];
 
 // Cajera PC: todo directo, sin submenús.
