@@ -130,6 +130,7 @@ const CASHIER_MOBILE: Entry[] = [
   },
   { href: "/empleado/gastos", label: "Gastos y salidas", icon: Wallet },
   { href: "/empleado/clientes", label: "Clientes", icon: Users },
+  { href: "/empleado/proveedores", label: "Proveedores", icon: Truck },
 ];
 
 function isActive(pathname: string, href: string): boolean {

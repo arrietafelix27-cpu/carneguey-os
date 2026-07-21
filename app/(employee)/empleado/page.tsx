@@ -3,20 +3,29 @@ import {
   ScanLine,
   ChevronRight,
   ShoppingCart,
-  Scissors,
+  Split,
   Wallet,
   Users,
+  Truck,
   type LucideIcon,
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 
 export const metadata = { title: "Inicio · Carnegüey" };
 
-const MOBILE_SHORTCUTS: { href: string; label: string; icon: LucideIcon }[] = [
+type Shortcut = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  wide?: boolean;
+};
+
+const MOBILE_SHORTCUTS: Shortcut[] = [
   { href: "/empleado/compras", label: "Compras", icon: ShoppingCart },
-  { href: "/empleado/desposte", label: "Desposte", icon: Scissors },
+  { href: "/empleado/procesos", label: "Procesos", icon: Split },
   { href: "/empleado/gastos", label: "Gastos y salidas", icon: Wallet },
   { href: "/empleado/clientes", label: "Clientes", icon: Users },
+  { href: "/empleado/proveedores", label: "Proveedores", icon: Truck, wide: true },
 ];
 
 export default async function EmployeeHome() {
@@ -51,22 +60,38 @@ export default async function EmployeeHome() {
         <ChevronRight className="size-6 shrink-0 text-primary-foreground/70" />
       </Link>
 
-      {/* Móvil: accesos directos a los módulos más usados (grid 2×2) */}
+      {/* Móvil: accesos directos a los módulos principales */}
       <div className="grid grid-cols-2 gap-3 lg:hidden">
-        {MOBILE_SHORTCUTS.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex flex-col items-center justify-center gap-3 rounded-3xl bg-card px-4 py-8 text-center shadow-sm transition-transform active:scale-[0.97]"
-          >
-            <span className="grid size-14 place-items-center rounded-2xl bg-[var(--brand-red-soft)] text-primary">
-              <Icon className="size-7" strokeWidth={2} />
-            </span>
-            <span className="text-[15px] font-semibold text-foreground">
-              {label}
-            </span>
-          </Link>
-        ))}
+        {MOBILE_SHORTCUTS.map(({ href, label, icon: Icon, wide }) =>
+          wide ? (
+            <Link
+              key={href}
+              href={href}
+              className="col-span-2 flex items-center gap-4 rounded-3xl bg-card px-5 py-4 shadow-sm transition-transform active:scale-[0.98]"
+            >
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[var(--brand-red-soft)] text-primary">
+                <Icon className="size-6" strokeWidth={2} />
+              </span>
+              <span className="flex-1 text-[16px] font-semibold text-foreground">
+                {label}
+              </span>
+              <ChevronRight className="size-5 shrink-0 text-text-tertiary" />
+            </Link>
+          ) : (
+            <Link
+              key={href}
+              href={href}
+              className="flex flex-col items-center justify-center gap-3 rounded-3xl bg-card px-4 py-8 text-center shadow-sm transition-transform active:scale-[0.97]"
+            >
+              <span className="grid size-14 place-items-center rounded-2xl bg-[var(--brand-red-soft)] text-primary">
+                <Icon className="size-7" strokeWidth={2} />
+              </span>
+              <span className="text-[15px] font-semibold text-foreground">
+                {label}
+              </span>
+            </Link>
+          ),
+        )}
       </div>
     </main>
   );
