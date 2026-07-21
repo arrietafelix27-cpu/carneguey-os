@@ -5,91 +5,98 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
+  Receipt,
   Boxes,
+  History,
+  Warehouse,
+  PackageCheck,
+  ClipboardCheck,
+  ShoppingCart,
   BarChart3,
-  ScanLine,
-  Users,
-  Truck,
-  CalendarCheck,
-  IdCard,
-  Package,
-  Settings,
-  Banknote,
   ArrowLeftRight,
   Split,
-  ClipboardCheck,
-  PackageCheck,
-  History,
-  ShoppingCart,
   Wallet,
+  CalendarCheck,
+  Banknote,
+  Users,
+  Truck,
+  IdCard,
+  HandCoins,
+  Settings,
+  Package,
+  ScanLine,
+  Beef,
+  PiggyBank,
+  Bird,
   Scissors,
   ArrowLeft,
   Menu,
   LogOut,
   Loader2,
-  Receipt,
+  ChevronDown,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 
-type Item = { href: string; label: string; icon: LucideIcon };
-type Section = { title?: string; items: Item[] };
-
+type Leaf = { href: string; label: string; icon: LucideIcon };
+type Group = { label: string; icon: LucideIcon; children: Leaf[] };
+type Entry = Leaf | Group;
 type Role = "admin" | "employee";
+
+const isGroup = (e: Entry): e is Group => "children" in e;
 
 // ── Configuración de módulos por rol ───────────────────────────────────────
 const ADMIN_HOME = "/admin";
 const EMPLOYEE_HOME = "/empleado";
 
-const ADMIN_DESKTOP: Item[] = [
+// Félix: misma estructura en PC y móvil.
+const ADMIN_NAV: Entry[] = [
   { href: "/admin", label: "Dashboard", icon: Home },
-  { href: "/admin/inventario", label: "Inventario", icon: Boxes },
-  { href: "/admin/analitica", label: "Analítica", icon: BarChart3 },
-  { href: "/empleado/pos", label: "POS", icon: ScanLine },
-  { href: "/admin/ventas", label: "Historial de ventas", icon: Receipt },
-  { href: "/admin/clientes", label: "Clientes", icon: Users },
-  { href: "/admin/proveedores", label: "Proveedores", icon: Truck },
-  { href: "/admin/cuadre", label: "Cuadre de caja", icon: CalendarCheck },
-  { href: "/admin/empleados", label: "Nómina", icon: IdCard },
-  { href: "/admin/productos", label: "Productos", icon: Package },
-  { href: "/admin/configuracion", label: "Configuración", icon: Settings },
-];
-
-const ADMIN_MOBILE: Section[] = [
+  { href: "/admin/ventas", label: "Ventas", icon: Receipt },
   {
-    items: [
-      { href: "/admin", label: "Dashboard", icon: Home },
-      { href: "/admin/inventario", label: "Inventario", icon: Boxes },
+    label: "Inventario",
+    icon: Boxes,
+    children: [
+      { href: "/admin/entradas", label: "Últimas entradas", icon: History },
+      { href: "/admin/inventario", label: "Inventario actual", icon: Warehouse },
+      { href: "/admin/lotes/activos", label: "Lotes activos", icon: PackageCheck },
+      { href: "/admin/conteos", label: "Conteo quincenal", icon: ClipboardCheck },
+      { href: "/admin/lotes/nuevo-en-pie", label: "Ganado en pie", icon: ShoppingCart },
       { href: "/admin/analitica", label: "Analítica", icon: BarChart3 },
-      { href: "/admin/clientes", label: "Clientes", icon: Users },
-      { href: "/admin/empleados", label: "Nómina", icon: IdCard },
-      { href: "/empleado/pos", label: "POS", icon: ScanLine },
-      { href: "/admin/ventas", label: "Historial de ventas", icon: Receipt },
+      { href: "/admin/transferencias", label: "Transferencias", icon: ArrowLeftRight },
+      { href: "/admin/sub-despostes", label: "Sub-despostes", icon: Split },
     ],
   },
   {
-    title: "Más módulos",
-    items: [
+    label: "Finanzas",
+    icon: Wallet,
+    children: [
       { href: "/admin/cuadre", label: "Cuadre de caja", icon: CalendarCheck },
       { href: "/admin/egresos", label: "Egresos de efectivo", icon: Banknote },
+    ],
+  },
+  { href: "/admin/clientes", label: "Clientes", icon: Users },
+  { href: "/admin/proveedores", label: "Proveedores", icon: Truck },
+  {
+    label: "Nómina",
+    icon: IdCard,
+    children: [
+      { href: "/admin/empleados", label: "Empleados", icon: Users },
+      { href: "/admin/nomina/pago", label: "Realizar pago", icon: HandCoins },
+    ],
+  },
+  {
+    label: "Configuración",
+    icon: Settings,
+    children: [
       { href: "/admin/productos", label: "Productos", icon: Package },
-      { href: "/admin/proveedores", label: "Proveedores", icon: Truck },
-      {
-        href: "/admin/transferencias",
-        label: "Transferencias",
-        icon: ArrowLeftRight,
-      },
-      { href: "/admin/sub-despostes", label: "Sub-despostes", icon: Split },
-      { href: "/admin/conteos", label: "Conteo quincenal", icon: ClipboardCheck },
-      { href: "/admin/lotes/activos", label: "Lotes activos", icon: PackageCheck },
-      { href: "/admin/entradas", label: "Últimas entradas", icon: History },
-      { href: "/admin/configuracion", label: "Configuración", icon: Settings },
     ],
   },
 ];
 
-const CASHIER_DESKTOP: Item[] = [
+// Cajera PC: todo directo, sin submenús.
+const CASHIER_DESKTOP: Entry[] = [
   { href: "/empleado/pos", label: "POS", icon: ScanLine },
   { href: "/empleado/ventas-dia", label: "Ventas del día", icon: Receipt },
   { href: "/empleado/clientes", label: "Clientes", icon: Users },
@@ -97,33 +104,31 @@ const CASHIER_DESKTOP: Item[] = [
   { href: "/empleado/cierre", label: "Cerrar día", icon: CalendarCheck },
 ];
 
-const CASHIER_MOBILE: Section[] = [
+// Cajera móvil: submenús de Compras y Procesos. Sin Proveedores (solo PC).
+const CASHIER_MOBILE: Entry[] = [
   {
-    items: [
-      { href: "/empleado", label: "Inicio", icon: Home },
-      { href: "/empleado/compras", label: "Compras", icon: ShoppingCart },
-      { href: "/empleado/ventas-dia", label: "Ventas del día", icon: Receipt },
+    label: "Compras",
+    icon: ShoppingCart,
+    children: [
+      { href: "/empleado/compras/canal-directo", label: "Canal directo (res)", icon: Beef },
+      { href: "/empleado/compras/cerdo", label: "Cerdo en canal", icon: PiggyBank },
+      { href: "/empleado/compras/llegada-canales", label: "Llegada de canales", icon: Truck },
+      { href: "/empleado/compras/pollo", label: "Pollo", icon: Bird },
+      { href: "/empleado/compras/otros", label: "Otros productos", icon: Package },
+      { href: "/empleado/compras/corte-directo", label: "Compra directa de corte", icon: Scissors },
     ],
   },
   {
-    title: "Procesos",
-    items: [
+    label: "Procesos",
+    icon: Split,
+    children: [
       { href: "/empleado/desposte", label: "Desposte", icon: Scissors },
-      {
-        href: "/empleado/transferencias",
-        label: "Transferencias",
-        icon: ArrowLeftRight,
-      },
+      { href: "/empleado/transferencias", label: "Transferencia de cortes", icon: ArrowLeftRight },
       { href: "/empleado/sub-desposte", label: "Sub-desposte", icon: Split },
     ],
   },
-  {
-    items: [
-      { href: "/empleado/gastos", label: "Gastos y salidas", icon: Wallet },
-      { href: "/empleado/clientes", label: "Clientes", icon: Users },
-      { href: "/empleado/proveedores", label: "Proveedores", icon: Truck },
-    ],
-  },
+  { href: "/empleado/gastos", label: "Gastos y salidas", icon: Wallet },
+  { href: "/empleado/clientes", label: "Clientes", icon: Users },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -131,28 +136,23 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export function AppNav({
-  role,
-  fullName,
-}: {
-  role: Role;
-  fullName: string;
-}) {
+function groupActive(pathname: string, g: Group): boolean {
+  return g.children.some((c) => isActive(pathname, c.href));
+}
+
+export function AppNav({ role, fullName }: { role: Role; fullName: string }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const home = role === "admin" ? ADMIN_HOME : EMPLOYEE_HOME;
-  const desktop = role === "admin" ? ADMIN_DESKTOP : CASHIER_DESKTOP;
-  const mobile = role === "admin" ? ADMIN_MOBILE : CASHIER_MOBILE;
+  const desktop = role === "admin" ? ADMIN_NAV : CASHIER_DESKTOP;
+  const mobile = role === "admin" ? ADMIN_NAV : CASHIER_MOBILE;
 
   return (
     <>
       {/* ── Barra lateral (PC) ────────────────────────────────────────── */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[15%] flex-col border-r border-border bg-card lg:flex">
-        <Link
-          href={home}
-          className="flex items-center gap-2.5 px-4 py-5"
-        >
+        <Link href={home} className="flex items-center gap-2.5 px-4 py-5">
           <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-[var(--shadow-brand)]">
             CG
           </span>
@@ -162,27 +162,7 @@ export function AppNav({
         </Link>
 
         <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
-          <ul className="grid gap-1">
-            {desktop.map((it) => {
-              const active = isActive(pathname, it.href);
-              const Icon = it.icon;
-              return (
-                <li key={it.href}>
-                  <Link
-                    href={it.href}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors ${
-                      active
-                        ? "bg-primary text-primary-foreground"
-                        : "text-secondary-foreground hover:bg-secondary"
-                    }`}
-                  >
-                    <Icon className="size-[18px] shrink-0" strokeWidth={2} />
-                    <span className="truncate">{it.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <AccordionNav entries={desktop} pathname={pathname} variant="desktop" />
         </nav>
 
         <SidebarFooter fullName={fullName} />
@@ -194,13 +174,133 @@ export function AppNav({
       {/* ── Drawer de módulos (móvil) ─────────────────────────────────── */}
       {drawerOpen && (
         <MobileDrawer
-          sections={mobile}
+          entries={mobile}
           pathname={pathname}
           fullName={fullName}
           onClose={() => setDrawerOpen(false)}
         />
       )}
     </>
+  );
+}
+
+// ── Renderizador de menús con submenús (acordeón) ──────────────────────────
+function AccordionNav({
+  entries,
+  pathname,
+  variant,
+  onNavigate,
+}: {
+  entries: Entry[];
+  pathname: string;
+  variant: "desktop" | "drawer";
+  onNavigate?: () => void;
+}) {
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    const s = new Set<string>();
+    for (const e of entries) {
+      if (isGroup(e) && groupActive(pathname, e)) s.add(e.label);
+    }
+    return s;
+  });
+
+  const toggle = (label: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+
+  const isDesktop = variant === "desktop";
+  const rowBase = isDesktop
+    ? "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors"
+    : "flex items-center gap-3 rounded-2xl px-3 py-3 text-[15px] font-medium transition-colors";
+  const childBase = isDesktop
+    ? "flex items-center gap-3 rounded-xl py-2 pl-9 pr-3 text-[13px] font-medium transition-colors"
+    : "flex items-center gap-3 rounded-2xl py-2.5 pl-9 pr-3 text-[14.5px] font-medium transition-colors";
+  const iconSize = isDesktop ? "size-[18px]" : "size-5";
+  const childIconSize = isDesktop ? "size-4" : "size-[18px]";
+  const inactiveRow = isDesktop
+    ? "text-secondary-foreground hover:bg-secondary"
+    : "text-foreground active:bg-secondary";
+
+  return (
+    <ul className="grid gap-1">
+      {entries.map((entry) => {
+        if (!isGroup(entry)) {
+          const active = isActive(pathname, entry.href);
+          const Icon = entry.icon;
+          return (
+            <li key={entry.href}>
+              <Link
+                href={entry.href}
+                onClick={onNavigate}
+                className={`${rowBase} ${
+                  active ? "bg-primary text-primary-foreground" : inactiveRow
+                }`}
+              >
+                <Icon className={`${iconSize} shrink-0`} strokeWidth={2} />
+                <span className="truncate">{entry.label}</span>
+              </Link>
+            </li>
+          );
+        }
+
+        const gActive = groupActive(pathname, entry);
+        const open = expanded.has(entry.label);
+        const Icon = entry.icon;
+        return (
+          <li key={entry.label}>
+            <button
+              type="button"
+              onClick={() => toggle(entry.label)}
+              className={`${rowBase} w-full ${
+                gActive && !open
+                  ? "text-primary"
+                  : inactiveRow
+              }`}
+              aria-expanded={open}
+            >
+              <Icon className={`${iconSize} shrink-0`} strokeWidth={2} />
+              <span className="flex-1 truncate text-left">{entry.label}</span>
+              <ChevronDown
+                className={`size-4 shrink-0 transition-transform ${
+                  open ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {open && (
+              <ul className="mt-1 grid gap-1">
+                {entry.children.map((c) => {
+                  const active = isActive(pathname, c.href);
+                  const CIcon = c.icon;
+                  return (
+                    <li key={c.href}>
+                      <Link
+                        href={c.href}
+                        onClick={onNavigate}
+                        className={`${childBase} ${
+                          active
+                            ? "bg-primary text-primary-foreground"
+                            : inactiveRow
+                        }`}
+                      >
+                        <CIcon
+                          className={`${childIconSize} shrink-0`}
+                          strokeWidth={2}
+                        />
+                        <span className="truncate">{c.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -227,13 +327,7 @@ function SidebarFooter({ fullName }: { fullName: string }) {
   );
 }
 
-function MobileBar({
-  home,
-  onMenu,
-}: {
-  home: string;
-  onMenu: () => void;
-}) {
+function MobileBar({ home, onMenu }: { home: string; onMenu: () => void }) {
   const router = useRouter();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
@@ -268,12 +362,12 @@ function MobileBar({
 }
 
 function MobileDrawer({
-  sections,
+  entries,
   pathname,
   fullName,
   onClose,
 }: {
-  sections: Section[];
+  entries: Entry[];
   pathname: string;
   fullName: string;
   onClose: () => void;
@@ -301,37 +395,12 @@ function MobileDrawer({
         </div>
 
         <div className="px-3 py-3">
-          {sections.map((section, si) => (
-            <div key={si} className={si > 0 ? "mt-4" : undefined}>
-              {section.title && (
-                <p className="px-3 pb-1.5 text-[12px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
-                  {section.title}
-                </p>
-              )}
-              <ul className="grid gap-1">
-                {section.items.map((it) => {
-                  const active = isActive(pathname, it.href);
-                  const Icon = it.icon;
-                  return (
-                    <li key={it.href}>
-                      <Link
-                        href={it.href}
-                        onClick={onClose}
-                        className={`flex items-center gap-3 rounded-2xl px-3 py-3 text-[15px] font-medium transition-colors ${
-                          active
-                            ? "bg-primary text-primary-foreground"
-                            : "text-foreground active:bg-secondary"
-                        }`}
-                      >
-                        <Icon className="size-5 shrink-0" strokeWidth={2} />
-                        <span className="truncate">{it.label}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+          <AccordionNav
+            entries={entries}
+            pathname={pathname}
+            variant="drawer"
+            onNavigate={onClose}
+          />
 
           <div className="mt-4 border-t border-border pt-3">
             <p className="truncate px-3 pb-2 text-[13px] font-medium text-foreground">
