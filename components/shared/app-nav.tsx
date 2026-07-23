@@ -10,7 +10,6 @@ import {
   History,
   Warehouse,
   PackageCheck,
-  ClipboardCheck,
   ShoppingCart,
   BarChart3,
   ArrowLeftRight,
@@ -61,11 +60,16 @@ const ADMIN_NAV: Entry[] = [
       { href: "/admin/entradas", label: "Últimas entradas", icon: History },
       { href: "/admin/inventario", label: "Inventario actual", icon: Warehouse },
       { href: "/admin/lotes/activos", label: "Lotes activos", icon: PackageCheck },
-      { href: "/admin/conteos", label: "Conteo quincenal", icon: ClipboardCheck },
       { href: "/admin/lotes/nuevo-en-pie", label: "Ganado en pie", icon: ShoppingCart },
-      { href: "/admin/analitica", label: "Analítica", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Procesos",
+    icon: Scissors,
+    children: [
       { href: "/admin/transferencias", label: "Transferencias", icon: ArrowLeftRight },
       { href: "/admin/sub-despostes", label: "Sub-despostes", icon: Split },
+      { href: "/admin/analitica", label: "Analítica", icon: BarChart3 },
     ],
   },
   {
@@ -73,7 +77,7 @@ const ADMIN_NAV: Entry[] = [
     icon: Wallet,
     children: [
       { href: "/admin/cuadre", label: "Cuadre de caja", icon: CalendarCheck },
-      { href: "/admin/egresos", label: "Egresos de efectivo", icon: Banknote },
+      { href: "/admin/egresos", label: "Egresos", icon: Banknote },
     ],
   },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
@@ -86,14 +90,7 @@ const ADMIN_NAV: Entry[] = [
       { href: "/admin/nomina/pago", label: "Realizar pago", icon: HandCoins },
     ],
   },
-  {
-    label: "Configuración",
-    icon: Settings,
-    children: [
-      { href: "/admin/productos", label: "Productos", icon: Package },
-    ],
-  },
-  { href: "/empleado/pos", label: "POS", icon: ScanLine },
+  { href: "/admin/productos", label: "Configuración", icon: Settings },
 ];
 
 // Cajera PC: todo directo, sin submenús.
