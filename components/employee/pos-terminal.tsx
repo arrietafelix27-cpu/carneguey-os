@@ -15,7 +15,6 @@ import {
   Loader2,
   Monitor,
   ChevronDown,
-  RotateCcw,
   Check,
   User,
 } from "lucide-react";
@@ -446,14 +445,6 @@ export function PosTerminal({
               Punto de venta
             </h1>
           </div>
-          <Button
-            variant="secondary"
-            className="h-9"
-            onClick={() => toast.info("Devoluciones: disponible próximamente")}
-          >
-            <RotateCcw className="size-4" />
-            Devoluciones
-          </Button>
         </div>
 
         <div className="grid grid-cols-[1fr_360px] gap-4">
