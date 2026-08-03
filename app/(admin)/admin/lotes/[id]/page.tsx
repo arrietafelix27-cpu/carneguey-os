@@ -7,7 +7,7 @@ import { formatKg, formatCOP } from "@/lib/format";
 import { getReceiptSignedUrls } from "@/lib/receipts";
 import { ReceiptViewer } from "@/components/admin/receipt-viewer";
 
-export const metadata = { title: "Lote · Carnegüey OS" };
+export const metadata = { title: "Lote" };
 
 const TYPE_LABEL: Record<string, string> = {
   beef_live: "Res (ganado en pie)",

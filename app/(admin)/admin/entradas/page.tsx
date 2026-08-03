@@ -11,7 +11,7 @@ import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { formatQty, formatKg } from "@/lib/format";
 
-export const metadata = { title: "Últimas entradas · Carnegüey OS" };
+export const metadata = { title: "Últimas entradas" };
 
 type Kind = "directa" | "lote" | "desposte";
 

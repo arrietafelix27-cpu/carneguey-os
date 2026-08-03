@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Provider } from "@/lib/catalog";
 import { ProvidersManager } from "@/components/admin/providers-manager";
 
-export const metadata = { title: "Proveedores · Carnegüey OS" };
+export const metadata = { title: "Proveedores" };
 
 export default async function ProveedoresPage() {
   const supabase = await createClient();

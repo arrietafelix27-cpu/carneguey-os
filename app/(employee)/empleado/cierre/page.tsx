@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { bogotaToday } from "@/lib/dates";
 import { DayClosing, type DaySummary } from "@/components/employee/day-closing";
 
-export const metadata = { title: "Cerrar día · Carnegüey" };
+export const metadata = { title: "Cerrar día" };
 export const dynamic = "force-dynamic";
 
 export default async function CierreCajeraPage() {

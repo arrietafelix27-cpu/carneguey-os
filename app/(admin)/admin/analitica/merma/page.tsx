@@ -7,7 +7,7 @@ import { getMermaThresholdsCached } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
 import { MermaThresholdEditor } from "@/components/admin/merma-threshold-editor";
 
-export const metadata = { title: "Merma de desposte · Carnegüey OS" };
+export const metadata = { title: "Merma de desposte" };
 
 export default async function MermaPage() {
   const supabase = await createClient();

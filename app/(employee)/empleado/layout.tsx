@@ -6,7 +6,7 @@ export default async function EmployeeLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // El rol del que mira decide la navegación: si Félix (admin) entra al POS
+  // El rol del que mira decide la navegación: si el admin entra al POS
   // (que vive bajo /empleado), sigue viendo SU barra de admin.
   const profile = await getCurrentProfile();
 

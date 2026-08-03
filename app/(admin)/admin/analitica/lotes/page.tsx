@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAllProviders } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
 
-export const metadata = { title: "Promedios por lote · Carnegüey OS" };
+export const metadata = { title: "Promedios por lote" };
 
 const TYPE_LABEL: Record<string, string> = {
   beef_live: "Res",

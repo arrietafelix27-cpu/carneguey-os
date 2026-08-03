@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { CATEGORY_LABELS, CATEGORY_ORDER, type Category } from "@/lib/catalog";
 import { formatQty } from "@/lib/format";
 
-export const metadata = { title: "Conteo · Carnegüey OS" };
+export const metadata = { title: "Conteo" };
 export const dynamic = "force-dynamic";
 
 type Band = "green" | "yellow" | "red";

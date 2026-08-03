@@ -13,7 +13,7 @@ function parseMoney(raw: string): number {
 
 /**
  * Registra un gasto/salida desde el celular. Las tres categorías exigen foto:
- *  - sf: entrega a Félix (queda pendiente)
+ *  - sf: salida de efectivo (queda pendiente)
  *  - employee_advance: préstamo a empleado (crea cash_outflow + employee_loan
  *    vía fn_create_employee_loan; queda pendiente)
  *  - expense: gasto operativo con subcategoría (queda aprobado)

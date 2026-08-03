@@ -10,7 +10,7 @@ import {
   type OutflowCategory,
 } from "@/lib/validations/cash-outflow";
 
-export const metadata = { title: "Cuadre del día · Carnegüey OS" };
+export const metadata = { title: "Cuadre del día" };
 export const dynamic = "force-dynamic";
 
 const TOLERANCE = 2000;

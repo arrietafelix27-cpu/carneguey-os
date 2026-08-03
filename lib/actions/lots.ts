@@ -12,7 +12,7 @@ import {
 type Result = { ok: true; lotCode: string } | { error: string };
 type VoidResult = { ok: true } | { error: string };
 
-/** Félix finaliza un lote activo: el remanente se va a merma y se cierra. */
+/** El administrador finaliza un lote activo: el remanente se va a merma y se cierra. */
 export async function closeLotWithMerma(lotId: string): Promise<VoidResult> {
   const { supabase, isAdmin } = await getAdminContext();
   if (!isAdmin) return { error: "No autorizado" };

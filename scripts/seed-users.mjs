@@ -1,10 +1,14 @@
-// Crea los usuarios iniciales de Carnegüey OS por la API de administración
-// oficial de Supabase (NO insertar a mano en auth.users por SQL: deja filas
-// incompletas que rompen el login — ver docs/DECISIONS.md D-012).
+// Crea el PRIMER usuario admin de una instancia de Miura por la API de
+// administración oficial de Supabase (NO insertar a mano en auth.users por
+// SQL: deja filas incompletas que rompen el login).
 //
 // Uso:  node scripts/seed-users.mjs
-// Lee NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY de .env.local
-// Es idempotente: si un usuario ya existe, lo omite.
+// Lee de .env.local:
+//   NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+//   MIURA_ADMIN_EMAIL, MIURA_ADMIN_PASSWORD, MIURA_ADMIN_NAME
+// Es idempotente: si el usuario ya existe, lo omite.
+//
+// Las demás cuentas (cajeras) se crean desde la app una vez dentro.
 
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
@@ -24,7 +28,21 @@ const url = env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!url || !serviceKey) {
-  console.error("Falta NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local");
+  console.error(
+    "Falta NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local",
+  );
+  process.exit(1);
+}
+
+const email = env.MIURA_ADMIN_EMAIL;
+const password = env.MIURA_ADMIN_PASSWORD;
+const fullName = env.MIURA_ADMIN_NAME || "Administrador";
+
+if (!email || !password) {
+  console.error(
+    "Falta MIURA_ADMIN_EMAIL o MIURA_ADMIN_PASSWORD en .env.local.\n" +
+      "Define el correo y la contraseña del primer administrador y vuelve a correr.",
+  );
   process.exit(1);
 }
 
@@ -32,46 +50,27 @@ const admin = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const USERS = [
-  {
-    email: "felix@carneguey.com",
-    password: "2723",
-    user_metadata: { full_name: "Félix Arrieta", role: "admin" },
-  },
-  {
-    email: "cajera1@carneguey.com",
-    password: "Carneguey2026!",
-    user_metadata: { full_name: "Cajera 1", role: "employee" },
-  },
-  {
-    email: "cajera2@carneguey.com",
-    password: "Carneguey2026!",
-    user_metadata: { full_name: "Cajera 2", role: "employee" },
-  },
-];
-
 const { data: existing, error: listErr } = await admin.auth.admin.listUsers();
 if (listErr) {
   console.error("No se pudo listar usuarios:", listErr.message);
   process.exit(1);
 }
-const existingEmails = new Set(existing.users.map((u) => u.email));
 
-for (const u of USERS) {
-  if (existingEmails.has(u.email)) {
-    console.log(`= ${u.email} ya existe, omitido`);
-    continue;
-  }
-  const { error } = await admin.auth.admin.createUser({
-    email: u.email,
-    password: u.password,
-    email_confirm: true,
-    user_metadata: u.user_metadata,
-  });
-  if (error) {
-    console.error(`x ${u.email}: ${error.message}`);
-    process.exitCode = 1;
-  } else {
-    console.log(`+ ${u.email} creado (${u.user_metadata.role})`);
-  }
+if (existing.users.some((u) => u.email === email)) {
+  console.log(`= ${email} ya existe, omitido`);
+  process.exit(0);
 }
+
+const { error } = await admin.auth.admin.createUser({
+  email,
+  password,
+  email_confirm: true,
+  user_metadata: { full_name: fullName, role: "admin" },
+});
+
+if (error) {
+  console.error(`x ${email}: ${error.message}`);
+  process.exit(1);
+}
+
+console.log(`+ ${email} creado (admin)`);

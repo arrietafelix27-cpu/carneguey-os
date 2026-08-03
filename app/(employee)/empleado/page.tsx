@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 
-export const metadata = { title: "Inicio · Carnegüey" };
+export const metadata = { title: "Inicio" };
 
 type Shortcut = {
   href: string;

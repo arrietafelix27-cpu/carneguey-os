@@ -9,7 +9,7 @@ import {
   type TodayGasto,
 } from "@/components/employee/gastos-form";
 
-export const metadata = { title: "Gastos y salidas · Carnegüey" };
+export const metadata = { title: "Gastos y salidas" };
 export const dynamic = "force-dynamic";
 
 export default async function GastosCajeraPage() {

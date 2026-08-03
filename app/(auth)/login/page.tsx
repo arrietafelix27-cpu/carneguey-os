@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { LoginForm } from "./login-form";
+import { PRODUCT_NAME, BUSINESS_NAME } from "@/lib/config";
 
 export const metadata: Metadata = {
-  title: "Entrar · Carnegüey OS",
+  title: "Entrar",
 };
 
 export default function LoginPage() {
@@ -11,11 +12,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="grid size-16 place-items-center rounded-[var(--radius-xl)] bg-primary text-2xl font-bold text-primary-foreground shadow-[var(--shadow-brand)]">
-            CG
+            M
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Carnegüey OS
+              {PRODUCT_NAME}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Sistema de gestión interno
@@ -28,7 +29,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Acceso exclusivo para el personal de Carnegüey.
+          Acceso exclusivo para el personal de {BUSINESS_NAME}.
         </p>
       </div>
     </main>

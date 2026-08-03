@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { getActiveProviders } from "@/lib/cache";
 import { CarcassLotForm } from "@/components/employee/carcass-lot-form";
 
-export const metadata = { title: "Cerdo · Carnegüey" };
+export const metadata = { title: "Cerdo" };
 
 export default async function CerdoPage() {
   const providers = await getActiveProviders();

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Product } from "@/lib/catalog";
 import { ProductsManager } from "@/components/admin/products-manager";
 
-export const metadata = { title: "Productos · Carnegüey OS" };
+export const metadata = { title: "Productos" };
 
 export default async function ProductosPage() {
   const supabase = await createClient();

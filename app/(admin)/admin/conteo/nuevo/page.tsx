@@ -12,7 +12,7 @@ import {
   type PhysicalItem,
 } from "@/components/admin/conteo-physical-editor";
 
-export const metadata = { title: "Conteo en curso · Carnegüey OS" };
+export const metadata = { title: "Conteo en curso" };
 export const dynamic = "force-dynamic";
 
 function numToInput(v: unknown): string {

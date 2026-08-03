@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupplierAccount } from "@/lib/suppliers";
 import { SupplierAccountView } from "@/components/shared/supplier-account-view";
 
-export const metadata = { title: "Proveedor · Carnegüey" };
+export const metadata = { title: "Proveedor" };
 export const dynamic = "force-dynamic";
 
 export default async function ProveedorCajeraDetailPage({

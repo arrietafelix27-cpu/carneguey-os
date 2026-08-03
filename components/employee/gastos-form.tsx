@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { formatCOP } from "@/lib/format";
+import { OWNER_NAME } from "@/lib/config";
 import { createGasto } from "@/lib/actions/gastos";
 import { compressImage } from "@/lib/compress-image";
 import {
@@ -50,7 +51,7 @@ export type TodayGasto = {
 type Tab = "sf" | "employee_advance" | "expense";
 
 const TABS: { key: Tab; label: string; icon: typeof HandCoins }[] = [
-  { key: "sf", label: "Entrega a Félix", icon: HandCoins },
+  { key: "sf", label: "Salida de efectivo", icon: HandCoins },
   { key: "employee_advance", label: "Préstamo", icon: UserPlus },
   { key: "expense", label: "Gasto operativo", icon: Receipt },
 ];
@@ -206,7 +207,8 @@ export function GastosForm({
             </Select>
             {employees.length === 0 && (
               <p className="text-[13px] text-secondary-foreground">
-                No hay empleados registrados. Félix debe crearlos en Nómina.
+                No hay empleados registrados. {OWNER_NAME} debe crearlos en
+                Nómina.
               </p>
             )}
           </div>
@@ -300,7 +302,7 @@ export function GastosForm({
         {tab !== "expense" && (
           <p className="rounded-xl bg-warning/10 px-4 py-2.5 text-[13px] text-foreground">
             Queda <span className="font-semibold">pendiente</span> hasta que
-            Félix lo apruebe.
+            {" "}{OWNER_NAME} lo apruebe.
           </p>
         )}
 

@@ -7,7 +7,7 @@ import {
   type TransferProduct,
 } from "@/components/employee/cut-transfer-form";
 
-export const metadata = { title: "Transferencia de cortes · Carnegüey" };
+export const metadata = { title: "Transferencia de cortes" };
 export const dynamic = "force-dynamic";
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string }> =

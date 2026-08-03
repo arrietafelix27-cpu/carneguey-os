@@ -75,7 +75,7 @@ export async function registerSupplierPayment(
   return { ok: true };
 }
 
-/** Félix marca/desmarca una factura como privada — la cajera deja de verla. */
+/** El administrador marca/desmarca una factura como privada — la cajera deja de verla. */
 export async function setSupplierInvoicePrivate(
   invoiceId: string,
   isPrivate: boolean,
@@ -99,7 +99,7 @@ export async function setSupplierInvoicePrivate(
 }
 
 /**
- * Félix marca/desmarca TODO un proveedor como privado — oculta todas sus
+ * El administrador marca/desmarca TODO un proveedor como privado — oculta todas sus
  * deudas y pagos de la cajera de una sola vez (se suma a la privacidad por
  * factura, no la reemplaza).
  */

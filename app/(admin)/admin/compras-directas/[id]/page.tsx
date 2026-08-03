@@ -7,7 +7,7 @@ import { formatQty } from "@/lib/format";
 import { getReceiptSignedUrls } from "@/lib/receipts";
 import { ReceiptViewer } from "@/components/admin/receipt-viewer";
 
-export const metadata = { title: "Compra directa · Carnegüey OS" };
+export const metadata = { title: "Compra directa" };
 
 const CATEGORY_LABEL: Record<string, string> = {
   beef: "Res",

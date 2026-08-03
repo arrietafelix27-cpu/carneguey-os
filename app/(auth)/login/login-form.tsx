@@ -41,7 +41,7 @@ export function LoginForm() {
           inputMode="email"
           autoComplete="email"
           autoCapitalize="none"
-          placeholder="tucorreo@carneguey.com"
+          placeholder="tucorreo@ejemplo.com"
           aria-invalid={!!errors.email}
           {...register("email")}
         />

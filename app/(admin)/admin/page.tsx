@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAdminAlerts } from "@/lib/admin-alerts";
 import { AdminAlertsPanel } from "@/components/admin/admin-alerts-panel";
 
-export const metadata = { title: "Panel · Carnegüey OS" };
+export const metadata = { title: "Panel" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {

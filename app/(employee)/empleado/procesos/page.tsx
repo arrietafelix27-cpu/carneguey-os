@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Scissors, ArrowLeftRight, Split, ChevronRight } from "lucide-react";
 
-export const metadata = { title: "Procesos · Carnegüey" };
+export const metadata = { title: "Procesos" };
 
 const OPTIONS = [
   {

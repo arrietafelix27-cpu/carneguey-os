@@ -7,7 +7,7 @@ import {
   type SaleItemRow,
 } from "@/components/employee/ventas-dia-view";
 
-export const metadata = { title: "Ventas del día · Carnegüey" };
+export const metadata = { title: "Ventas del día" };
 export const dynamic = "force-dynamic";
 
 export default async function VentasDiaPage() {

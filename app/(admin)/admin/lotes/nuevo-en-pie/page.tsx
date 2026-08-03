@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { getActiveProviders } from "@/lib/cache";
 import { LiveLotForm } from "@/components/admin/live-lot-form";
 
-export const metadata = { title: "Ganado en pie · Carnegüey OS" };
+export const metadata = { title: "Ganado en pie" };
 
 export default async function NuevoEnPiePage() {
   const providers = await getActiveProviders();

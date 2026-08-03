@@ -5,7 +5,7 @@ import { statusClasses } from "@/lib/analytics";
 import { getAllProviders } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
 
-export const metadata = { title: "Rendimiento de sacrificio · Carnegüey OS" };
+export const metadata = { title: "Rendimiento de sacrificio" };
 
 export default async function RendimientoPage() {
   const supabase = await createClient();

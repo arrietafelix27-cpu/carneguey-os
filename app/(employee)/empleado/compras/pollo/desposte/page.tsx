@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { getActiveProviders } from "@/lib/cache";
 import { CarcassLotForm } from "@/components/employee/carcass-lot-form";
 
-export const metadata = { title: "Pollo para desposte · Carnegüey" };
+export const metadata = { title: "Pollo para desposte" };
 
 export default async function PolloDespostePage() {
   const providers = await getActiveProviders();

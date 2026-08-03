@@ -6,7 +6,7 @@ import {
   type PosCustomerBalance,
 } from "@/components/employee/customer-payments";
 
-export const metadata = { title: "Clientes · Carnegüey" };
+export const metadata = { title: "Clientes" };
 export const dynamic = "force-dynamic";
 
 export default async function ClientesCajeraPage() {

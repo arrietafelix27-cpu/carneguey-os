@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { StartCountButton } from "@/components/admin/start-count-button";
 
-export const metadata = { title: "Conteo quincenal · Carnegüey OS" };
+export const metadata = { title: "Conteo quincenal" };
 export const dynamic = "force-dynamic";
 
 const STATUS_META: Record<

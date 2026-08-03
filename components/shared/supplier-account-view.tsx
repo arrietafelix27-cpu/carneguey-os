@@ -63,7 +63,7 @@ type PayLine = { amount: string; source: "cash" | "owner_contribution" };
 
 const SOURCE_LABEL: Record<string, string> = {
   cash: "De caja",
-  owner_contribution: "Aporte Félix",
+  owner_contribution: "Aporte del dueño",
 };
 
 export function SupplierAccountView({
@@ -485,7 +485,7 @@ export function SupplierAccountView({
                     <SelectContent>
                       <SelectItem value="cash">De caja</SelectItem>
                       <SelectItem value="owner_contribution">
-                        Aporte Félix
+                        Aporte del dueño
                       </SelectItem>
                     </SelectContent>
                   </Select>

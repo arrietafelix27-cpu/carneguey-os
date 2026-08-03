@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { getActiveProviders, getActiveProducts } from "@/lib/cache";
 import { DirectPurchaseForm } from "@/components/employee/direct-purchase-form";
 
-export const metadata = { title: "Compra directa de corte · Carnegüey" };
+export const metadata = { title: "Compra directa de corte" };
 
 export default async function CorteDirectoPage() {
   const [providers, products] = await Promise.all([

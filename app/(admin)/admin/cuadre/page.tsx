@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { formatCOP } from "@/lib/format";
 
-export const metadata = { title: "Cuadre de caja · Carnegüey OS" };
+export const metadata = { title: "Cuadre de caja" };
 export const dynamic = "force-dynamic";
 
 const TOLERANCE = 2000;

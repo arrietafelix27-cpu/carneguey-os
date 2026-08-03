@@ -9,7 +9,7 @@ import {
   type LoanRow,
 } from "@/components/admin/payroll-payment";
 
-export const metadata = { title: "Realizar pago · Carnegüey OS" };
+export const metadata = { title: "Realizar pago" };
 export const dynamic = "force-dynamic";
 
 export default async function PagoNominaPage() {

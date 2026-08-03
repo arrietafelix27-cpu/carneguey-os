@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatQty } from "@/lib/format";
 import { TransferReview } from "@/components/admin/transfer-review";
 
-export const metadata = { title: "Transferencias · Carnegüey OS" };
+export const metadata = { title: "Transferencias" };
 export const dynamic = "force-dynamic";
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string }> =

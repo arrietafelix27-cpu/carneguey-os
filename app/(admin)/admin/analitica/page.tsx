@@ -13,7 +13,7 @@ import { thresholdFor } from "@/lib/analytics";
 import { getAllProviders, getMermaThresholdsCached } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
 
-export const metadata = { title: "Analítica · Carnegüey OS" };
+export const metadata = { title: "Analítica" };
 
 export default async function AnaliticaPage() {
   const supabase = await createClient();

@@ -12,7 +12,7 @@ const PERIOD_LABEL: Record<string, string> = {
   second: "2ª quincena",
 };
 
-export const metadata = { title: "Empleado · Carnegüey OS" };
+export const metadata = { title: "Empleado" };
 export const dynamic = "force-dynamic";
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string }> =

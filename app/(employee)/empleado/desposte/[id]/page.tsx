@@ -8,7 +8,7 @@ import {
   type DesposteItem,
 } from "@/components/employee/desposte-progress";
 
-export const metadata = { title: "Desposte en curso · Carnegüey" };
+export const metadata = { title: "Desposte en curso" };
 
 // Esta pantalla debe ver SIEMPRE el catálogo más reciente — no cachea.
 // El caché global (lib/cache) no se invalida si los productos se editan

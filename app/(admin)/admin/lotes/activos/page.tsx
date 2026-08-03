@@ -5,7 +5,7 @@ import { getAllProviders } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
 import { CloseLotButton } from "@/components/admin/close-lot-button";
 
-export const metadata = { title: "Lotes activos · Carnegüey OS" };
+export const metadata = { title: "Lotes activos" };
 export const dynamic = "force-dynamic";
 
 const TYPE_LABEL: Record<string, string> = {

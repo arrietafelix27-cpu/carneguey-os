@@ -7,7 +7,7 @@ import {
   type DiscountType,
 } from "@/components/admin/customers-manager";
 
-export const metadata = { title: "Clientes · Carnegüey OS" };
+export const metadata = { title: "Clientes" };
 export const dynamic = "force-dynamic";
 
 export default async function ClientesPage() {

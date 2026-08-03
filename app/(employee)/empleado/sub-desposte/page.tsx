@@ -8,7 +8,7 @@ import {
   type OutputProduct,
 } from "@/components/employee/sub-desposte-form";
 
-export const metadata = { title: "Sub-desposte · Carnegüey" };
+export const metadata = { title: "Sub-desposte" };
 export const dynamic = "force-dynamic";
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string }> =

@@ -48,7 +48,7 @@ export async function createCashOutflow(values: unknown): Promise<Result> {
   return { ok: true };
 }
 
-/** Félix aprueba o rechaza un egreso pendiente. */
+/** El administrador aprueba o rechaza un egreso pendiente. */
 export async function reviewCashOutflow(
   outflowId: string,
   approve: boolean,

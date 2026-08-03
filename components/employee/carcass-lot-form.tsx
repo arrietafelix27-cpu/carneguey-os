@@ -148,7 +148,8 @@ export function CarcassLotForm({
           placeholder="$"
         />
         <p className="text-xs text-muted-foreground">
-          Este dato lo necesita Félix. Tú no lo verás después de guardar.
+          Este dato lo necesita la administración. Tú no lo verás después de
+          guardar.
         </p>
       </div>
 

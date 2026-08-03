@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { getActiveProviders } from "@/lib/cache";
 import { CarcassLotForm } from "@/components/employee/carcass-lot-form";
 
-export const metadata = { title: "Canal directo · Carnegüey" };
+export const metadata = { title: "Canal directo" };
 
 export default async function CanalDirectoPage() {
   const providers = await getActiveProviders();

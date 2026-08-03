@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Category } from "@/lib/catalog";
 import { InventoryView, type InvItem } from "@/components/admin/inventory-view";
 
-export const metadata = { title: "Inventario · Carnegüey OS" };
+export const metadata = { title: "Inventario" };
 
 export default async function InventarioPage() {
   const supabase = await createClient();

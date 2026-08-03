@@ -37,7 +37,7 @@ export async function createCutTransfer(values: unknown): Promise<Result> {
   return { ok: true };
 }
 
-/** Félix aprueba o rechaza una transferencia. Solo al aprobar toca inventario. */
+/** El administrador aprueba o rechaza una transferencia. Solo al aprobar toca inventario. */
 export async function reviewCutTransfer(
   transferId: string,
   approve: boolean,

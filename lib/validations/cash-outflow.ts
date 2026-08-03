@@ -11,14 +11,14 @@ export const OUTFLOW_CATEGORIES = [
 export type OutflowCategory = (typeof OUTFLOW_CATEGORIES)[number];
 
 export const OUTFLOW_LABELS: Record<OutflowCategory, string> = {
-  sf: "Señor Félix (SF)",
+  sf: "Salida de efectivo",
   employee_advance: "Adelanto a empleado",
   supplier_payment: "Pago a proveedor",
   expense: "Gasto operativo en efectivo",
   other: "Otro",
 };
 
-/** Categorías que quedan pendientes de aprobación de Félix. */
+/** Categorías que quedan pendientes de aprobación del administrador. */
 export const NEEDS_APPROVAL: OutflowCategory[] = ["sf", "employee_advance"];
 
 export const EXPENSE_SUBCATEGORIES = [

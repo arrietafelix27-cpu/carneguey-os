@@ -7,7 +7,7 @@ import {
   type PendingLot,
 } from "@/components/employee/llegada-canales-manager";
 
-export const metadata = { title: "Llegada de canales · Carnegüey" };
+export const metadata = { title: "Llegada de canales" };
 
 export default async function LlegadaCanalesPage() {
   const supabase = await createClient();

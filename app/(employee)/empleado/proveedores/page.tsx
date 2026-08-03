@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Truck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatCOP } from "@/lib/format";
 
-export const metadata = { title: "Proveedores · Carnegüey" };
+export const metadata = { title: "Proveedores" };
 export const dynamic = "force-dynamic";
 
 export default async function ProveedoresCajeraPage() {

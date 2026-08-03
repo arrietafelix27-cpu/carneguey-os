@@ -10,7 +10,7 @@ import {
   type CustomerOption,
 } from "@/components/admin/ventas-history-manager";
 
-export const metadata = { title: "Historial de ventas · Carnegüey OS" };
+export const metadata = { title: "Historial de ventas" };
 export const dynamic = "force-dynamic";
 
 function defaultFrom(): string {

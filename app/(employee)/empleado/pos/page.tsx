@@ -5,7 +5,7 @@ import {
   type PosCustomer,
 } from "@/components/employee/pos-terminal";
 
-export const metadata = { title: "POS · Carnegüey" };
+export const metadata = { title: "POS" };
 export const dynamic = "force-dynamic";
 
 export default async function PosPage() {

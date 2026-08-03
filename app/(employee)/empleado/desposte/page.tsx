@@ -5,7 +5,7 @@ import {
   type OngoingDesposte,
 } from "@/components/employee/desposte-start";
 
-export const metadata = { title: "Desposte · Carnegüey" };
+export const metadata = { title: "Desposte" };
 
 export default async function DespostePage() {
   const supabase = await createClient();

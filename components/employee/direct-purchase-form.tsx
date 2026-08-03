@@ -203,7 +203,8 @@ export function DirectPurchaseForm({
           Agregar otro producto
         </Button>
         <p className="text-xs text-muted-foreground">
-          El costo lo necesita Félix. Tú no lo verás después de guardar.
+          El costo lo necesita la administración. Tú no lo verás después de
+          guardar.
         </p>
       </div>
 

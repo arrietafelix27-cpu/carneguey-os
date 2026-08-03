@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatKg, formatQty } from "@/lib/format";
 import { getMermaThresholds, thresholdFor } from "@/lib/analytics";
 
-export const metadata = { title: "Desposte · Carnegüey OS" };
+export const metadata = { title: "Desposte" };
 
 const TYPE_LABEL: Record<string, string> = {
   beef_live: "Res",

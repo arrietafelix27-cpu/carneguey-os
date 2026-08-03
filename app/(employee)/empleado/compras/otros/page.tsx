@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { getActiveProviders, getActiveProducts } from "@/lib/cache";
 import { DirectPurchaseForm } from "@/components/employee/direct-purchase-form";
 
-export const metadata = { title: "Otros productos · Carnegüey" };
+export const metadata = { title: "Otros productos" };
 
 export default async function OtrosPage() {
   const [providers, allProducts] = await Promise.all([

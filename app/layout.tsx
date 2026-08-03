@@ -2,10 +2,11 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { PointerEventsGuard } from "@/components/shared/pointer-events-guard";
+import { BUSINESS_NAME } from "@/lib/config";
 
 export const metadata: Metadata = {
-  title: "Carnegüey OS",
-  description: "Sistema de gestión interno de Carnegüey",
+  title: { default: BUSINESS_NAME, template: `%s · ${BUSINESS_NAME}` },
+  description: `Sistema de gestión de ${BUSINESS_NAME}`,
 };
 
 export const viewport: Viewport = {

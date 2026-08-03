@@ -9,7 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-export const metadata = { title: "Compras · Carnegüey" };
+export const metadata = { title: "Compras" };
 
 const OPTIONS = [
   {

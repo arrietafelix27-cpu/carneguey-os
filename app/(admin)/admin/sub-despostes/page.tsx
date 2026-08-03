@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatQty } from "@/lib/format";
 import { SubDesposteReview } from "@/components/admin/sub-desposte-review";
 
-export const metadata = { title: "Sub-despostes · Carnegüey OS" };
+export const metadata = { title: "Sub-despostes" };
 export const dynamic = "force-dynamic";
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string }> =

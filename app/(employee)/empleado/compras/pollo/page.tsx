@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Bird, Scissors } from "lucide-react";
 
-export const metadata = { title: "Pollo · Carnegüey" };
+export const metadata = { title: "Pollo" };
 
 const OPTIONS = [
   {

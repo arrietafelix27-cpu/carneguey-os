@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2, TriangleAlert, Clock } from "lucide-react";
 import { formatCOP } from "@/lib/format";
+import { OWNER_NAME } from "@/lib/config";
 import { closeDay } from "@/lib/actions/closing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +58,7 @@ export function DayClosing({
   const blocked = summary.outflowsPendingCount > 0;
 
   // Mientras haya egresos pendientes, refresca solo para detectar cuando
-  // Félix aprueba o rechaza el último y habilitar el botón.
+  // el admin aprueba o rechaza el último y habilitar el botón.
   useEffect(() => {
     if (alreadyClosed || !blocked) return;
     const id = setInterval(() => router.refresh(), 15000);
@@ -85,7 +86,7 @@ export function DayClosing({
           El día ya está cerrado
         </p>
         <p className="mt-1 text-[15px] text-secondary-foreground">
-          No se puede modificar. Félix ya puede ver el cuadre.
+          No se puede modificar. {OWNER_NAME} ya puede ver el cuadre.
         </p>
       </div>
     );
@@ -109,8 +110,9 @@ export function DayClosing({
                   ? "egreso pendiente"
                   : "egresos pendientes"}
               </span>{" "}
-              de aprobación por {formatCOP(summary.outflowsPending)}. Félix debe
-              aprobarlos o rechazarlos antes de cerrar la caja.
+              de aprobación por {formatCOP(summary.outflowsPending)}.{" "}
+              {OWNER_NAME} debe aprobarlos o rechazarlos antes de cerrar la
+              caja.
             </p>
             <p className="mt-1 text-[12px] text-secondary-foreground">
               Esta pantalla se actualiza sola cuando él los revise.

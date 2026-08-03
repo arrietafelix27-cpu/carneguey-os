@@ -6,7 +6,7 @@ import {
   type EmployeeRow,
 } from "@/components/admin/employees-manager";
 
-export const metadata = { title: "Nómina · Carnegüey OS" };
+export const metadata = { title: "Nómina" };
 export const dynamic = "force-dynamic";
 
 export default async function EmpleadosPage() {

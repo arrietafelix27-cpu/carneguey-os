@@ -37,6 +37,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
+import { PRODUCT_NAME } from "@/lib/config";
 
 type Leaf = { href: string; label: string; icon: LucideIcon };
 type Group = { label: string; icon: LucideIcon; children: Leaf[] };
@@ -49,7 +50,7 @@ const isGroup = (e: Entry): e is Group => "children" in e;
 const ADMIN_HOME = "/admin";
 const EMPLOYEE_HOME = "/empleado";
 
-// Félix: misma estructura en PC y móvil.
+// Admin: misma estructura en PC y móvil.
 const ADMIN_NAV: Entry[] = [
   { href: "/admin", label: "Dashboard", icon: Home },
   { href: "/admin/ventas", label: "Ventas", icon: Receipt },
@@ -153,10 +154,10 @@ export function AppNav({ role, fullName }: { role: Role; fullName: string }) {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[15%] flex-col border-r border-border bg-card lg:flex">
         <Link href={home} className="flex items-center gap-2.5 px-4 py-5">
           <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-[var(--shadow-brand)]">
-            CG
+            M
           </span>
           <span className="truncate text-[15px] font-bold tracking-tight text-foreground">
-            Carnegüey OS
+            {PRODUCT_NAME}
           </span>
         </Link>
 

@@ -83,7 +83,7 @@ export async function createSubDesposte(values: unknown): Promise<Result> {
   return { ok: true };
 }
 
-/** Félix aprueba o rechaza un sub-desposte. Solo al aprobar toca inventario. */
+/** El administrador aprueba o rechaza un sub-desposte. Solo al aprobar toca inventario. */
 export async function reviewSubDesposte(
   subId: string,
   approve: boolean,

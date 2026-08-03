@@ -7,7 +7,7 @@ import { formatCOP } from "@/lib/format";
 import { describeDiscount } from "@/components/admin/customers-manager";
 import { CreditPaymentForm } from "@/components/admin/credit-payment-form";
 
-export const metadata = { title: "Cliente · Carnegüey OS" };
+export const metadata = { title: "Cliente" };
 export const dynamic = "force-dynamic";
 
 const METHOD_LABEL: Record<string, string> = {

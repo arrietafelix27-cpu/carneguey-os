@@ -12,7 +12,7 @@ import { getReceiptSignedUrls } from "@/lib/receipts";
 import { OutflowReview } from "@/components/admin/outflow-review";
 import { ReceiptViewer } from "@/components/admin/receipt-viewer";
 
-export const metadata = { title: "Egresos · Carnegüey OS" };
+export const metadata = { title: "Egresos" };
 export const dynamic = "force-dynamic";
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string }> =
