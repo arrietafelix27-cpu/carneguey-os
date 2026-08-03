@@ -23,6 +23,7 @@ import {
   HandCoins,
   Settings,
   Package,
+  UsersRound,
   ScanLine,
   Beef,
   PiggyBank,
@@ -33,6 +34,7 @@ import {
   LogOut,
   Loader2,
   ChevronDown,
+  KeyRound,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -91,7 +93,14 @@ const ADMIN_NAV: Entry[] = [
       { href: "/admin/nomina/pago", label: "Realizar pago", icon: HandCoins },
     ],
   },
-  { href: "/admin/productos", label: "Configuración", icon: Settings },
+  {
+    label: "Configuración",
+    icon: Settings,
+    children: [
+      { href: "/admin/productos", label: "Productos", icon: Package },
+      { href: "/admin/equipo", label: "Equipo", icon: UsersRound },
+    ],
+  },
 ];
 
 // Cajera PC: todo directo, sin submenús.
@@ -311,6 +320,13 @@ function SidebarFooter({ fullName }: { fullName: string }) {
       <p className="truncate px-2 pb-2 text-[13px] font-medium text-foreground">
         {fullName}
       </p>
+      <Link
+        href="/cambiar-clave"
+        className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-secondary-foreground transition-colors hover:bg-secondary"
+      >
+        <KeyRound className="size-[18px]" />
+        Cambiar contraseña
+      </Link>
       <button
         onClick={() => startTransition(() => logout())}
         disabled={isPending}
@@ -406,6 +422,14 @@ function MobileDrawer({
             <p className="truncate px-3 pb-2 text-[13px] font-medium text-foreground">
               {fullName}
             </p>
+            <Link
+              href="/cambiar-clave"
+              onClick={onClose}
+              className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-[15px] font-medium text-foreground active:bg-secondary"
+            >
+              <KeyRound className="size-5" />
+              Cambiar contraseña
+            </Link>
             <button
               onClick={() => startTransition(() => logout())}
               disabled={isPending}

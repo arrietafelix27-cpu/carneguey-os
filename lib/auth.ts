@@ -32,6 +32,7 @@ export type Profile = {
   full_name: string;
   role: "admin" | "employee";
   active: boolean;
+  must_change_password: boolean;
 };
 
 /**
@@ -54,7 +55,7 @@ export const getCurrentProfile = cache(async (): Promise<Profile> => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, full_name, role, active")
+    .select("id, full_name, role, active, must_change_password")
     .eq("id", user.id)
     .single();
 

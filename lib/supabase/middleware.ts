@@ -53,9 +53,14 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const onLogin = path === LOGIN_PATH;
 
-  // Sin sesión: solo /login.
+  // Rutas públicas de recuperación de contraseña (el callback establece la
+  // sesión; sin esto el middleware redirigiría a /login y perdería el token).
+  const isPublic =
+    onLogin || path === "/recuperar-clave" || path.startsWith("/auth/");
+
+  // Sin sesión: solo rutas públicas.
   if (!user) {
-    return onLogin
+    return isPublic
       ? supabaseResponse
       : redirectWithCookies(request, supabaseResponse, LOGIN_PATH);
   }

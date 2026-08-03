@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -88,6 +89,15 @@ export function LoginForm() {
           "Entrar"
         )}
       </Button>
+
+      <p className="text-center text-sm">
+        <Link
+          href="/recuperar-clave"
+          className="text-primary transition-opacity active:opacity-60"
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </p>
     </form>
   );
 }

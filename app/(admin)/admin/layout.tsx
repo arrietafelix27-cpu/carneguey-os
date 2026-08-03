@@ -8,6 +8,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const profile = await getCurrentProfile();
+  if (profile.must_change_password) redirect("/cambiar-clave");
   if (profile.role !== "admin") redirect("/empleado");
 
   return (
