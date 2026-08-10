@@ -43,8 +43,14 @@ export async function uploadReceiptPhoto(
   entityType: "purchase_lot" | "cash_outflow" | "payroll_payment",
 ): Promise<string> {
   const supabase = createClient();
+  // La ruta empieza por la organización del usuario: la policy de Storage
+  // exige que la primera carpeta coincida con current_org_id().
+  const { data: orgId, error: orgErr } = await supabase.rpc("current_org_id");
+  if (orgErr || !orgId) {
+    throw new Error("No se pudo resolver la organización para la foto");
+  }
   const safe = (file.name || "foto.jpg").replace(/[^\w.\-]/g, "_");
-  const path = `${entityType}/${randomId()}_${safe}`;
+  const path = `${orgId}/${entityType}/${randomId()}_${safe}`;
   const { error } = await supabase.storage
     .from("receipts")
     .upload(path, file, {

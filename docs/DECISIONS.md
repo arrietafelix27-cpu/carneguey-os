@@ -8,6 +8,36 @@ del spec) se anotan aquí en lugar de implementarlas.
 
 ## Decisiones tomadas
 
+### D-016 · Multi-tenancy Fase 1 — aislamiento por organización
+**Fecha:** 2026-08-10
+**Decisión:** Se agrega `organizations` + `organization_id` a las 29 tablas de
+negocio, con aislamiento por RLS y funciones `SECURITY DEFINER` que resuelven
+el org con `current_org_id()` (nunca desde parámetro del cliente). Migraciones
+en 4 pasos para no dejar la BD en estado roto: **030** (columna nullable +
+backfill a la org semilla "Carnegüey (datos de prueba)" + `current_org_id()` +
+`handle_new_user`), **031** (las 59 policies con filtro por org), **032** (las
+funciones `fn_*` + `gen_lot_code`/`set_lot_code` org-aware), **033** (NOT NULL +
+PK compuestas de `app_settings` y `lot_code_counters` + Storage). Correr 030→033
+en orden, de una sentada.
+**Nombres corregidos del brief:** `pos_sales`→`sales`, `pos_sale_items`→
+`sale_items`, `customer_payments`→`credit_payments`, `supplier_accounts`→
+`supplier_invoices`, `payroll_*`→`payroll_payments`/`payroll_deductions`.
+
+### D-017 · `lib/cache.ts` — se elimina el caché global service-role (Opción B)
+**Fecha:** 2026-08-10
+**Decisión:** El caché de catálogo (`unstable_cache` + `service_role`) no
+distingue negocio y sería el hueco más fácil de filtrar entre organizaciones.
+Se elimina y se consulta directo con el cliente del usuario (RLS filtra por
+org). El volumen por carnicería es pequeño, así que el costo de rendimiento es
+despreciable frente al riesgo de fuga entre negocios.
+
+### D-018 · Proveedores no se comparten entre organizaciones
+**Fecha:** 2026-08-10
+**Decisión:** Si dos negocios le compran al mismo proveedor real, cada uno
+tiene su propia fila de proveedor (aunque el nombre se repita). No hay
+proveedores compartidos entre organizaciones en Fase 1. Replantear si algún
+día se necesita un catálogo de proveedores global.
+
 ### D-015 · Rediseño visual 2026 (App Store / Uber) — desviaciones por la regla "solo estética"
 **Fecha:** 2026-06-12
 **Decisión:** Rediseño visual completo dirigido por Félix (referencias App Store + Uber, solo modo claro). Se reemplazaron los tokens de `globals.css` (paleta, radios más redondeados, sombras `--shadow-sm/md/brand`, escala tipográfica) y se reestilizaron los componentes base (`button`, `input`, `textarea`, `label`, `card`, `select`, `dialog`, `sonner`, `skeleton`) más todas las pantallas. La regla del encargo fue **cero cambios de lógica, rutas, queries, acciones o posiciones**.

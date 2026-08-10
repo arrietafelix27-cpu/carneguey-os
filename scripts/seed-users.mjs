@@ -37,6 +37,9 @@ if (!url || !serviceKey) {
 const email = env.MIURA_ADMIN_EMAIL;
 const password = env.MIURA_ADMIN_PASSWORD;
 const fullName = env.MIURA_ADMIN_NAME || "Administrador";
+// Slug de la organización a la que pertenece el admin. Crear organizaciones
+// nuevas es parte del onboarding (Fase 4); por ahora se usa la ya sembrada.
+const orgSlug = env.MIURA_ORG_SLUG || "carneguey";
 
 if (!email || !password) {
   console.error(
@@ -49,6 +52,20 @@ if (!email || !password) {
 const admin = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
+
+// Resolver la organización del admin.
+const { data: org, error: orgErr } = await admin
+  .from("organizations")
+  .select("id")
+  .eq("slug", orgSlug)
+  .single();
+if (orgErr || !org) {
+  console.error(
+    `No existe la organización con slug "${orgSlug}". Corre las migraciones ` +
+      `(030 crea la organización semilla) o define MIURA_ORG_SLUG.`,
+  );
+  process.exit(1);
+}
 
 const { data: existing, error: listErr } = await admin.auth.admin.listUsers();
 if (listErr) {
@@ -65,7 +82,7 @@ const { error } = await admin.auth.admin.createUser({
   email,
   password,
   email_confirm: true,
-  user_metadata: { full_name: fullName, role: "admin" },
+  user_metadata: { full_name: fullName, role: "admin", organization_id: org.id },
 });
 
 if (error) {

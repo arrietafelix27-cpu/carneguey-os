@@ -57,8 +57,13 @@ export async function createTeamUser(values: unknown): Promise<Result> {
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Revisa los datos" };
   }
-  const { isAdmin } = await getAdminContext();
+  const { supabase, isAdmin } = await getAdminContext();
   if (!isAdmin) return { error: "No autorizado" };
+
+  // El nuevo usuario hereda la organización del admin que lo crea. Nunca se
+  // toma de un valor que mande el cliente.
+  const { data: orgId } = await supabase.rpc("current_org_id");
+  if (!orgId) return { error: "No se pudo resolver tu organización" };
 
   const admin = createAdminClient();
   const { data, error } = await admin.auth.admin.createUser({
@@ -68,6 +73,7 @@ export async function createTeamUser(values: unknown): Promise<Result> {
     user_metadata: {
       full_name: parsed.data.full_name,
       role: parsed.data.role,
+      organization_id: orgId,
     },
   });
 
