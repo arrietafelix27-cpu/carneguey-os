@@ -1,23 +1,48 @@
 -- ============================================================================
 -- 034 · Aislamiento de las vistas por organización (Fase 1)
 -- ----------------------------------------------------------------------------
--- Las vistas del proyecto corren como owner (BYPASSRLS) a propósito: es el
--- mecanismo para exponer a la cajera columnas de tablas cuya RLS le niega el
--- SELECT (precio de venta, saldos) sin darle acceso al dinero. Ese propósito
--- NO cambia. Lo que faltaba: filtrar por organización. Sin el filtro, una
--- vista owner devuelve filas de TODOS los negocios.
+-- Las vistas corren como owner (BYPASSRLS) a propósito: exponen a la cajera
+-- columnas (precio de venta, saldos) cuya RLS le niega el SELECT, sin darle
+-- acceso al dinero. Ese propósito NO cambia. Faltaba filtrar por organización:
+-- sin el filtro, una vista owner devuelve filas de TODOS los negocios.
 --
--- A cada vista se le agrega  "and <tabla>.organization_id = current_org_id()"
--- (columna ajustada por vista). No se cambia ninguna columna de salida ni la
--- lógica de ocultar precios/nómina a la cajera.
+-- Se usa DROP VIEW ... CASCADE + CREATE VIEW (en vez de create or replace)
+-- porque algunas vistas reales en la BD tienen distinto orden/nombre de
+-- columnas que el repo (p. ej. v_monthly_payroll y v_employees_active se
+-- crearon a mano y nunca se versionaron), y create-or-replace no admite
+-- cambiar columnas. El drop+create las deja idénticas al repo.
 --
--- Nota: v_current_inventory, v_lot_summary y v_desposte_summary ya tenían
--- security_invoker=on (respetan la RLS de 031, ya aisladas); se les agrega el
--- filtro igual como defensa en profundidad, conservando security_invoker.
+-- CASCADE: la única dependencia entre vistas es v_pos_sale_items_today →
+-- v_pos_sales_today; ambas se recrean aquí. Ninguna función ni tabla depende
+-- de estas vistas, así que cascade no arrastra nada más.
+--
+-- Como el drop borra los GRANT, se vuelve a dar "grant select ... authenticated"
+-- después de cada vista.
 -- ============================================================================
 
+-- ── Drops (dependiente primero) ────────────────────────────────────────────
+drop view if exists public.v_pos_sale_items_today          cascade;
+drop view if exists public.v_pos_sales_today               cascade;
+drop view if exists public.v_purchase_lots_employee        cascade;
+drop view if exists public.v_direct_purchases_employee     cascade;
+drop view if exists public.v_inventory_movements_employee  cascade;
+drop view if exists public.v_current_inventory_employee    cascade;
+drop view if exists public.v_physical_count_items_employee cascade;
+drop view if exists public.v_physical_count_items_admin    cascade;
+drop view if exists public.v_products_admin                cascade;
+drop view if exists public.v_pos_products                  cascade;
+drop view if exists public.v_pos_customers                 cascade;
+drop view if exists public.v_customer_balances             cascade;
+drop view if exists public.v_pos_customer_balances         cascade;
+drop view if exists public.v_supplier_balances             cascade;
+drop view if exists public.v_employees_active              cascade;
+drop view if exists public.v_monthly_payroll               cascade;
+drop view if exists public.v_current_inventory             cascade;
+drop view if exists public.v_lot_summary                   cascade;
+drop view if exists public.v_desposte_summary              cascade;
+
 -- ── Vistas de EMPLEADO (owner, sin dinero) ─────────────────────────────────
-create or replace view public.v_purchase_lots_employee as
+create view public.v_purchase_lots_employee as
 select
   id, lot_code, type, provider_id, status,
   live_animal_count, live_weight_kg, live_purchase_date,
@@ -25,22 +50,25 @@ select
   notes, created_by, created_at, activated_by, activated_at, closed_at
 from public.purchase_lots
 where organization_id = public.current_org_id();
+grant select on public.v_purchase_lots_employee to authenticated;
 
-create or replace view public.v_direct_purchases_employee as
+create view public.v_direct_purchases_employee as
 select
   id, provider_id, product_id, quantity, purchase_date,
   notes, created_by, created_at
 from public.direct_purchases
 where organization_id = public.current_org_id();
+grant select on public.v_direct_purchases_employee to authenticated;
 
-create or replace view public.v_inventory_movements_employee as
+create view public.v_inventory_movements_employee as
 select
   id, product_id, movement_type, quantity,
   reference_type, reference_id, notes, created_by, created_at
 from public.inventory_movements
 where organization_id = public.current_org_id();
+grant select on public.v_inventory_movements_employee to authenticated;
 
-create or replace view public.v_current_inventory_employee as
+create view public.v_current_inventory_employee as
 select
   p.id        as product_id,
   p.name      as product_name,
@@ -52,8 +80,9 @@ from public.products p
 left join public.inventory_movements m on m.product_id = p.id
 where p.organization_id = public.current_org_id()
 group by p.id;
+grant select on public.v_current_inventory_employee to authenticated;
 
-create or replace view public.v_physical_count_items_employee as
+create view public.v_physical_count_items_employee as
 select
   i.id, i.physical_count_id, i.product_id,
   p.name as product_name, p.category, p.unit,
@@ -61,9 +90,10 @@ select
 from public.physical_count_items i
 join public.products p on p.id = i.product_id
 where i.organization_id = public.current_org_id();
+grant select on public.v_physical_count_items_employee to authenticated;
 
 -- ── Vista de conteo SOLO admin (owner + is_admin) ──────────────────────────
-create or replace view public.v_physical_count_items_admin as
+create view public.v_physical_count_items_admin as
 select
   i.id,
   i.physical_count_id,
@@ -80,35 +110,39 @@ from public.physical_count_items i
 join public.products p on p.id = i.product_id
 where public.is_admin()
   and i.organization_id = public.current_org_id();
+grant select on public.v_physical_count_items_admin to authenticated;
 
 -- ── Catálogo admin con precio (owner + is_admin) ───────────────────────────
-create or replace view public.v_products_admin as
+create view public.v_products_admin as
 select
   id, pos_code, name, category, unit, origin,
   active, shared_across_species, price, created_at
 from public.products
 where public.is_admin()
   and organization_id = public.current_org_id();
+grant select on public.v_products_admin to authenticated;
 
 -- ── POS: productos con precio de venta (owner, cajera) ─────────────────────
-create or replace view public.v_pos_products as
+create view public.v_pos_products as
 select
   p.id, p.pos_code, p.name, p.category, p.unit, p.price
 from public.products p
 where p.active = true
   and public.is_active_user()
   and p.organization_id = public.current_org_id();
+grant select on public.v_pos_products to authenticated;
 
 -- ── POS: clientes (owner, cajera) ──────────────────────────────────────────
-create or replace view public.v_pos_customers as
+create view public.v_pos_customers as
 select id, name, phone, discount_type, discount_value
 from public.customers
 where active = true
   and public.is_active_user()
   and organization_id = public.current_org_id();
+grant select on public.v_pos_customers to authenticated;
 
 -- ── Saldos de clientes SOLO admin (owner + is_admin) ───────────────────────
-create or replace view public.v_customer_balances as
+create view public.v_customer_balances as
 select
   c.id as customer_id,
   coalesce(cr.credit_total, 0)::numeric(14,2)  as credit_total,
@@ -129,9 +163,10 @@ left join (
 ) pa on pa.customer_id = c.id
 where public.is_admin()
   and c.organization_id = public.current_org_id();
+grant select on public.v_customer_balances to authenticated;
 
 -- ── POS: saldos de clientes para la cajera (owner) ─────────────────────────
-create or replace view public.v_pos_customer_balances as
+create view public.v_pos_customer_balances as
 select
   c.id,
   c.name,
@@ -153,9 +188,10 @@ left join (
 where c.active = true
   and public.is_active_user()
   and c.organization_id = public.current_org_id();
+grant select on public.v_pos_customer_balances to authenticated;
 
--- ── POS: ventas del día (owner, cajera) ────────────────────────────────────
-create or replace view public.v_pos_sales_today as
+-- ── POS: ventas del día (owner, cajera) ── v_pos_sales_today ANTES de items ─
+create view public.v_pos_sales_today as
 select
   s.id,
   s.created_at,
@@ -170,8 +206,9 @@ where (s.created_at at time zone 'America/Bogota')::date
   and s.status <> 'cancelled'
   and public.is_active_user()
   and s.organization_id = public.current_org_id();
+grant select on public.v_pos_sales_today to authenticated;
 
-create or replace view public.v_pos_sale_items_today as
+create view public.v_pos_sale_items_today as
 select
   si.id,
   si.sale_id,
@@ -186,9 +223,10 @@ join public.products p on p.id = si.product_id
 where public.is_active_user()
   and si.organization_id = public.current_org_id()
   and si.sale_id in (select id from public.v_pos_sales_today);
+grant select on public.v_pos_sale_items_today to authenticated;
 
 -- ── Saldos de proveedores (owner) ──────────────────────────────────────────
-create or replace view public.v_supplier_balances as
+create view public.v_supplier_balances as
 select
   p.id as provider_id,
   coalesce(sum(
@@ -206,17 +244,19 @@ left join (
 where (public.is_admin() or p.is_private = false)
   and p.organization_id = public.current_org_id()
 group by p.id;
+grant select on public.v_supplier_balances to authenticated;
 
 -- ── Nómina: empleados activos (owner, para el dropdown de la cajera) ───────
-create or replace view public.v_employees_active as
+create view public.v_employees_active as
 select id, name
 from public.employees
 where active = true
   and public.is_active_user()
   and organization_id = public.current_org_id();
+grant select on public.v_employees_active to authenticated;
 
 -- ── Nómina: resumen mensual SOLO admin (owner + is_admin) ──────────────────
-create or replace view public.v_monthly_payroll as
+create view public.v_monthly_payroll as
 select
   p.employee_id,
   e.name                                     as employee_name,
@@ -230,9 +270,10 @@ join public.employees e on e.id = p.employee_id
 where public.is_admin()
   and p.organization_id = public.current_org_id()
 group by p.employee_id, e.name, date_trunc('month', p.payment_date);
+grant select on public.v_monthly_payroll to authenticated;
 
 -- ── Vistas security_invoker (ya respetaban RLS; filtro como defensa extra) ─
-create or replace view public.v_current_inventory
+create view public.v_current_inventory
 with (security_invoker = on) as
 with agg as (
   select
@@ -262,8 +303,9 @@ select
   round(weighted_avg_unit_cost, 4)::numeric(12,4)                   as weighted_avg_unit_cost,
   round(quantity_in_stock * weighted_avg_unit_cost, 2)::numeric(14,2) as total_value
 from agg;
+grant select on public.v_current_inventory to authenticated;
 
-create or replace view public.v_lot_summary
+create view public.v_lot_summary
 with (security_invoker = on) as
 with d as (
   select
@@ -312,8 +354,9 @@ select
   coalesce(d.finalized_desposte_count, 0)                                as finalized_desposte_count
 from base b
 left join d on d.lot_id = b.id;
+grant select on public.v_lot_summary to authenticated;
 
-create or replace view public.v_desposte_summary
+create view public.v_desposte_summary
 with (security_invoker = on) as
 select
   d.id              as desposte_id,
@@ -334,3 +377,4 @@ from public.despostes d
 left join public.desposte_items i on i.desposte_id = d.id
 where d.organization_id = public.current_org_id()
 group by d.id;
+grant select on public.v_desposte_summary to authenticated;
