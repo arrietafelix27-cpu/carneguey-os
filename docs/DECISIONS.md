@@ -8,6 +8,33 @@ del spec) se anotan aquí en lugar de implementarlas.
 
 ## Decisiones tomadas
 
+### D-019 · Fase 2 — una sola experiencia por rol, conservando las URLs
+**Fecha:** 2026-08-14
+**Decisión:** No se colapsan los árboles `app/(admin)/admin/...` y
+`app/(employee)/empleado/...` en una sola raíz de URLs. Se conservan tal cual
+(no mover ~50 rutas, no romper enlaces guardados/compartidos como el detalle
+de una venta) y la unificación se logra por rol, no por URL:
+- **Puerta única:** `/` (`app/page.tsx`) redirige según `profiles.role` a
+  `/admin` o `/empleado`. El middleware manda a `/` a quien llega autenticado
+  a `/login` o `/`.
+- **Menú único:** un solo `AppNav` (sidebar PC + barra móvil) que arma el menú
+  desde el rol del que mira. No hay navs duplicados entre admin y empleado.
+- **Protección real (servidor):** el layout de `/admin` hace
+  `if role !== 'admin' redirect('/empleado')` — una cajera que escriba una URL
+  `/admin/*` rebota antes de renderizar. El árbol `/empleado` queda abierto a
+  ambos roles a propósito: el admin "ve todo" (incluido el POS). Defensa en
+  profundidad: aunque una cajera llegara a una pantalla de admin, la RLS de
+  Fase 1 (solo-admin + org) no le devuelve datos.
+- **POS:** el POS vive en `/empleado/pos` (herramienta principal de la cajera,
+  prominente en su menú). Para el admin se agrega en el submenú
+  **Configuración** (accesible pero no prominente en su inicio).
+**Por qué:** el objetivo del brief (el rol manda, no la URL) ya se cumplía en
+gran parte por trabajo previo (nav unificada + redirect de rol + puerta única);
+colapsar las URLs sería mucho movimiento de archivos y ruptura de enlaces por
+un beneficio menor. Se privilegia bajo riesgo y cero cambio de datos.
+**Pendiente futuro:** si en Fase 7 (pulido) se rediseña la navegación, se puede
+reconsiderar unificar las URLs con redirects 301 de las viejas.
+
 ### D-016 · Multi-tenancy Fase 1 — aislamiento por organización
 **Fecha:** 2026-08-10
 **Decisión:** Se agrega `organizations` + `organization_id` a las 29 tablas de

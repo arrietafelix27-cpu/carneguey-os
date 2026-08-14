@@ -99,6 +99,7 @@ const ADMIN_NAV: Entry[] = [
     children: [
       { href: "/admin/productos", label: "Productos", icon: Package },
       { href: "/admin/equipo", label: "Equipo", icon: UsersRound },
+      { href: "/empleado/pos", label: "POS", icon: ScanLine },
     ],
   },
 ];
