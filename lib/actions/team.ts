@@ -16,10 +16,15 @@ export type TeamMember = {
   active: boolean;
 };
 
-/** Lista el equipo (perfiles + email de Auth). Solo admin. */
+/** Lista el equipo (perfiles + email de Auth) de la organización. Solo admin. */
 export async function listTeam(): Promise<TeamMember[]> {
-  const { isAdmin } = await getAdminContext();
+  const { supabase, isAdmin } = await getAdminContext();
   if (!isAdmin) return [];
+
+  // El cliente admin (service-role) salta la RLS, así que hay que filtrar por
+  // la organización del admin a mano — si no, vería usuarios de otros negocios.
+  const { data: orgId } = await supabase.rpc("current_org_id");
+  if (!orgId) return [];
 
   const admin = createAdminClient();
 
@@ -28,6 +33,7 @@ export async function listTeam(): Promise<TeamMember[]> {
     admin
       .from("profiles")
       .select("id, full_name, role, active")
+      .eq("organization_id", orgId)
       .order("full_name", { ascending: true }),
   ]);
 
@@ -117,13 +123,23 @@ export async function setTeamUserActive(
     return { error: "No puedes desactivar tu propia cuenta" };
   }
 
+  const { data: orgId } = await supabase.rpc("current_org_id");
+  if (!orgId) return { error: "No se pudo resolver tu organización" };
+
   const admin = createAdminClient();
-  const { error: profErr } = await admin
+  // Solo usuarios de MI organización (el service-role salta la RLS).
+  const { data: updated, error: profErr } = await admin
     .from("profiles")
     .update({ active })
-    .eq("id", userId);
+    .eq("id", userId)
+    .eq("organization_id", orgId)
+    .select("id")
+    .maybeSingle();
   if (profErr) {
     return { error: `No se pudo actualizar: ${profErr.message}` };
+  }
+  if (!updated) {
+    return { error: "Usuario no encontrado en tu organización" };
   }
 
   // Bloquea/desbloquea el login en Auth.
