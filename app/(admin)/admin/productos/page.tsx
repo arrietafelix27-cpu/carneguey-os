@@ -2,12 +2,14 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Product } from "@/lib/catalog";
+import { readOrgScalePattern } from "@/lib/actions/scale";
 import { ProductsManager } from "@/components/admin/products-manager";
 
 export const metadata = { title: "Productos" };
 
 export default async function ProductosPage() {
   const supabase = await createClient();
+  const scalePattern = await readOrgScalePattern(supabase);
   // v_products_admin incluye price y solo devuelve filas al admin (migración 018).
   const { data } = await supabase
     .from("v_products_admin")
@@ -37,7 +39,10 @@ export default async function ProductosPage() {
         <ChevronLeft className="size-4" />
         Panel
       </Link>
-      <ProductsManager initialProducts={products} />
+      <ProductsManager
+        initialProducts={products}
+        hasScalePattern={scalePattern !== null}
+      />
     </main>
   );
 }

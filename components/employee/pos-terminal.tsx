@@ -19,6 +19,7 @@ import {
   User,
 } from "lucide-react";
 import { formatCOP } from "@/lib/format";
+import { parseBarcode, type ScalePattern } from "@/lib/barcode";
 import { completeSale } from "@/lib/actions/sales";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -126,9 +127,11 @@ function qtyLabel(it: { unit: "kg" | "unit"; quantity: number }): string {
 export function PosTerminal({
   products,
   customers,
+  scalePattern,
 }: {
   products: PosProduct[];
   customers: PosCustomer[];
+  scalePattern: ScalePattern | null;
 }) {
   const [mounted, setMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
@@ -222,25 +225,29 @@ export function PosTerminal({
     ]);
   }, []);
 
-  // EAN-13 de la báscula DIBAL: prefijo '2' + pos_code (6 díg, posiciones 2-7)
-  // + peso en diezmilésimas de kg (6 díg, posiciones 8-13).
-  // Ej: "2 000302 004452" → pos_code 302, peso 4452/10000 = 0,4452 kg.
+  // El código escaneado se separa en código de producto + peso usando el
+  // patrón de la báscula de ESTA organización (migración 036 / lib/barcode).
   const addScan = useCallback(
     (raw: string) => {
-      const code = digitsOnly(raw);
-      if (code.length < 7) return;
-      const posCode = String(parseInt(code.slice(1, 7) || "0", 10));
-      const weightRaw = parseInt(code.slice(7, 13) || "0", 10);
-      const kg = Math.round((weightRaw / 10000) * 1000) / 1000;
-
-      const product = cache.get(posCode);
-      if (!product) {
-        toast.error(`Producto no encontrado (código ${posCode})`);
+      if (!scalePattern) {
+        toast.error(
+          "Este negocio aún no configuró su báscula. Configúrala en Productos, o escribe el código del producto.",
+        );
         return;
       }
-      pushItem(product, product.unit === "unit" ? 1 : kg);
+      const parsed = parseBarcode(raw, scalePattern);
+      if (!parsed) {
+        toast.error("El código escaneado no tiene el formato de tu báscula.");
+        return;
+      }
+      const product = cache.get(parsed.posCode);
+      if (!product) {
+        toast.error(`Producto no encontrado (código ${parsed.posCode})`);
+        return;
+      }
+      pushItem(product, product.unit === "unit" ? 1 : parsed.weightKg);
     },
-    [cache, pushItem],
+    [cache, pushItem, scalePattern],
   );
 
   const openManual = useCallback(

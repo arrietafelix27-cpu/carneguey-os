@@ -8,6 +8,34 @@ del spec) se anotan aquí en lugar de implementarlas.
 
 ## Decisiones tomadas
 
+### D-020 · Fase 3 — báscula universal (patrón de código por organización)
+**Fecha:** 2026-08-14
+**Decisión:** El patrón del código de barras de la báscula se guarda por
+organización, como 5 columnas nullable en `organizations`: `barcode_code_start`,
+`barcode_code_len`, `barcode_weight_start`, `barcode_weight_len` (posiciones
+base 0 dentro del EAN-13) y `barcode_weight_divisor` (kg = entero_peso /
+divisor). Null = negocio sin báscula configurada. Se guarda vía RPC acotado
+`fn_set_scale_pattern` (definer, solo-admin) para no abrir un UPDATE general
+sobre `organizations`. Carnegüey migra su patrón fijo actual `(1,6,7,6,10000)`.
+**Detección (lib/barcode.ts `detectPattern`):** se conoce el código del
+producto (el PLU que el dueño escribe, igual al de su báscula) + el peso
+confirmado + el escaneo. Con ambos valores conocidos la deducción es
+determinista: se buscan las posiciones donde aparece cada uno. **Ambigüedad:**
+si hay varias combinaciones posibles, el desempate es (1) campo de peso que
+termina más a la derecha, (2) más largo, (3) código empezando más a la
+izquierda —prefijo mínimo—, (4) más ancho. Si ninguna combinación cuadra
+(código+peso no aparecen coherentes), se rechaza con mensaje claro; nunca
+adivina. Divisores candidatos: 10000 (diezmilésimas, DIBAL) y 1000 (gramos).
+**Fuera de alcance explícito:** básculas que codifican **precio** en vez de
+peso en esa parte del código (existen, DIBAL no). No se soporta en v1; si un
+cliente la usa, se retoma como fase aparte.
+**Casos límite cubiertos:** código escaneado que no cuadra con el patrón →
+rechazo con mensaje; producto sin código → entrada manual en el POS (ya existía);
+peso ≤ 0 → la venta ya no se registra (validación previa del POS).
+**DT-002 — resuelto:** los `pos_code` de Carnegüey se recargaron con datos
+reales en la migración 015; no quedan productos con `pos_code` vacío que
+requieran re-escaneo. DT-002 se da por cerrado.
+
 ### D-019 · Fase 2 — una sola experiencia por rol, conservando las URLs
 **Fecha:** 2026-08-14
 **Decisión:** No se colapsan los árboles `app/(admin)/admin/...` y

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Loader2, Search } from "lucide-react";
+import { Plus, Pencil, Loader2, Search, ScanLine } from "lucide-react";
 import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
@@ -37,19 +37,26 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import {
+  ScaleConfigDialog,
+  type ScaleProduct,
+} from "@/components/admin/scale-config-dialog";
 
 type Filter = "all" | Category;
 
 export function ProductsManager({
   initialProducts,
+  hasScalePattern,
 }: {
   initialProducts: Product[];
+  hasScalePattern: boolean;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [scaleProduct, setScaleProduct] = useState<ScaleProduct | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -229,6 +236,20 @@ export function ProductsManager({
                       </p>
                       <p className="text-xs text-muted-foreground">precio</p>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setScaleProduct({
+                          id: p.id,
+                          name: p.name,
+                          pos_code: p.pos_code,
+                        })
+                      }
+                      aria-label={`Configurar báscula de ${p.name}`}
+                    >
+                      <ScanLine className="size-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -416,6 +437,12 @@ export function ProductsManager({
           </form>
         </DialogContent>
       </Dialog>
+
+      <ScaleConfigDialog
+        product={scaleProduct}
+        hasPattern={hasScalePattern}
+        onClose={() => setScaleProduct(null)}
+      />
     </div>
   );
 }

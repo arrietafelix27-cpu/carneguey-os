@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { readOrgScalePattern } from "@/lib/actions/scale";
 import {
   PosTerminal,
   type PosProduct,
@@ -10,6 +11,8 @@ export const dynamic = "force-dynamic";
 
 export default async function PosPage() {
   const supabase = await createClient();
+
+  const scalePattern = await readOrgScalePattern(supabase);
 
   // Caché en memoria: productos activos con precio de venta y clientes activos.
   // Ambas vistas son definer y no exponen costos, cupo de crédito ni notas.
@@ -42,5 +45,11 @@ export default async function PosPage() {
     discount_value: Number(c.discount_value ?? 0),
   }));
 
-  return <PosTerminal products={productList} customers={customerList} />;
+  return (
+    <PosTerminal
+      products={productList}
+      customers={customerList}
+      scalePattern={scalePattern}
+    />
+  );
 }
