@@ -151,7 +151,7 @@ export function DesposteStart({
                       </Button>
                       <Button
                         className="flex-1 gap-2"
-                        disabled={isPending}
+                        disabled={isPending || weight.trim() === ""}
                         onClick={start}
                       >
                         {isPending && (

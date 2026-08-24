@@ -165,6 +165,12 @@ export function DesposteProgress({
 
   const pickedUnit: "kg" | "unit" = picked?.unit === "unit" ? "unit" : "kg";
 
+  // El botón "Agregar" solo se habilita con los datos requeridos: peso siempre;
+  // y además unidades cuando el producto se vende por unidad.
+  const addValid =
+    weight.trim() !== "" &&
+    (pickedUnit !== "unit" || unitCount.trim() !== "");
+
   return (
     <div className="grid gap-5">
       {/* Encabezado con medidor circular en vivo */}
@@ -365,7 +371,7 @@ export function DesposteProgress({
           <DialogFooter>
             <Button
               className="gap-2"
-              disabled={isPending}
+              disabled={isPending || !addValid}
               onClick={addItem}
             >
               {isPending ? (
