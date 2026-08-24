@@ -3,13 +3,14 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, Check } from "lucide-react";
+import { Loader2, Search, Trash2, Check, TriangleAlert } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { formatKg, formatQty } from "@/lib/format";
 import {
   addDesposteItem,
   removeDesposteItem,
   finalizeDesposte,
+  cancelDesposte,
 } from "@/lib/actions/desposte";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,12 +61,14 @@ export function DesposteProgress({
   inputWeight,
   products,
   initialItems,
+  canCancel,
 }: {
   desposteId: string;
   lotCode: string;
   inputWeight: number;
   products: Product[];
   initialItems: DesposteItem[];
+  canCancel: boolean;
 }) {
   const router = useRouter();
   const [items, setItems] = useState<DesposteItem[]>(initialItems);
@@ -74,6 +77,7 @@ export function DesposteProgress({
   const [weight, setWeight] = useState("");
   const [unitCount, setUnitCount] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Suma kg de todos los cortes. Para productos unit ahora weight_kg son los
@@ -93,6 +97,8 @@ export function DesposteProgress({
     Math.max(0, (registeredKg / inputWeight) * 100),
   );
   const mermaPct = inputWeight > 0 ? (remaining / inputWeight) * 100 : 0;
+  // Merma negativa: los cortes pesan más que lo que entró (imposible).
+  const overweight = registeredKg - inputWeight > 0.001;
 
   const filtered = useMemo(() => {
     const q = normalize(query.trim());
@@ -159,6 +165,19 @@ export function DesposteProgress({
       }
       toast.success(`Desposte finalizado · Merma ${formatKg(remaining)} kg`);
       setConfirmOpen(false);
+      router.push("/empleado/desposte");
+    });
+  }
+
+  function cancel() {
+    startTransition(async () => {
+      const result = await cancelDesposte(desposteId);
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Desposte cancelado");
+      setCancelOpen(false);
       router.push("/empleado/desposte");
     });
   }
@@ -304,13 +323,35 @@ export function DesposteProgress({
         </div>
       )}
 
+      {overweight && (
+        <div className="flex items-start gap-2 rounded-2xl bg-danger/10 px-4 py-3 text-[13px] text-danger">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+          <span>
+            Los cortes registrados pesan más que lo que entró al desposte. No se
+            puede finalizar hasta que revises los pesos (no puede salir más de
+            lo que entró).
+          </span>
+        </div>
+      )}
+
       <Button
         className="h-12 w-full text-base font-semibold"
-        disabled={isPending || items.length === 0}
+        disabled={isPending || items.length === 0 || overweight}
         onClick={() => setConfirmOpen(true)}
       >
         Finalizar desposte
       </Button>
+
+      {canCancel && (
+        <Button
+          variant="ghost"
+          className="h-11 w-full text-destructive"
+          disabled={isPending}
+          onClick={() => setCancelOpen(true)}
+        >
+          Cancelar desposte
+        </Button>
+      )}
 
       {/* Dialog: ingresar cantidad del corte */}
       <Dialog
@@ -426,6 +467,38 @@ export function DesposteProgress({
             <Button className="gap-2" disabled={isPending} onClick={finalize}>
               {isPending && <Loader2 className="size-4 animate-spin" />}
               Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: confirmar cancelación */}
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle>Cancelar desposte</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-secondary-foreground">
+            Se borrará este desposte y los cortes que registraste. El lote
+            queda como estaba, disponible para despostar. Esto no se puede
+            deshacer.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setCancelOpen(false)}
+              disabled={isPending}
+            >
+              Volver
+            </Button>
+            <Button
+              variant="destructive"
+              className="gap-2"
+              disabled={isPending}
+              onClick={cancel}
+            >
+              {isPending && <Loader2 className="size-4 animate-spin" />}
+              Sí, cancelar
             </Button>
           </DialogFooter>
         </DialogContent>

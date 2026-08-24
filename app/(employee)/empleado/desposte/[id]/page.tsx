@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/auth";
 import type { Product } from "@/lib/catalog";
 import {
   DesposteProgress,
@@ -22,16 +23,21 @@ export default async function DesposteEnCursoPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const profile = await getCurrentProfile();
 
   const { data: desposte } = await supabase
     .from("despostes")
-    .select("id, lot_id, input_weight_kg, status")
+    .select("id, lot_id, input_weight_kg, status, created_by")
     .eq("id", id)
     .single();
 
   if (!desposte || desposte.status !== "in_progress") {
     redirect("/empleado/desposte");
   }
+
+  // Solo quien lo inició o el admin puede cancelarlo.
+  const canCancel =
+    profile.role === "admin" || profile.id === desposte.created_by;
 
   const { data: lot } = await supabase
     .from("v_purchase_lots_employee")
@@ -105,6 +111,7 @@ export default async function DesposteEnCursoPage({
         inputWeight={Number(desposte.input_weight_kg)}
         products={products}
         initialItems={initialItems}
+        canCancel={canCancel}
       />
     </main>
   );

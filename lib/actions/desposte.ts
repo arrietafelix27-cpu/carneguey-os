@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/auth";
 import {
   startDesposteSchema,
   desposteItemSchema,
@@ -111,9 +112,28 @@ export async function finalizeDesposte(
 export async function cancelDesposte(
   desposteId: string,
 ): Promise<VoidResult> {
-  const supabase = await createClient();
-  // Borra los cortes registrados y el desposte (solo si está en curso; la
-  // RLS lo garantiza). Sirve para cancelar un desposte iniciado por error.
+  const { supabase, isAdmin } = await getAdminContext();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "No autorizado" };
+
+  // Solo quien lo inició (o el admin) puede cancelar, y solo en curso.
+  const { data: desp } = await supabase
+    .from("despostes")
+    .select("created_by, status")
+    .eq("id", desposteId)
+    .maybeSingle();
+  if (!desp) return { error: "Desposte no encontrado" };
+  if (desp.status !== "in_progress") {
+    return { error: "El desposte ya fue finalizado; no se puede cancelar." };
+  }
+  if (desp.created_by !== user.id && !isAdmin) {
+    return {
+      error: "Solo quien inició el desposte o el administrador puede cancelarlo.",
+    };
+  }
+
   await supabase.from("desposte_items").delete().eq("desposte_id", desposteId);
   const { error } = await supabase
     .from("despostes")
