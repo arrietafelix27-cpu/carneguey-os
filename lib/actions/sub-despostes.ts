@@ -4,10 +4,15 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminContext } from "@/lib/auth";
 import { subDesposteSchema } from "@/lib/validations/sub-desposte";
+import { getPermissions } from "@/lib/permissions.server";
 
-type Result = { ok: true } | { error: string };
+type Result = { ok: true; applied?: boolean } | { error: string };
 
-/** Cajera o admin registra un sub-desposte pendiente con sus productos. */
+/**
+ * Registra un sub-desposte con sus productos. Si el negocio configuró
+ * "Hacer un sub-desposte" como acción libre (migración 038), se aplica de una
+ * vez al inventario; si no, queda pendiente de aprobación del dueño.
+ */
 export async function createSubDesposte(values: unknown): Promise<Result> {
   const parsed = subDesposteSchema.safeParse(values);
   if (!parsed.success) {
@@ -77,10 +82,32 @@ export async function createSubDesposte(values: unknown): Promise<Result> {
     };
   }
 
+  // Acción libre: se aplica sola. La base vuelve a verificar el permiso y el
+  // stock disponible, así que un fallo aquí lo deja pendiente en vez de
+  // aplicarlo a medias.
+  const permissions = await getPermissions(supabase);
+  let applied = false;
+  if (permissions.perm_sub_desposte) {
+    const { error: applyError } = await supabase.rpc("fn_review_sub_desposte", {
+      p_sub_id: head.id,
+      p_approve: true,
+    });
+    if (applyError) {
+      revalidatePath("/empleado/sub-desposte");
+      revalidatePath("/admin/sub-despostes");
+      revalidatePath("/admin");
+      return {
+        error: `El sub-desposte quedó pendiente de aprobación: ${applyError.message}`,
+      };
+    }
+    applied = true;
+  }
+
   revalidatePath("/empleado/sub-desposte");
   revalidatePath("/admin/sub-despostes");
+  revalidatePath("/admin/inventario");
   revalidatePath("/admin");
-  return { ok: true };
+  return { ok: true, applied };
 }
 
 /** El administrador aprueba o rechaza un sub-desposte. Solo al aprobar toca inventario. */

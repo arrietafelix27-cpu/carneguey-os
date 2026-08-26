@@ -22,6 +22,7 @@ import {
   IdCard,
   HandCoins,
   Settings,
+  ShieldCheck,
   Package,
   UsersRound,
   ScanLine,
@@ -99,6 +100,11 @@ const ADMIN_NAV: Entry[] = [
     children: [
       { href: "/admin/productos", label: "Productos", icon: Package },
       { href: "/admin/equipo", label: "Equipo", icon: UsersRound },
+      {
+        href: "/admin/configuracion/acciones",
+        label: "Acciones delicadas",
+        icon: ShieldCheck,
+      },
       { href: "/empleado/pos", label: "POS", icon: ScanLine },
     ],
   },

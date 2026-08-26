@@ -129,7 +129,11 @@ export function SubDesposteForm({
         toast.error(r.error);
         return;
       }
-      toast.success("Sub-desposte registrado. Queda pendiente de aprobación.");
+      toast.success(
+        r.applied
+          ? "Sub-desposte aplicado al inventario."
+          : "Sub-desposte registrado. Queda pendiente de aprobación.",
+      );
       router.push("/empleado");
     });
   }

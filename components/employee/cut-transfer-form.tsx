@@ -51,7 +51,11 @@ export function CutTransferForm({
         toast.error(r.error);
         return;
       }
-      toast.success("Transferencia registrada. Queda pendiente de aprobación.");
+      toast.success(
+        r.applied
+          ? "Transferencia aplicada al inventario."
+          : "Transferencia registrada. Queda pendiente de aprobación.",
+      );
       router.push("/empleado");
     });
   }
