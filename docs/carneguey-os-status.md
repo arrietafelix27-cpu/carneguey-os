@@ -1,100 +1,110 @@
-# Estado del proyecto — Carnegüey OS
+# Estado del proyecto — Miura
 
-> Documento vivo. Cada vez que se cierra un hito se actualiza este archivo.
+> Documento vivo. **Esta es la fuente de verdad del estado del proyecto.**
+> Cada vez que se cierra una fase se actualiza este archivo.
+>
+> Última actualización: **2026-08-26**
 
-**Versión actual en construcción:** v1.0 — Módulo de Inventario
-**Spec maestra:** [`carneguey-os-spec-v1.md`](carneguey-os-spec-v1.md)
+**Producto:** Miura — sistema de gestión completo para carnicerías (POS + administración).
 **Decisiones y deudas técnicas:** [`DECISIONS.md`](DECISIONS.md)
+**Documento histórico:** [`carneguey-os-spec-v1.md`](carneguey-os-spec-v1.md) — describe la v1.0
+original (módulo de inventario para una sola carnicería). Útil como referencia
+del modelo de datos y los flujos de inventario; **no** como definición de alcance.
 
 ---
 
-## Estado al 2026-05-20 (alcance redefinido)
+## Dónde estamos
 
-Alcance redefinido por Félix el 2026-05-20 (ver DECISIONS / memoria). Todo el
-flujo construido: compras (canal/cerdo, pollo y otros, ganado en pie +
-llegada de canales), desposte con contador, vista admin (últimas entradas +
-inventario), y conteo quincenal. **Pendiente:** aplicar `003_sales_count.sql`
-en Supabase y prueba final de Félix. Fuera de alcance (fase 2): cuadre,
-crédito, cuentas por pagar, gastos, WhatsApp, dashboard, notificaciones.
+La app está **funcionalmente completa en cobertura**: 52 pantallas, 37 migraciones,
+~20.700 líneas. Cubre POS, compras (res en pie, canal directo, cerdo, pollo, otros),
+desposte y sub-desposte, transferencias de cortes, inventario, conteo quincenal,
+cuadre de caja, gastos y egresos, clientes con crédito, proveedores con cuentas por
+pagar, nómina y analítica de merma.
 
-## Bitácora de hitos
+**La etapa actual no es construir, es terminar**: pulir lo que existe, tapar los
+huecos funcionales detectados en la auditoría del 2026-08-26, y dejarlo listo para
+mostrárselo a carnicerías piloto.
 
-### Paso 1 · Bootstrap del proyecto — ✅ completado (2026-05-15)
+### Fases cerradas y verificadas
 
-Stack base inicializado en la raíz `/Users/felixarrieta/Desktop/carneguey/`.
-
-**Lo que quedó hecho:**
-- Next.js **15.5.18** (App Router, TypeScript, Tailwind v4, ESLint).
-- Dependencias instaladas: `@supabase/supabase-js`, `@supabase/ssr`, `react-hook-form`, `@hookform/resolvers`, `zod`, `date-fns`, `lucide-react`.
-- shadcn/ui inicializado, estilo `base-nova`, iconos `lucide`. Componentes base: `button`, `input`, `form`, `card`, `dialog`, `dropdown-menu`, `select`, `label`, `textarea`, `sonner`, `skeleton`.
-- Tokens de diseño Carnegüey aplicados en `app/globals.css` (paleta rojo de marca, SF Pro stack, radii 14/16/12, escala tipográfica iOS).
-- Clientes Supabase creados en `lib/supabase/{client,server,middleware}.ts`.
-- `middleware.ts` skeleton (passthrough, sin lógica de auth aún).
-- `.env.local.example` y `.env.local` placeholder.
-- Git inicializado por `create-next-app`.
-
-**Verificado:** `npm run dev` levanta en http://localhost:3000 sin errores y muestra el placeholder "Carnegüey OS · v1.0 en construcción".
+| Fase | Qué entregó | Referencia |
+|---|---|---|
+| **1 · Multi-negocio** | Aislamiento por `organization_id` en las tablas de negocio, RLS + funciones `SECURITY DEFINER`. Migraciones 030→033 | D-016, D-017, D-018 |
+| **2 · App unificada por rol** | Puerta única (`/`), un solo `AppNav`, protección de servidor en `/admin`. Las URLs `/admin` y `/empleado` se conservan a propósito | D-019 |
+| **3 · Báscula universal** | Patrón de código de barras por organización, detección determinista, RPC `fn_set_scale_pattern` | D-020 |
+| **Pulido · Compras y desposte** | Migración 037: bloquea merma negativa al finalizar, bloquea aprobar transferencias/sub-despostes sin stock, cancelar desposte con permisos | commits `a977878`, `d443e87` |
 
 ---
 
-### Paso 2 · Migración inicial de Supabase — ✅ redactada (2026-05-15)
+## Auditoría de punta a punta — 2026-08-26
 
-`supabase/migrations/001_initial_schema.sql` completa (bloques A–H) y
-`supabase/seed.sql` listos para ejecutar en el SQL Editor de Supabase.
+Revisión completa de las 52 pantallas, las 21 áreas de acciones y las 37 migraciones.
 
-Contenido: 12 tablas, 17 índices, función `gen_lot_code` + trigger, 9 vistas
-(3 calculadas + 5 empleado + 1 resultado-conteo admin), 30 RLS policies +
-GRANTs, 10 funciones RPC SECURITY DEFINER de inventario, trigger
-`auth.users → profiles`, bucket Storage `receipts` con policies. Seed: 3
-usuarios (1 admin + 2 cajeras), 5 proveedores, ~55 productos.
+### Lo que está sólido
 
-Decisiones técnicas registradas: D-005 a D-011 en `DECISIONS.md`.
+- **30 de 30 tablas con RLS activada.** Sin excepciones.
+- **El dinero nunca se calcula en el cliente**: costos, mermas y totales se resuelven
+  en funciones `SECURITY DEFINER` dentro de la base.
+- **Higiene de código**: cero `any`, cero `console.log`, cero TODOs pendientes,
+  `tsc --noEmit` limpio.
+- **Inmutabilidad respetada**: movimientos de inventario, despostes finalizados y
+  conteos completados no se editan ni se borran — se corrigen con ajustes nuevos.
+- **Sin marca quemada**: ningún nombre de negocio en componentes o pantallas.
+  La identidad sale de `lib/config.ts`. Listo para otro cliente.
 
-**Pendiente:** Félix ejecuta el SQL en su Supabase (instrucciones entregadas).
+### Huecos detectados (ordenados por impacto de negocio)
 
-### Paso 3 · Autenticación + roles + middleware — ✅ completado (2026-05-16)
-
-Login funcionando (verificado en navegador por Félix). Incidencia resuelta:
-los usuarios sembrados por SQL rompían GoTrue; se recrearon por Admin API
-(D-012). Admin: felix@carneguey.com / PIN 2723 (D-004). Cajeras:
-cajera1/cajera2@carneguey.com / Carneguey2026!.
-
-### Paso 4 · Gestión de proveedores y productos — ✅ redactado (2026-05-16)
-
-Panel admin con navegación. Proveedores: lista simple (sin campo tipo,
-D-013) con agregar/editar/activar. Productos: lista por categoría con
-filtros, buscador y CRUD (nombre, categoría, unidad, origen, código POS).
-Catálogo real cargado (9 proveedores, 81 productos). Build OK, RLS
-verificada. **Pendiente:** que Félix lo pruebe en el navegador.
-
-### Paso 5 · Lote canal directo (res) y cerdo — ✅ redactado (2026-05-16)
-
-Flujo de compra para la cajera: proveedor, N° canales, peso, costo, fecha,
-foto de comprobante obligatoria, notas. Crea el lote vía RPC
-`fn_create_lot_carcass` (status active) y sube el comprobante a Storage
-(`receipts`). Nav inferior del empleado. Build OK. **Pendiente:** prueba de
-Félix/cajera en el navegador.
-
-## Próximo paso
-
-### Paso 6 · Entrada directa (pollo y otros) — ⏳ siguiente
-
-Compra de pollo y otros productos que entran directo al inventario
-(sección 15.3 #5).
+1. **No se puede anular ni devolver una venta.** `lib/actions/sales.ts` solo expone
+   `completeSale`. **La base ya está preparada**: `sales.status` acepta `returned` y
+   `cancelled`, y el cuadre, los saldos de clientes y las ventas del día ya excluyen
+   las anuladas — pero ninguna ruta de código las pone en ese estado. La tubería está,
+   falta la llave. → **Fase 1**
+2. **El POS muere sin internet.** La app se renderiza en el servidor: sin señal, la
+   pantalla del POS ni siquiera abre. Sin PWA, sin manejo de conexión. → **Fase 2**
+3. **La analítica no habla de plata.** Solo mide merma y rendimiento. No hay ventas
+   del mes, margen, producto más rentable ni comparativo contra el período anterior.
+   Los datos existen; la pantalla no. Choca con la filosofía de producto
+   ("control total, no se escapa ningún dato"). → **Fase 5**
+4. **El panel del dueño solo muestra alertas.** Si no hay nada urgente queda vacío.
+   Es un panel de problemas, no de estado del negocio. → **Fase 5**
+5. **No existe el tutorial de primera vez.** Está en la visión de producto, no en el
+   código. → **Fase 6**
+6. **No hay exportación de datos** (Excel/PDF) para el contador o el dueño. → **Fase 5**
+7. **Menor:** `listTeam()` (`lib/actions/team.ts`) pagina Auth a 1000 usuarios totales
+   antes de filtrar por organización. Irrelevante hoy; anotar si Miura crece.
 
 ---
 
-## Backlog (sección 15.3 del spec)
+## Hoja de ruta
 
-1. ✅ Bootstrap del proyecto
-2. ⏳ Migración inicial Supabase + seed
-3. Auth + roles + middleware
-4. Catálogo (proveedores/productos)
-5. Lote canal directo y cerdo
-6. Entrada directa (pollo/otros)
-7. Lote en pie + llegada de canales
-8. Desposte con contador en tiempo real
-9. Inventario (admin y empleado)
-10. Conteo físico
-11. Comprobantes (Storage)
-12. Refinamiento visual + PWA + deploy Vercel
+| # | Fase | Qué se pone | Qué se modifica |
+|---|---|---|---|
+| **0** | Orden de casa | — | Documentación al día (README, este archivo, CLAUDE.md); registrar D-021 y D-022 |
+| **1** | Ventas y clientes | Anular venta y devolver venta; cobro por WhatsApp a clientes con saldo | Pulido de POS y clientes; verificar cadena venta a crédito → abono → saldo |
+| **2** | POS a prueba de fallas | Venta offline **opción B** (D-022): si el POS ya está abierto y cae la conexión, sigue vendiendo y sincroniza al volver; indicador de estado de conexión | La pantalla del POS pasa a guardar catálogo y precios en el dispositivo |
+| **3** | Finanzas | Recordatorio de cuentas por pagar próximas a vencer | Pulido de cuadre de caja, egresos y cuentas por pagar de punta a punta |
+| **4** | Nómina y equipo | Por definir tras auditoría del módulo | Pulido de pago de nómina, deducciones y gestión de empleados |
+| **5** | Analítica y panel del dueño | Analítica de dinero (ventas, margen, producto más rentable, comparativo); exportación a Excel/PDF | El panel de inicio pasa de "solo alertas" a "cómo va mi negocio hoy" + alertas debajo |
+| **6** | Primera impresión | Tutorial de primera vez; procedimiento repetible para instalar un cliente nuevo | Simplificar el menú del admin (hoy 7 grupos — demasiada puerta a la vez) |
+
+**Orden acordado con Félix (2026-08-26):** la Fase 2 va **antes** de Finanzas — un POS
+que se cae le duele más al cliente que una pantalla de finanzas incompleta.
+
+### Decisiones de negocio pendientes
+
+- **Fase 1 — anular/devolver:** ¿la cajera puede anular sola o requiere aprobación del
+  admin? ¿Se puede devolver solo parte de una venta o toda completa? ¿Hasta cuándo se
+  puede anular (mismo día, día ya cerrado)?
+- **Fase 4:** alcance real del pulido de nómina, tras auditar el módulo.
+
+---
+
+## Cómo se despliega un cliente nuevo
+
+**Cada carnicería vive en su propia base de datos** (D-021). No hay auto-registro:
+el despliegue lo hace Félix con acompañamiento, que es como se venderá en la etapa
+piloto. El procedimiento repetible se formaliza en la Fase 6.
+
+Pasos hoy: proyecto Supabase nuevo → correr las migraciones en orden → `supabase/seed.sql`
+→ `node scripts/seed-users.mjs` con las variables `MIURA_ADMIN_*` → desplegar en Vercel
+con `NEXT_PUBLIC_BUSINESS_NAME`, `NEXT_PUBLIC_OWNER_NAME` y `NEXT_PUBLIC_SITE_URL`.

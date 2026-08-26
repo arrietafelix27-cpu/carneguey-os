@@ -1,5 +1,18 @@
 # Carnegüey OS — Especificación de Requisitos v1.0
 
+> ⚠️ **DOCUMENTO HISTÓRICO — NO ES LA DEFINICIÓN DE ALCANCE ACTUAL.**
+>
+> Este documento describe la v1.0 original: un módulo de inventario para **una sola
+> carnicería** (Carnegüey, el negocio del papá de Félix, ya vendido). El producto
+> evolucionó a **Miura**, un sistema de gestión completo para carnicerías que se
+> vende a varios clientes, cada uno en su propia instancia (D-021).
+>
+> Se conserva porque el **modelo de datos y los flujos de inventario** que describe
+> siguen siendo la base real del sistema y son buena referencia.
+>
+> Para el estado actual y la hoja de ruta: [`carneguey-os-status.md`](carneguey-os-status.md).
+> Para lo que cambió desde entonces: [`DECISIONS.md`](DECISIONS.md), D-016 en adelante.
+
 **Módulo de Inventario — Primera versión funcional**
 
 ---

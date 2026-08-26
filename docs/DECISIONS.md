@@ -1,12 +1,48 @@
-# Decisiones del proyecto · Carnegüey OS
+# Decisiones del proyecto · Miura
 
 Registro de decisiones técnicas, dudas pendientes y deudas técnicas para
-discusión. Las ideas que surgen fuera del alcance de v1.0 (sección 3.2
-del spec) se anotan aquí en lugar de implementarlas.
+discusión. Las ideas que surgen fuera de la fase actual se anotan aquí en
+lugar de implementarlas.
 
 ---
 
 ## Decisiones tomadas
+
+### D-021 · Cada carnicería cliente vive en su propia base de datos
+**Fecha:** 2026-08-26
+**Decisión:** Miura se despliega **una instancia por cliente** — cada carnicería
+tiene su propio proyecto de Supabase y su propio despliegue en Vercel. No hay una
+instalación compartida con varios negocios adentro.
+**Por qué:** Félix lo planteó como el riesgo que puede matar el producto — que un
+negocio vea datos de otro. Con una sola base compartida, esa garantía depende de que
+cada pantalla, cada vista y cada función futura filtre bien, siempre. En este mismo
+proyecto ya se corrigieron dos fugas de ese tipo mientras se construía la Fase 1
+(migraciones 034 y 035: vistas sin filtro de organización y policies huérfanas). Se
+detectaron a tiempo, pero confirman que la garantía dependía de que nadie se equivocara.
+Con bases separadas la garantía es estructural, no depende del código.
+**Qué pasa con el trabajo multi-tenant de la Fase 1:** no se revierte ni estorba. En
+cada instancia habrá una sola organización y toda esa maquinaria queda inerte pero
+correcta. Si algún día se decide consolidar en una instalación compartida, la base
+técnica ya está puesta.
+**Costo asumido:** montar cada cliente nuevo es trabajo manual (proyecto Supabase +
+migraciones + seed + despliegue). Aceptable mientras Félix instale y capacite
+personalmente a cada piloto. Revisar cuando el número de clientes lo haga pesado.
+
+### D-022 · POS offline — opción B (resiliencia en sesión, no offline total)
+**Fecha:** 2026-08-26
+**Decisión:** El POS debe **seguir vendiendo si la conexión se cae con la pantalla ya
+abierta**: las ventas se guardan en el dispositivo y se envían solas al volver la señal.
+NO se soporta abrir el POS de cero sin internet.
+**Por qué:** la app se renderiza en el servidor, así que hoy sin señal la pantalla del
+POS ni siquiera carga. El offline total exigiría convertir el POS en una app autónoma
+en el dispositivo (catálogo, precios, clientes y descuentos locales) más un motor de
+sincronización y reglas de conflicto — el trabajo más grande y riesgoso que queda en el
+proyecto. El caso real no es "llegar en la mañana sin internet", es "se fue la señal a
+media mañana con el negocio lleno", y la opción B lo cubre por una fracción del costo.
+**Riesgo conocido a resolver al implementar:** dos cajeras vendiendo offline pueden
+vender el mismo stock. Al sincronizar, el inventario puede quedar negativo. La regla
+de negocio para ese caso se define al construir la fase (no se resuelve solo con código).
+**Revisar:** cuando haya clientes pagando y el offline total se justifique.
 
 ### D-020 · Fase 3 — báscula universal (patrón de código por organización)
 **Fecha:** 2026-08-14
