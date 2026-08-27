@@ -633,10 +633,13 @@ $$;
 grant execute on function public.fn_daily_summary(date) to authenticated;
 
 -- ── 10. fn_close_day: bloquea si hay anulaciones/devoluciones pendientes ────
+-- El `default null` de p_notes se conserva tal cual venía desde la 023:
+-- create or replace no puede quitarle los valores por defecto a una función
+-- que ya existe.
 create or replace function public.fn_close_day(
   p_date         date,
   p_counted_cash numeric,
-  p_notes        text
+  p_notes        text default null
 )
 returns uuid
 language plpgsql
