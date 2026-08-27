@@ -260,6 +260,15 @@ export default async function CuadreDetailPage({
         />
       </Section>
 
+      <Section title="Devoluciones">
+        <Row
+          label="Devuelto en efectivo"
+          value={amountOf("sale_returns_cash")}
+          negative
+          strong
+        />
+      </Section>
+
       {closing.notes && (
         <div className="mb-6 rounded-2xl bg-card px-5 py-4 shadow-sm">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-foreground/70">

@@ -8,9 +8,12 @@ import {
   ArrowLeftRight,
   Wallet,
   Receipt,
+  PenLine,
   type LucideIcon,
 } from "lucide-react";
 import { formatCOP, formatKg, formatQty } from "@/lib/format";
+import { SaleAdjustmentDialog } from "@/components/shared/sale-adjustment-dialog";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +65,7 @@ function qtyLabel(item: SaleItemRow): string {
 
 export function VentasDiaView({ sales }: { sales: SaleRow[] }) {
   const [active, setActive] = useState<SaleRow | null>(null);
+  const [adjusting, setAdjusting] = useState<string | null>(null);
 
   const totals = useMemo(() => {
     const byMethod: Record<string, number> = {
@@ -214,10 +218,28 @@ export function VentasDiaView({ sales }: { sales: SaleRow[] }) {
                   <span>{METHOD_LABEL[active.paymentMethod]}</span>
                 </div>
               </div>
+
+              <Button
+                variant="secondary"
+                className="w-full gap-2"
+                onClick={() => {
+                  setAdjusting(active.id);
+                  setActive(null);
+                }}
+              >
+                <PenLine className="size-4" />
+                Corregir esta venta
+              </Button>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <SaleAdjustmentDialog
+        saleId={adjusting}
+        open={adjusting !== null}
+        onOpenChange={(o) => !o && setAdjusting(null)}
+      />
     </div>
   );
 }

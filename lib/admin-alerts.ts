@@ -9,7 +9,8 @@ export type AlertIcon =
   | "bird"
   | "transfer"
   | "split"
-  | "banknote";
+  | "banknote"
+  | "undo";
 
 export type AlertSeverity = "warning" | "danger";
 
@@ -45,6 +46,7 @@ export async function getAdminAlerts(
     pendingTransfersResult,
     pendingSubDespostesResult,
     pendingOutflowsResult,
+    pendingAdjustmentsResult,
   ] = await Promise.all([
     supabase
       .from("v_lot_summary")
@@ -88,6 +90,10 @@ export async function getAdminAlerts(
       .from("cash_outflows")
       .select("id")
       .eq("status", "pending"),
+    supabase
+      .from("sale_adjustments")
+      .select("id, kind")
+      .eq("status", "pending"),
   ]);
 
   const activeLots = activeLotsResult.data ?? [];
@@ -99,9 +105,33 @@ export async function getAdminAlerts(
   const pendingTransfers = pendingTransfersResult.data ?? [];
   const pendingSubDespostes = pendingSubDespostesResult.data ?? [];
   const pendingOutflows = pendingOutflowsResult.data ?? [];
+  const pendingAdjustments = pendingAdjustmentsResult.data ?? [];
 
   const alerts: Alert[] = [];
   const lotById = new Map(allLots.map((l) => [l.lot_id as string, l]));
+
+  // 0α) Anulaciones y devoluciones de ventas pendientes — lo más urgente:
+  // suele haber un cliente esperando en el mostrador.
+  if (pendingAdjustments.length > 0) {
+    const n = pendingAdjustments.length;
+    const voids = pendingAdjustments.filter((a) => a.kind === "void").length;
+    const returns = n - voids;
+    const parts: string[] = [];
+    if (voids > 0) {
+      parts.push(`${voids} ${voids === 1 ? "anulación" : "anulaciones"}`);
+    }
+    if (returns > 0) {
+      parts.push(`${returns} ${returns === 1 ? "devolución" : "devoluciones"}`);
+    }
+    alerts.push({
+      id: "ajustes-venta-pendientes",
+      severity: "danger",
+      icon: "undo",
+      title: parts.join(" y "),
+      description: "Puede haber un cliente esperando",
+      href: "/admin/devoluciones",
+    });
+  }
 
   // 0) Transferencias de cortes pendientes de aprobación
   if (pendingTransfers.length > 0) {

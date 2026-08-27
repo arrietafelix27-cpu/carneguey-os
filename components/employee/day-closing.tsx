@@ -31,6 +31,8 @@ export type DaySummary = {
   outflowsPending: number;
   outflowsPendingCount: number;
   supplierPaymentsCash: number;
+  returnsCash: number;
+  adjustmentsPendingCount: number;
   expectedCash: number;
 };
 
@@ -55,7 +57,8 @@ export function DayClosing({
   const diff = countedNum - summary.expectedCash;
   const ok = Math.abs(diff) <= TOLERANCE;
 
-  const blocked = summary.outflowsPendingCount > 0;
+  const blocked =
+    summary.outflowsPendingCount > 0 || summary.adjustmentsPendingCount > 0;
 
   // Mientras haya egresos pendientes, refresca solo para detectar cuando
   // el admin aprueba o rechaza el último y habilitar el botón.
@@ -94,7 +97,7 @@ export function DayClosing({
 
   return (
     <div className="grid gap-5">
-      {/* Bloqueo por egresos pendientes */}
+      {/* Bloqueo por egresos, anulaciones o devoluciones sin revisar */}
       {blocked && (
         <div className="flex gap-3 rounded-3xl bg-danger/10 px-5 py-4">
           <Clock className="mt-0.5 size-5 shrink-0 text-danger" />
@@ -102,20 +105,36 @@ export function DayClosing({
             <p className="text-[15px] font-semibold text-danger">
               No puedes cerrar el día todavía
             </p>
-            <p className="mt-0.5 text-[14px] text-foreground">
-              Hay{" "}
-              <span className="font-semibold">
-                {summary.outflowsPendingCount}{" "}
-                {summary.outflowsPendingCount === 1
-                  ? "egreso pendiente"
-                  : "egresos pendientes"}
-              </span>{" "}
-              de aprobación por {formatCOP(summary.outflowsPending)}.{" "}
-              {OWNER_NAME} debe aprobarlos o rechazarlos antes de cerrar la
+            {summary.outflowsPendingCount > 0 && (
+              <p className="mt-0.5 text-[14px] text-foreground">
+                Hay{" "}
+                <span className="font-semibold">
+                  {summary.outflowsPendingCount}{" "}
+                  {summary.outflowsPendingCount === 1
+                    ? "egreso pendiente"
+                    : "egresos pendientes"}
+                </span>{" "}
+                de aprobación por {formatCOP(summary.outflowsPending)}.
+              </p>
+            )}
+            {summary.adjustmentsPendingCount > 0 && (
+              <p className="mt-0.5 text-[14px] text-foreground">
+                Hay{" "}
+                <span className="font-semibold">
+                  {summary.adjustmentsPendingCount}{" "}
+                  {summary.adjustmentsPendingCount === 1
+                    ? "anulación o devolución pendiente"
+                    : "anulaciones o devoluciones pendientes"}
+                </span>{" "}
+                de aprobación.
+              </p>
+            )}
+            <p className="mt-1 text-[14px] text-foreground">
+              {OWNER_NAME} debe aprobarlas o rechazarlas antes de cerrar la
               caja.
             </p>
             <p className="mt-1 text-[12px] text-secondary-foreground">
-              Esta pantalla se actualiza sola cuando él los revise.
+              Esta pantalla se actualiza sola cuando él las revise.
             </p>
           </div>
         </div>
@@ -162,6 +181,16 @@ export function DayClosing({
           negative
           strong
         />
+
+        <h2 className="mb-3 mt-5 text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
+          Devoluciones
+        </h2>
+        <Row
+          label="Devuelto en efectivo"
+          value={summary.returnsCash}
+          negative
+          strong
+        />
       </section>
 
       {/* Efectivo esperado */}
@@ -174,7 +203,7 @@ export function DayClosing({
         </p>
         <p className="mt-2 text-[12px] opacity-80">
           ventas en efectivo + abonos en efectivo − egresos aprobados − pagos
-          a proveedores
+          a proveedores − devoluciones en efectivo
         </p>
       </section>
 
@@ -243,10 +272,12 @@ export function DayClosing({
         </Button>
         {blocked && (
           <p className="text-center text-[13px] text-danger">
-            Bloqueado: hay {summary.outflowsPendingCount}{" "}
-            {summary.outflowsPendingCount === 1
-              ? "egreso pendiente"
-              : "egresos pendientes"}{" "}
+            Bloqueado: hay{" "}
+            {summary.outflowsPendingCount + summary.adjustmentsPendingCount}{" "}
+            {summary.outflowsPendingCount + summary.adjustmentsPendingCount ===
+            1
+              ? "cosa pendiente"
+              : "cosas pendientes"}{" "}
             de aprobación.
           </p>
         )}

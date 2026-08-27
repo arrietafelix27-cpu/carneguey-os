@@ -23,6 +23,7 @@ import {
   HandCoins,
   Settings,
   ShieldCheck,
+  Undo2,
   Package,
   UsersRound,
   ScanLine,
@@ -57,6 +58,7 @@ const EMPLOYEE_HOME = "/empleado";
 const ADMIN_NAV: Entry[] = [
   { href: "/admin", label: "Dashboard", icon: Home },
   { href: "/admin/ventas", label: "Ventas", icon: Receipt },
+  { href: "/admin/devoluciones", label: "Devoluciones", icon: Undo2 },
   {
     label: "Inventario",
     icon: Boxes,

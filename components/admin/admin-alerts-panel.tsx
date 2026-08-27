@@ -8,6 +8,7 @@ import {
   ArrowLeftRight,
   Split,
   Banknote,
+  Undo2,
   TriangleAlert,
   ChevronRight,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const ICONS: Record<AlertIcon, typeof Clock> = {
   transfer: ArrowLeftRight,
   split: Split,
   banknote: Banknote,
+  undo: Undo2,
 };
 
 export function AdminAlertsPanel({ alerts }: { alerts: Alert[] }) {

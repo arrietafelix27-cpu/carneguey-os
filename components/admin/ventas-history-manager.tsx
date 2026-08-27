@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Search, Receipt, TriangleAlert } from "lucide-react";
+import { Search, Receipt, TriangleAlert, PenLine } from "lucide-react";
 import { formatCOP, formatKg, formatQty } from "@/lib/format";
+import { SaleAdjustmentDialog } from "@/components/shared/sale-adjustment-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -93,6 +94,7 @@ export function VentasHistoryManager({
   const [method, setMethod] = useState(filters.method);
   const [q, setQ] = useState(filters.q);
   const [active, setActive] = useState<SaleRow | null>(null);
+  const [adjusting, setAdjusting] = useState<string | null>(null);
 
   const summary = useMemo(() => {
     const byMethod: Record<string, number> = {
@@ -375,10 +377,30 @@ export function VentasHistoryManager({
                   </span>
                 </div>
               </div>
+
+              {active.status !== "cancelled" && (
+                <Button
+                  variant="secondary"
+                  className="w-full gap-2"
+                  onClick={() => {
+                    setAdjusting(active.id);
+                    setActive(null);
+                  }}
+                >
+                  <PenLine className="size-4" />
+                  Corregir esta venta
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <SaleAdjustmentDialog
+        saleId={adjusting}
+        open={adjusting !== null}
+        onOpenChange={(o) => !o && setAdjusting(null)}
+      />
     </div>
   );
 }
