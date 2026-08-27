@@ -14,6 +14,7 @@ import {
 import { formatCOP } from "@/lib/format";
 import { OWNER_NAME } from "@/lib/config";
 import { createGasto } from "@/lib/actions/gastos";
+import { PhotoDeviceHint } from "@/components/shared/photo-device-hint";
 import { compressImage } from "@/lib/compress-image";
 import {
   uploadReceiptPhoto,
@@ -70,9 +71,11 @@ const STATUS_META: Record<string, { label: string; bg: string; text: string }> =
 export function GastosForm({
   employees,
   today,
+  receiptRequired,
 }: {
   employees: Employee[];
   today: TodayGasto[];
+  receiptRequired: boolean;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("sf");
@@ -100,7 +103,7 @@ export function GastosForm({
     e.preventDefault();
     if (busy) return;
     const file = fileRef.current?.files?.[0];
-    if (!file) {
+    if (!file && receiptRequired) {
       toast.error("La foto del soporte es obligatoria");
       return;
     }
@@ -110,15 +113,18 @@ export function GastosForm({
 
     (async () => {
       try {
-        setPhase("compressing");
-        const compressed = await compressImage(file);
-        setPhase("uploading");
-        const path = await uploadReceiptPhoto(compressed, "cash_outflow");
+        let path = "";
+        if (file) {
+          setPhase("compressing");
+          const compressed = await compressImage(file);
+          setPhase("uploading");
+          path = await uploadReceiptPhoto(compressed, "cash_outflow");
+        }
 
         const fd = new FormData();
         fd.set("category", snapshot.tab);
         fd.set("amount", snapshot.amount);
-        fd.set("photo_path", path);
+        if (path) fd.set("photo_path", path);
         if (snapshot.tab === "sf") fd.set("notes", snapshot.notes);
         if (snapshot.tab === "employee_advance") {
           fd.set("employee_id", snapshot.employeeId);
@@ -156,10 +162,11 @@ export function GastosForm({
     })();
   }
 
+  const suffix = receiptRequired ? "(obligatoria)" : "(opcional)";
   const photoLabel: Record<Tab, string> = {
-    sf: "Foto del soporte (obligatoria)",
-    employee_advance: "Foto del recibo firmado (obligatoria)",
-    expense: "Foto de la factura (obligatoria)",
+    sf: `Foto del soporte ${suffix}`,
+    employee_advance: `Foto del recibo firmado ${suffix}`,
+    expense: `Foto de la factura ${suffix}`,
   };
 
   return (
@@ -278,6 +285,7 @@ export function GastosForm({
         {/* Foto obligatoria */}
         <div className="grid gap-2">
           <Label htmlFor="photo">{photoLabel[tab]}</Label>
+          <PhotoDeviceHint required={receiptRequired} />
           <label
             htmlFor="photo"
             className="flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] bg-secondary px-4 py-3.5 text-[15px] text-foreground"

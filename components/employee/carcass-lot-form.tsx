@@ -23,15 +23,18 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { PhotoDeviceHint } from "@/components/shared/photo-device-hint";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
 export function CarcassLotForm({
   type,
   providers,
+  receiptRequired,
 }: {
   type: "beef_carcass" | "pork_carcass" | "poultry_carcass";
   providers: Provider[];
+  receiptRequired: boolean;
 }) {
   const router = useRouter();
   const [phase, setPhase] = useState<UploadPhase>("idle");
@@ -60,19 +63,22 @@ export function CarcassLotForm({
     fd.set("due_date", paymentMethod === "credit" ? dueDate : "");
 
     const file = fd.get("photo");
-    if (!(file instanceof File) || file.size === 0) {
+    const hasPhoto = file instanceof File && file.size > 0;
+    if (!hasPhoto && receiptRequired) {
       toast.error("La foto del comprobante es obligatoria");
       return;
     }
 
     (async () => {
       try {
-        setPhase("compressing");
-        const compressed = await compressImage(file);
-        setPhase("uploading");
-        const path = await uploadReceiptPhoto(compressed, "purchase_lot");
         fd.delete("photo");
-        fd.set("photo_path", path);
+        if (hasPhoto) {
+          setPhase("compressing");
+          const compressed = await compressImage(file);
+          setPhase("uploading");
+          const path = await uploadReceiptPhoto(compressed, "purchase_lot");
+          fd.set("photo_path", path);
+        }
 
         setPhase("saving");
         const result = await createCarcassLot(fd);
@@ -165,7 +171,10 @@ export function CarcassLotForm({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="photo">Foto del comprobante (obligatoria)</Label>
+        <Label htmlFor="photo">
+          Foto del comprobante {receiptRequired ? "(obligatoria)" : "(opcional)"}
+        </Label>
+        <PhotoDeviceHint required={receiptRequired} />
         <label
           htmlFor="photo"
           className="flex cursor-pointer items-center gap-3 rounded-md border border-input bg-secondary px-4 py-3 text-sm"

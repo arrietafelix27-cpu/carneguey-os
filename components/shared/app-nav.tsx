@@ -23,6 +23,7 @@ import {
   HandCoins,
   Settings,
   ShieldCheck,
+  ClipboardCheck,
   Undo2,
   Package,
   UsersRound,
@@ -67,6 +68,7 @@ const ADMIN_NAV: Entry[] = [
       { href: "/admin/inventario", label: "Inventario actual", icon: Warehouse },
       { href: "/admin/lotes/activos", label: "Lotes activos", icon: PackageCheck },
       { href: "/admin/lotes/nuevo-en-pie", label: "Ganado en pie", icon: ShoppingCart },
+      { href: "/admin/conteos", label: "Conteo quincenal", icon: ClipboardCheck },
     ],
   },
   {
@@ -112,41 +114,53 @@ const ADMIN_NAV: Entry[] = [
   },
 ];
 
-// Cajera PC: todo directo, sin submenús.
+// Compras y Procesos son los mismos en PC y celular: la cajera trabaja en el
+// computador del negocio y el desposte es justo lo que más se digita (los
+// pesos del papel del carnicero). Los flujos que exigen foto del comprobante
+// avisan en pantalla que se terminan desde el celular.
+const CASHIER_PURCHASES: Group = {
+  label: "Compras",
+  icon: ShoppingCart,
+  children: [
+    { href: "/empleado/compras/canal-directo", label: "Canal directo (res)", icon: Beef },
+    { href: "/empleado/compras/cerdo", label: "Cerdo en canal", icon: PiggyBank },
+    { href: "/empleado/compras/llegada-canales", label: "Llegada de canales", icon: Truck },
+    { href: "/empleado/compras/pollo", label: "Pollo", icon: Bird },
+    { href: "/empleado/compras/otros", label: "Otros productos", icon: Package },
+    { href: "/empleado/compras/corte-directo", label: "Compra directa de corte", icon: Scissors },
+  ],
+};
+
+const CASHIER_PROCESSES: Group = {
+  label: "Procesos",
+  icon: Split,
+  children: [
+    { href: "/empleado/desposte", label: "Desposte", icon: Scissors },
+    { href: "/empleado/transferencias", label: "Transferencia de cortes", icon: ArrowLeftRight },
+    { href: "/empleado/sub-desposte", label: "Sub-desposte", icon: Split },
+  ],
+};
+
+// Cajera PC: el POS de primero (su herramienta principal), y todo lo demás.
 const CASHIER_DESKTOP: Entry[] = [
   { href: "/empleado/pos", label: "POS", icon: ScanLine },
   { href: "/empleado/ventas-dia", label: "Ventas del día", icon: Receipt },
+  CASHIER_PURCHASES,
+  CASHIER_PROCESSES,
+  { href: "/empleado/gastos", label: "Gastos y salidas", icon: Wallet },
   { href: "/empleado/clientes", label: "Clientes", icon: Users },
   { href: "/empleado/proveedores", label: "Proveedores", icon: Truck },
   { href: "/empleado/cierre", label: "Cerrar día", icon: CalendarCheck },
 ];
 
-// Cajera móvil: submenús de Compras y Procesos. Sin Proveedores (solo PC).
+// Cajera móvil: lo mismo, sin el POS (solo funciona con báscula en el PC).
 const CASHIER_MOBILE: Entry[] = [
-  {
-    label: "Compras",
-    icon: ShoppingCart,
-    children: [
-      { href: "/empleado/compras/canal-directo", label: "Canal directo (res)", icon: Beef },
-      { href: "/empleado/compras/cerdo", label: "Cerdo en canal", icon: PiggyBank },
-      { href: "/empleado/compras/llegada-canales", label: "Llegada de canales", icon: Truck },
-      { href: "/empleado/compras/pollo", label: "Pollo", icon: Bird },
-      { href: "/empleado/compras/otros", label: "Otros productos", icon: Package },
-      { href: "/empleado/compras/corte-directo", label: "Compra directa de corte", icon: Scissors },
-    ],
-  },
-  {
-    label: "Procesos",
-    icon: Split,
-    children: [
-      { href: "/empleado/desposte", label: "Desposte", icon: Scissors },
-      { href: "/empleado/transferencias", label: "Transferencia de cortes", icon: ArrowLeftRight },
-      { href: "/empleado/sub-desposte", label: "Sub-desposte", icon: Split },
-    ],
-  },
+  CASHIER_PURCHASES,
+  CASHIER_PROCESSES,
   { href: "/empleado/gastos", label: "Gastos y salidas", icon: Wallet },
   { href: "/empleado/clientes", label: "Clientes", icon: Users },
   { href: "/empleado/proveedores", label: "Proveedores", icon: Truck },
+  { href: "/empleado/cierre", label: "Cerrar día", icon: CalendarCheck },
 ];
 
 function isActive(pathname: string, href: string): boolean {

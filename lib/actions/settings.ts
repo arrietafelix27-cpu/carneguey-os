@@ -4,7 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { getAdminContext } from "@/lib/auth";
 import { coerceDecimal } from "@/lib/validations/decimal";
-import { PERMISSION_KEYS, type PermissionKey } from "@/lib/permissions";
+import { POLICY_KEYS, type PolicyKey } from "@/lib/permissions";
 
 type Result = { ok: true } | { error: string };
 
@@ -47,16 +47,16 @@ export async function updateMermaThresholds(
 }
 
 /**
- * Guarda las acciones delicadas: cuáles puede hacer la cajera sola y cuáles
- * necesitan aprobación del dueño (migración 038). Solo admin.
+ * Guarda las políticas del negocio: qué puede hacer la cajera sola (038) y de
+ * qué flujos se exige foto del comprobante (040). Solo admin.
  */
 export async function updateDelicateActions(
-  values: Partial<Record<PermissionKey, boolean>>,
+  values: Partial<Record<PolicyKey, boolean>>,
 ): Promise<Result> {
   const { supabase, isAdmin } = await getAdminContext();
   if (!isAdmin) return { error: "No autorizado" };
 
-  const rows = PERMISSION_KEYS.filter((k) => typeof values[k] === "boolean").map(
+  const rows = POLICY_KEYS.filter((k) => typeof values[k] === "boolean").map(
     (key) => ({
       key,
       value: values[key] ? 1 : 0,
@@ -75,5 +75,7 @@ export async function updateDelicateActions(
   revalidatePath("/admin/sub-despostes");
   revalidatePath("/admin/egresos");
   revalidatePath("/admin");
+  revalidatePath("/empleado/compras", "layout");
+  revalidatePath("/empleado/gastos");
   return { ok: true };
 }

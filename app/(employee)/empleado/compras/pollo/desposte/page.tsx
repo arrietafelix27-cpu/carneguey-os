@@ -2,11 +2,15 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getActiveProviders } from "@/lib/cache";
 import { CarcassLotForm } from "@/components/employee/carcass-lot-form";
+import { getPolicies } from "@/lib/permissions.server";
 
 export const metadata = { title: "Pollo para desposte" };
 
 export default async function PolloDespostePage() {
-  const providers = await getActiveProviders();
+  const [providers, policies] = await Promise.all([
+    getActiveProviders(),
+    getPolicies(),
+  ]);
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-6">
@@ -23,7 +27,11 @@ export default async function PolloDespostePage() {
       <p className="mb-5 text-sm text-muted-foreground">
         Pollos enteros que entran al cuarto frío para despostarse después.
       </p>
-      <CarcassLotForm type="poultry_carcass" providers={providers} />
+      <CarcassLotForm
+        type="poultry_carcass"
+        providers={providers}
+        receiptRequired={policies.receipt_carcass_lot}
+      />
     </main>
   );
 }

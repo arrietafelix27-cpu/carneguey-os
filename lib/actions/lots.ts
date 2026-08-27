@@ -8,6 +8,7 @@ import {
   liveLotSchema,
   lotArrivalSchema,
 } from "@/lib/validations/lot";
+import { getPolicies } from "@/lib/permissions.server";
 
 type Result = { ok: true; lotCode: string } | { error: string };
 type VoidResult = { ok: true } | { error: string };
@@ -49,12 +50,17 @@ export async function createCarcassLot(formData: FormData): Promise<Result> {
   }
 
   // La foto ya se subió desde el navegador; aquí llega solo la ruta.
+  // Que sea obligatoria u opcional lo decide el dueño (migración 040).
   const photoPath = String(formData.get("photo_path") ?? "").trim();
-  if (!photoPath) {
-    return { error: "La foto del comprobante es obligatoria" };
-  }
 
   const supabase = await createClient();
+
+  if (!photoPath) {
+    const policies = await getPolicies(supabase);
+    if (policies.receipt_carcass_lot) {
+      return { error: "La foto del comprobante es obligatoria" };
+    }
+  }
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -89,12 +95,14 @@ export async function createCarcassLot(formData: FormData): Promise<Result> {
   const { lot_id: lotId, lot_code: lotCode } = lotRows[0];
 
   // Indexa el comprobante (ya subido) en receipts.
-  await supabase.from("receipts").insert({
-    entity_type: "purchase_lot",
-    entity_id: lotId,
-    file_path: photoPath,
-    uploaded_by: user.id,
-  });
+  if (photoPath) {
+    await supabase.from("receipts").insert({
+      entity_type: "purchase_lot",
+      entity_id: lotId,
+      file_path: photoPath,
+      uploaded_by: user.id,
+    });
+  }
 
   revalidatePath("/empleado/compras");
   return { ok: true, lotCode };
@@ -157,6 +165,16 @@ export async function registerLotArrival(
   if (!user) return { error: "No autorizado" };
 
   const d = parsed.data;
+  // Si el negocio exige foto (migración 040), se revisa ANTES de registrar la
+  // llegada — si no, quedaría registrada y se rechazaría después.
+  const photoPath = String(formData.get("photo_path") ?? "").trim();
+  if (!photoPath) {
+    const policies = await getPolicies(supabase);
+    if (policies.receipt_lot_arrival) {
+      return { error: "La foto del comprobante es obligatoria" };
+    }
+  }
+
   const { error } = await supabase.rpc("fn_register_lot_arrival", {
     p_lot_id: d.lot_id,
     p_carcass_count: d.carcass_count,
@@ -168,8 +186,6 @@ export async function registerLotArrival(
     return { error: `No se pudo registrar la llegada: ${error.message}` };
   }
 
-  // Foto del comprobante (opcional). Ya subida desde el navegador.
-  const photoPath = String(formData.get("photo_path") ?? "").trim();
   if (photoPath) {
     await supabase.from("receipts").insert({
       entity_type: "purchase_lot",

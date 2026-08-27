@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getAllProviders } from "@/lib/cache";
+import { getPolicies } from "@/lib/permissions.server";
 import {
   LlegadaCanalesManager,
   type PendingLot,
@@ -11,6 +12,7 @@ export const metadata = { title: "Llegada de canales" };
 
 export default async function LlegadaCanalesPage() {
   const supabase = await createClient();
+  const policies = await getPolicies(supabase);
 
   const [{ data: lots }, providers] = await Promise.all([
     supabase
@@ -47,7 +49,10 @@ export default async function LlegadaCanalesPage() {
       <p className="mb-5 text-sm text-muted-foreground">
         Lotes de ganado en pie pendientes de recibir.
       </p>
-      <LlegadaCanalesManager lots={pending} />
+      <LlegadaCanalesManager
+        lots={pending}
+        receiptRequired={policies.receipt_lot_arrival}
+      />
     </main>
   );
 }

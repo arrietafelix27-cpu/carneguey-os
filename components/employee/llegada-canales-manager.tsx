@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2, Camera, Truck, CheckCircle2 } from "lucide-react";
 import { registerLotArrival } from "@/lib/actions/lots";
 import { compressImage } from "@/lib/compress-image";
+import { PhotoDeviceHint } from "@/components/shared/photo-device-hint";
 import {
   uploadReceiptPhoto,
   PHASE_LABEL,
@@ -33,7 +34,13 @@ export type PendingLot = {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-export function LlegadaCanalesManager({ lots }: { lots: PendingLot[] }) {
+export function LlegadaCanalesManager({
+  lots,
+  receiptRequired,
+}: {
+  lots: PendingLot[];
+  receiptRequired: boolean;
+}) {
   const router = useRouter();
   const [phase, setPhase] = useState<UploadPhase>("idle");
   const busy = phase !== "idle";
@@ -47,6 +54,11 @@ export function LlegadaCanalesManager({ lots }: { lots: PendingLot[] }) {
     fd.set("lot_id", active.id);
     const lotCode = active.lot_code;
     const file = fd.get("photo");
+    const hasPhoto = file instanceof File && file.size > 0;
+    if (!hasPhoto && receiptRequired) {
+      toast.error("La foto del comprobante es obligatoria");
+      return;
+    }
 
     (async () => {
       try {
@@ -168,7 +180,11 @@ export function LlegadaCanalesManager({ lots }: { lots: PendingLot[] }) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="photo">Foto del comprobante (opcional)</Label>
+              <Label htmlFor="photo">
+                Foto del comprobante{" "}
+                {receiptRequired ? "(obligatoria)" : "(opcional)"}
+              </Label>
+              <PhotoDeviceHint required={receiptRequired} />
               <label
                 htmlFor="photo"
                 className="flex cursor-pointer items-center gap-3 rounded-md border border-input bg-secondary px-4 py-3 text-sm"

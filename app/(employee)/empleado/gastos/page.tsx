@@ -3,6 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import type { OutflowCategory } from "@/lib/validations/cash-outflow";
+import { getPolicies } from "@/lib/permissions.server";
 import {
   GastosForm,
   type Employee,
@@ -14,6 +15,8 @@ export const dynamic = "force-dynamic";
 
 export default async function GastosCajeraPage() {
   const supabase = await createClient();
+
+  const policies = await getPolicies(supabase);
 
   const [{ data: employees }, { data: outflows }] = await Promise.all([
     supabase.from("v_employees_active").select("id, name").order("name"),
@@ -55,7 +58,11 @@ export default async function GastosCajeraPage() {
         Gastos y salidas
       </h1>
 
-      <GastosForm employees={employeeList} today={today} />
+      <GastosForm
+        employees={employeeList}
+        today={today}
+        receiptRequired={policies.receipt_expense}
+      />
     </main>
   );
 }

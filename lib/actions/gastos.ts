@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { EXPENSE_SUBCATEGORIES } from "@/lib/validations/cash-outflow";
+import { getPolicies } from "@/lib/permissions.server";
 
 type Result = { ok: true } | { error: string };
 
@@ -25,8 +26,8 @@ export async function createGasto(formData: FormData): Promise<Result> {
   if (amount <= 0) return { error: "El monto debe ser mayor a 0" };
 
   // La foto ya se subió desde el navegador; aquí llega solo la ruta.
+  // Que sea obligatoria u opcional lo decide el dueño (migración 040).
   const photoPath = String(formData.get("photo_path") ?? "").trim();
-  if (!photoPath) return { error: "La foto del soporte es obligatoria" };
 
   const notes = String(formData.get("notes") ?? "").trim() || null;
 
@@ -35,6 +36,13 @@ export async function createGasto(formData: FormData): Promise<Result> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "No autorizado" };
+
+  if (!photoPath) {
+    const policies = await getPolicies(supabase);
+    if (policies.receipt_expense) {
+      return { error: "La foto del soporte es obligatoria" };
+    }
+  }
 
   let outflowId: string;
 
@@ -92,17 +100,20 @@ export async function createGasto(formData: FormData): Promise<Result> {
     return { error: "Categoría inválida" };
   }
 
-  // Indexa la foto (ya subida) en receipts.
-  const { error: receiptError } = await supabase.from("receipts").insert({
-    entity_type: "cash_outflow",
-    entity_id: outflowId,
-    file_path: photoPath,
-    uploaded_by: user.id,
-  });
-  if (receiptError) {
-    return {
-      error: `El registro se guardó pero la foto no quedó indexada: ${receiptError.message}`,
-    };
+  // Indexa la foto (ya subida) en receipts. Si el negocio no exige foto, puede
+  // no venir ninguna.
+  if (photoPath) {
+    const { error: receiptError } = await supabase.from("receipts").insert({
+      entity_type: "cash_outflow",
+      entity_id: outflowId,
+      file_path: photoPath,
+      uploaded_by: user.id,
+    });
+    if (receiptError) {
+      return {
+        error: `El registro se guardó pero la foto no quedó indexada: ${receiptError.message}`,
+      };
+    }
   }
 
   revalidatePath("/empleado/gastos");
