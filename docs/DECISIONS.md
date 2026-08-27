@@ -219,17 +219,37 @@ día se necesita un catálogo de proveedores global.
 
 ## Deudas técnicas
 
+### DT-005 · Contraseñas de prueba quedaron en un repositorio público
+**Fecha detectada:** 2026-08-27
+**Descripción:** `github.com/arrietafelix27-cpu/carneguey-os` es **público**, y hasta
+esta fecha `docs/DECISIONS.md` contenía en texto plano el PIN del admin y la
+contraseña de las cajeras (DT-001 y DT-004). Cualquiera podía leerlas.
+**Impacto real:** bajo — son credenciales de la instancia de prueba de un negocio
+que ya se vendió. Pero el mismo descuido con un cliente real expondría su
+operación y su plata.
+**Hecho:** las contraseñas se quitaron de la documentación en este commit.
+**Pendiente de Félix (no lo puede hacer el agente):**
+1. Poner el repositorio en privado desde GitHub.
+2. Rotar esas contraseñas en Supabase — quitarlas del archivo no las borra del
+   historial de git; ya estuvieron públicas.
+**Regla desde ahora:** ninguna contraseña, llave ni token real se escribe en
+archivos del repositorio. Los secretos viven solo en `.env.local` (que está en
+`.gitignore`); la documentación referencia el *nombre* de la variable, nunca su
+valor.
+
 ### DT-001 · Contraseñas iniciales sin flow de cambio obligatorio
 **Fecha:** 2026-05-15
-**Descripción:** Los tres usuarios semilla se crean con contraseña provisional `Carneguey2026!`. No existe en v1.0 un flujo de "cambio obligatorio en primer login". Félix cambia las contraseñas manualmente desde Supabase Studio después del primer login de cada usuaria.
-**Riesgo:** Si una contraseña inicial se filtra antes del cambio manual, el atacante tiene acceso a la cuenta hasta que Félix la rote.
-**Acción futura:** Implementar `force_password_change` flag en `profiles` y middleware que redirige a `/cambiar-clave` mientras el flag esté en true. Evaluar para v1.1.
+**Descripción:** Los usuarios semilla se creaban con una contraseña provisional fija.
+**Riesgo:** Si una contraseña inicial se filtra antes del cambio manual, el atacante tiene acceso a la cuenta hasta que se rote.
+**Estado:** mitigado — la migración 029 agregó `must_change_password` y el usuario debe cambiarla en su primer ingreso. El admin de cada instancia se crea con `scripts/seed-users.mjs` leyendo `MIURA_ADMIN_*` de `.env.local` (nunca valores quemados), y el resto del equipo se crea desde la app.
+**Nunca:** escribir contraseñas reales en este archivo ni en ningún documento del repositorio — ver DT-005.
 
 ### DT-004 · PIN corto de 4 dígitos para el admin (decisión del dueño)
 **Fecha:** 2026-05-16
-**Descripción:** Félix pidió cambiar su usuario a `felix@carneguey.com` con contraseña `2723` (4 dígitos). Se le explicó el riesgo de seguridad de un PIN tan corto en un sistema con datos financieros; lo aceptó explícitamente. Se bajó el mínimo de la validación de la app (zod) de 6 a 4 caracteres. Las cajeras siguen con `Carneguey2026!`.
+**Descripción:** Félix pidió un PIN de 4 dígitos para su usuario admin de pruebas. Se le explicó el riesgo en un sistema con datos financieros; lo aceptó explícitamente. Se bajó el mínimo de la validación de la app (zod) de 6 a 4 caracteres.
 **Por qué funciona sin tocar config de Supabase:** las contraseñas se fijan por SQL directo con `crypt()`, lo que evita la validación de longitud de la Auth API de Supabase (que solo aplica a signup/update vía API, no a sign-in ni a hash insertado por SQL).
-**Riesgo asumido:** un PIN de 4 dígitos numéricos es trivial de adivinar por fuerza bruta si alguien tiene acceso a la pantalla de login. Mitigación futura sugerida: rate limiting de intentos / 2FA para el admin. Evaluar en v1.1.
+**Riesgo asumido:** un PIN de 4 dígitos numéricos es trivial de adivinar por fuerza bruta si alguien tiene acceso a la pantalla de login.
+**Pendiente antes del primer cliente real:** subir el mínimo de vuelta a 6+ y evaluar límite de intentos fallidos. Un PIN de 4 dígitos no puede salir a producción en la instancia de otro negocio.
 
 ### DT-002 · `pos_code` de productos queda NULL en seed
 **Fecha:** 2026-05-15
