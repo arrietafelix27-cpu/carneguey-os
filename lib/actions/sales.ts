@@ -20,6 +20,10 @@ const saleSchema = z
     total: z.number().min(0),
     amount_paid: z.number().min(0).nullable().optional(),
     change_given: z.number().nullable().optional(),
+    // Identificador generado en el POS antes de intentar cobrar. Hace que
+    // reintentar una venta que se cayó por falta de señal sea seguro: si ya
+    // había entrado, la base devuelve la misma en vez de duplicarla (042).
+    client_ref: z.string().min(8).max(64).optional(),
     items: z.array(itemSchema).min(1, "La venta no tiene productos"),
   })
   .refine((v) => v.payment_method !== "credit" || !!v.customer_id, {
@@ -49,6 +53,7 @@ export async function completeSale(values: unknown): Promise<Result> {
     p_amount_paid: d.amount_paid ?? null,
     p_change_given: d.change_given ?? null,
     p_items: d.items,
+    p_client_ref: d.client_ref ?? null,
   });
 
   if (error || !data) {

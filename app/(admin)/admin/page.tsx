@@ -6,6 +6,7 @@ import { getAdminAlerts } from "@/lib/admin-alerts";
 import { getMoneySnapshot } from "@/lib/analytics-money";
 import { formatCOP } from "@/lib/format";
 import { AdminAlertsPanel } from "@/components/admin/admin-alerts-panel";
+import { FirstRunTour } from "@/components/admin/first-run-tour";
 
 export const metadata = { title: "Panel" };
 export const dynamic = "force-dynamic";
@@ -32,6 +33,8 @@ export default async function AdminDashboard() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-9">
+      <FirstRunTour />
+
       <header className="mb-7">
         <p className="text-[13px] font-semibold uppercase tracking-wide text-secondary-foreground/70">
           Panel de administración

@@ -8,12 +8,15 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   ScanLine,
   Trash2,
   Loader2,
   Monitor,
+  WifiOff,
+  RefreshCw,
   ChevronDown,
   Check,
   User,
@@ -21,6 +24,14 @@ import {
 import { formatCOP } from "@/lib/format";
 import { parseBarcode, type ScalePattern } from "@/lib/barcode";
 import { completeSale } from "@/lib/actions/sales";
+import {
+  newClientRef,
+  enqueue,
+  dequeue,
+  bumpAttempts,
+  readQueue,
+  isNetworkFailure,
+} from "@/lib/offline-sales";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -133,6 +144,7 @@ export function PosTerminal({
   customers: PosCustomer[];
   scalePattern: ScalePattern | null;
 }) {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
 
@@ -157,6 +169,78 @@ export function PosTerminal({
   const [changeOpen, setChangeOpen] = useState(false);
   const [changeValue, setChangeValue] = useState(0);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+
+  // ── Ventas pendientes por falta de señal (D-022) ──────────────────────────
+  const [online, setOnline] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [flushing, setFlushing] = useState(false);
+
+  /**
+   * Reenvía las ventas que quedaron guardadas sin señal. Es seguro llamarla
+   * cuantas veces sea: cada venta lleva su `client_ref`, así que si alguna ya
+   * había entrado, la base devuelve la misma en vez de duplicarla.
+   */
+  const flushPending = useCallback(async () => {
+    if (typeof navigator !== "undefined" && !navigator.onLine) return;
+    const queue = readQueue();
+    if (queue.length === 0) return;
+
+    setFlushing(true);
+    let sent = 0;
+    for (const pending of queue) {
+      try {
+        const result = await completeSale(pending.payload);
+        if ("error" in result) {
+          // El servidor la rechazó por una razón de negocio (cupo, producto
+          // inválido). Reintentar no la va a arreglar: se saca de la cola y se
+          // le avisa a la cajera para que la vuelva a hacer.
+          dequeue(pending.clientRef);
+          toast.error(
+            `Una venta guardada no se pudo registrar (${pending.label}): ${result.error}`,
+          );
+          continue;
+        }
+        dequeue(pending.clientRef);
+        sent += 1;
+      } catch (err) {
+        if (isNetworkFailure(err)) {
+          bumpAttempts(pending.clientRef);
+          break; // sigue sin señal: se reintenta después
+        }
+        bumpAttempts(pending.clientRef);
+      }
+    }
+    setPendingCount(readQueue().length);
+    setFlushing(false);
+    if (sent > 0) {
+      toast.success(
+        sent === 1
+          ? "Se envió la venta que estaba guardada."
+          : `Se enviaron ${sent} ventas que estaban guardadas.`,
+      );
+      router.refresh();
+    }
+  }, [router]);
+
+  useEffect(() => {
+    const sync = () => {
+      const isOnline = navigator.onLine;
+      setOnline(isOnline);
+      if (isOnline) void flushPending();
+    };
+    sync();
+    setPendingCount(readQueue().length);
+    window.addEventListener("online", sync);
+    window.addEventListener("offline", sync);
+    // Reintento periódico: el evento "online" no siempre dispara cuando la
+    // señal vuelve a medias (wifi conectado pero sin internet real).
+    const timer = setInterval(() => void flushPending(), 30_000);
+    return () => {
+      window.removeEventListener("online", sync);
+      window.removeEventListener("offline", sync);
+      clearInterval(timer);
+    };
+  }, [flushPending]);
   const [isPending, startTransition] = useTransition();
 
   const scanRef = useRef<HTMLInputElement>(null);
@@ -335,26 +419,54 @@ export function PosTerminal({
 
     const isCash = method === "cash";
     const isCredit = method === "credit";
+    const clientRef = newClientRef();
+
+    const payload = {
+      payment_method: method,
+      customer_id: customer?.id ?? null,
+      subtotal: totals.subtotal,
+      discount_total: totals.discountTotal,
+      total: totals.total,
+      amount_paid: isCash ? receivedNum : isCredit ? 0 : totals.total,
+      change_given: isCash ? change : 0,
+      client_ref: clientRef,
+      items: items.map((it) => {
+        const l = lineOf(it, customer);
+        return {
+          product_id: it.productId,
+          quantity: it.quantity,
+          unit_price: l.unit,
+          total_price: l.total,
+        };
+      }),
+    };
 
     startTransition(async () => {
-      const r = await completeSale({
-        payment_method: method,
-        customer_id: customer?.id ?? null,
-        subtotal: totals.subtotal,
-        discount_total: totals.discountTotal,
-        total: totals.total,
-        amount_paid: isCash ? receivedNum : isCredit ? 0 : totals.total,
-        change_given: isCash ? change : 0,
-        items: items.map((it) => {
-          const l = lineOf(it, customer);
-          return {
-            product_id: it.productId,
-            quantity: it.quantity,
-            unit_price: l.unit,
-            total_price: l.total,
-          };
-        }),
-      });
+      let r: Awaited<ReturnType<typeof completeSale>>;
+      try {
+        r = await completeSale(payload);
+      } catch (err) {
+        // Sin señal: la venta NO se pierde. Se guarda en el computador y se
+        // manda sola cuando vuelva el internet (D-022). Reintentar es seguro
+        // gracias al client_ref.
+        if (isNetworkFailure(err)) {
+          enqueue({
+            clientRef,
+            payload,
+            label: `${formatCOP(totals.total)} · ${PAY_LABELS[method]}`,
+            savedAt: Date.now(),
+            attempts: 1,
+          });
+          setPendingCount(readQueue().length);
+          toast.success(
+            "Sin internet: la venta quedó guardada y se enviará sola.",
+          );
+          reset();
+          return;
+        }
+        toast.error("No se pudo cobrar. Intenta de nuevo.");
+        return;
+      }
       if ("error" in r) {
         toast.error(r.error);
         return;
@@ -452,6 +564,30 @@ export function PosTerminal({
               Punto de venta
             </h1>
           </div>
+
+          {/* Estado de la conexión. Solo aparece cuando hay algo que decir. */}
+          {(!online || pendingCount > 0) && (
+            <div
+              className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${
+                online
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-[var(--brand-red-soft)] text-primary"
+              }`}
+            >
+              {online ? (
+                <RefreshCw
+                  className={`size-4 ${flushing ? "animate-spin" : ""}`}
+                />
+              ) : (
+                <WifiOff className="size-4" />
+              )}
+              {!online
+                ? pendingCount > 0
+                  ? `Sin internet · ${pendingCount} venta${pendingCount === 1 ? "" : "s"} guardada${pendingCount === 1 ? "" : "s"}`
+                  : "Sin internet · puedes seguir vendiendo"
+                : `Enviando ${pendingCount} venta${pendingCount === 1 ? "" : "s"} guardada${pendingCount === 1 ? "" : "s"}`}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-[1fr_360px] gap-4">

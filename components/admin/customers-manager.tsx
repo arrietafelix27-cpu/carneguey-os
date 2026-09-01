@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Pencil, Loader2, Search, ChevronRight } from "lucide-react";
 import { formatCOP } from "@/lib/format";
+import { WhatsAppReminder } from "@/components/shared/whatsapp-reminder";
 import {
   createCustomer,
   updateCustomer,
@@ -203,6 +204,12 @@ export function CustomersManager({
                 </p>
                 <p className="text-xs text-muted-foreground">saldo</p>
               </div>
+
+              <WhatsAppReminder
+                name={c.name}
+                phone={c.phone}
+                balance={c.balance}
+              />
 
               <Button
                 variant="ghost"
