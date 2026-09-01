@@ -57,53 +57,49 @@ const EMPLOYEE_HOME = "/empleado";
 
 // Admin: misma estructura en PC y móvil.
 const ADMIN_NAV: Entry[] = [
-  { href: "/admin", label: "Dashboard", icon: Home },
-  { href: "/admin/ventas", label: "Ventas", icon: Receipt },
-  { href: "/admin/devoluciones", label: "Devoluciones", icon: Undo2 },
+  { href: "/admin", label: "Inicio", icon: Home },
+  {
+    label: "Ventas",
+    icon: Receipt,
+    children: [
+      { href: "/admin/ventas", label: "Historial de ventas", icon: Receipt },
+      { href: "/admin/devoluciones", label: "Anulaciones y devoluciones", icon: Undo2 },
+      { href: "/admin/clientes", label: "Clientes", icon: Users },
+    ],
+  },
   {
     label: "Inventario",
     icon: Boxes,
     children: [
-      { href: "/admin/entradas", label: "Últimas entradas", icon: History },
       { href: "/admin/inventario", label: "Inventario actual", icon: Warehouse },
+      { href: "/admin/entradas", label: "Últimas entradas", icon: History },
       { href: "/admin/lotes/activos", label: "Lotes activos", icon: PackageCheck },
       { href: "/admin/lotes/nuevo-en-pie", label: "Ganado en pie", icon: ShoppingCart },
       { href: "/admin/conteos", label: "Conteo quincenal", icon: ClipboardCheck },
     ],
   },
   {
-    label: "Procesos",
-    icon: Scissors,
-    children: [
-      { href: "/admin/transferencias", label: "Transferencias", icon: ArrowLeftRight },
-      { href: "/admin/sub-despostes", label: "Sub-despostes", icon: Split },
-      { href: "/admin/analitica", label: "Analítica", icon: BarChart3 },
-    ],
-  },
-  {
-    label: "Finanzas",
+    label: "Dinero",
     icon: Wallet,
     children: [
+      { href: "/admin/analitica/dinero", label: "Ventas y ganancia", icon: BarChart3 },
       { href: "/admin/cuadre", label: "Cuadre de caja", icon: CalendarCheck },
       { href: "/admin/egresos", label: "Egresos", icon: Banknote },
-    ],
-  },
-  { href: "/admin/clientes", label: "Clientes", icon: Users },
-  { href: "/admin/proveedores", label: "Proveedores", icon: Truck },
-  {
-    label: "Nómina",
-    icon: IdCard,
-    children: [
-      { href: "/admin/empleados", label: "Empleados", icon: Users },
-      { href: "/admin/nomina/pago", label: "Realizar pago", icon: HandCoins },
+      { href: "/admin/proveedores", label: "Proveedores", icon: Truck },
     ],
   },
   {
-    label: "Configuración",
+    label: "Más",
     icon: Settings,
     children: [
+      { href: "/admin/actividad", label: "Actividad del equipo", icon: History },
+      { href: "/admin/analitica", label: "Rendimiento y merma", icon: Scissors },
+      { href: "/admin/transferencias", label: "Transferencias", icon: ArrowLeftRight },
+      { href: "/admin/sub-despostes", label: "Sub-despostes", icon: Split },
+      { href: "/admin/empleados", label: "Empleados", icon: IdCard },
+      { href: "/admin/nomina/pago", label: "Pagar nómina", icon: HandCoins },
       { href: "/admin/productos", label: "Productos", icon: Package },
-      { href: "/admin/equipo", label: "Equipo", icon: UsersRound },
+      { href: "/admin/equipo", label: "Usuarios", icon: UsersRound },
       {
         href: "/admin/configuracion/acciones",
         label: "Acciones delicadas",

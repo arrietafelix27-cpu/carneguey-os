@@ -17,8 +17,8 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { bogotaToday } from "@/lib/dates";
 
-const today = () => new Date().toISOString().slice(0, 10);
 
 export function LiveLotForm({ providers }: { providers: Provider[] }) {
   const router = useRouter();
@@ -160,8 +160,8 @@ export function LiveLotForm({ providers }: { providers: Provider[] }) {
           id="date"
           name="live_purchase_date"
           type="date"
-          defaultValue={today()}
-          max={today()}
+          defaultValue={bogotaToday()}
+          max={bogotaToday()}
         />
       </div>
 

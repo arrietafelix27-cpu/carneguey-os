@@ -17,8 +17,8 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { bogotaToday } from "@/lib/dates";
 
-const today = () => new Date().toISOString().slice(0, 10);
 
 type Row = { product_id: string; quantity: string; total_cost: string };
 
@@ -34,7 +34,7 @@ export function DirectPurchaseForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [providerId, setProviderId] = useState("");
-  const [date, setDate] = useState(today());
+  const [date, setDate] = useState(bogotaToday());
   const [rows, setRows] = useState<Row[]>([emptyRow()]);
   const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "credit">(
@@ -111,7 +111,7 @@ export function DirectPurchaseForm({
           id="date"
           type="date"
           value={date}
-          max={today()}
+          max={bogotaToday()}
           onChange={(e) => setDate(e.target.value)}
         />
       </div>

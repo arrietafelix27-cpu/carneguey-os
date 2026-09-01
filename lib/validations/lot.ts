@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { coerceDecimal } from "@/lib/validations/decimal";
+import { bogotaToday } from "@/lib/dates";
 
-const today = () => new Date().toISOString().slice(0, 10);
 
 export const carcassLotSchema = z.object({
   type: z.enum(["beef_carcass", "pork_carcass", "poultry_carcass"]),
@@ -25,7 +25,7 @@ export const carcassLotSchema = z.object({
   arrival_date: z
     .string()
     .min(1, "La fecha es obligatoria")
-    .refine((d) => d <= today(), "La fecha no puede ser futura"),
+    .refine((d) => d <= bogotaToday(), "La fecha no puede ser futura"),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
   payment_method: z.enum(["cash", "credit"]).default("cash"),
   due_date: z.string().trim().optional().or(z.literal("")),
@@ -64,7 +64,7 @@ export const liveLotSchema = z.object({
   live_purchase_date: z
     .string()
     .min(1, "La fecha es obligatoria")
-    .refine((d) => d <= today(), "La fecha no puede ser futura"),
+    .refine((d) => d <= bogotaToday(), "La fecha no puede ser futura"),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
   payment_method: z.enum(["cash", "credit"]).default("cash"),
   due_date: z.string().trim().optional().or(z.literal("")),
@@ -88,7 +88,7 @@ export const lotArrivalSchema = z.object({
   arrival_date: z
     .string()
     .min(1, "La fecha es obligatoria")
-    .refine((d) => d <= today(), "La fecha no puede ser futura"),
+    .refine((d) => d <= bogotaToday(), "La fecha no puede ser futura"),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 

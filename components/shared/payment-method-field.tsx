@@ -8,8 +8,8 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { bogotaToday } from "@/lib/dates";
 
-const today = () => new Date().toISOString().slice(0, 10);
 
 export function PaymentMethodField({
   value,
@@ -44,7 +44,7 @@ export function PaymentMethodField({
           <Input
             id="due_date"
             type="date"
-            min={today()}
+            min={bogotaToday()}
             value={dueDate}
             onChange={(e) => onDueDateChange(e.target.value)}
           />

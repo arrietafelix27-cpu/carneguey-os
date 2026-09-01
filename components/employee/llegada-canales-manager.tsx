@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { bogotaToday } from "@/lib/dates";
 
 export type PendingLot = {
   id: string;
@@ -32,7 +33,6 @@ export type PendingLot = {
   live_purchase_date: string | null;
 };
 
-const today = () => new Date().toISOString().slice(0, 10);
 
 export function LlegadaCanalesManager({
   lots,
@@ -174,8 +174,8 @@ export function LlegadaCanalesManager({
                 id="ad"
                 name="arrival_date"
                 type="date"
-                defaultValue={today()}
-                max={today()}
+                defaultValue={bogotaToday()}
+                max={bogotaToday()}
               />
             </div>
 

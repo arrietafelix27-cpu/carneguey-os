@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { coerceDecimal } from "@/lib/validations/decimal";
+import { bogotaToday } from "@/lib/dates";
 
-const today = () => new Date().toISOString().slice(0, 10);
 
 export const directPurchaseItemSchema = z.object({
   product_id: z.string().uuid("Selecciona un producto"),
@@ -22,7 +22,7 @@ export const directPurchaseSchema = z.object({
   purchase_date: z
     .string()
     .min(1, "La fecha es obligatoria")
-    .refine((d) => d <= today(), "La fecha no puede ser futura"),
+    .refine((d) => d <= bogotaToday(), "La fecha no puede ser futura"),
   items: z
     .array(directPurchaseItemSchema)
     .min(1, "Agrega al menos un producto"),

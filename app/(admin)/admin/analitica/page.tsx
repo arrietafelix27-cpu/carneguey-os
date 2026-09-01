@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { thresholdFor } from "@/lib/analytics";
 import { getAllProviders, getMermaThresholdsCached } from "@/lib/cache";
 import { formatKg } from "@/lib/format";
+import { bogotaThisMonth } from "@/lib/dates";
 
 export const metadata = { title: "Analítica" };
 
@@ -42,7 +43,7 @@ export default async function AnaliticaPage() {
 
   const now = Date.now();
   const since30 = now - 30 * 86400000;
-  const thisMonth = new Date().toISOString().slice(0, 7);
+  const thisMonth = bogotaThisMonth();
 
   // Merma promedio últimos 30 días
   const recent = (despostes ?? []).filter(

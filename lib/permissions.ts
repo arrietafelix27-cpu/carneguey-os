@@ -19,6 +19,7 @@ export const PERMISSION_KEYS = [
   "perm_cash_outflow",
   "perm_void_sale",
   "perm_return_sale",
+  "perm_credit_over_limit",
 ] as const;
 
 export const RECEIPT_KEYS = [
@@ -49,6 +50,7 @@ export const STRICT_POLICIES: Policies = {
   perm_cash_outflow: false,
   perm_void_sale: false,
   perm_return_sale: false,
+  perm_credit_over_limit: false,
   receipt_carcass_lot: true,
   receipt_expense: true,
   receipt_lot_arrival: true,
@@ -85,6 +87,12 @@ export const PERMISSION_INFO: {
     label: "Sacar efectivo de la caja",
     description:
       "Salidas de fondo y adelantos a empleados. Las demás salidas (pagos a proveedor, gastos) nunca piden aprobación.",
+  },
+  {
+    key: "perm_credit_over_limit",
+    label: "Pasarse del cupo de crédito",
+    description:
+      "Fiarle a un cliente por encima del cupo que le pusiste. Los clientes con cupo en cero no tienen límite.",
   },
   {
     key: "perm_cut_transfer",

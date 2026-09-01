@@ -24,8 +24,8 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { PhotoDeviceHint } from "@/components/shared/photo-device-hint";
+import { bogotaToday } from "@/lib/dates";
 
-const today = () => new Date().toISOString().slice(0, 10);
 
 export function CarcassLotForm({
   type,
@@ -165,8 +165,8 @@ export function CarcassLotForm({
           id="arrival"
           name="arrival_date"
           type="date"
-          defaultValue={today()}
-          max={today()}
+          defaultValue={bogotaToday()}
+          max={bogotaToday()}
         />
       </div>
 
