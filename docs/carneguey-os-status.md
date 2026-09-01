@@ -3,7 +3,7 @@
 > Documento vivo. **Esta es la fuente de verdad del estado del proyecto.**
 > Cada vez que se cierra una fase se actualiza este archivo.
 >
-> Última actualización: **2026-08-26**
+> Última actualización: **2026-08-27**
 
 **Producto:** Miura — sistema de gestión completo para carnicerías (POS + administración).
 **Decisiones y deudas técnicas:** [`DECISIONS.md`](DECISIONS.md)
@@ -52,52 +52,61 @@ Revisión completa de las 52 pantallas, las 21 áreas de acciones y las 37 migra
 - **Sin marca quemada**: ningún nombre de negocio en componentes o pantallas.
   La identidad sale de `lib/config.ts`. Listo para otro cliente.
 
-### Huecos detectados (ordenados por impacto de negocio)
+### Huecos detectados en la auditoría — estado
 
-1. **No se puede anular ni devolver una venta.** `lib/actions/sales.ts` solo expone
-   `completeSale`. **La base ya está preparada**: `sales.status` acepta `returned` y
-   `cancelled`, y el cuadre, los saldos de clientes y las ventas del día ya excluyen
-   las anuladas — pero ninguna ruta de código las pone en ese estado. La tubería está,
-   falta la llave. → **Fase 1**
-2. **El POS muere sin internet.** La app se renderiza en el servidor: sin señal, la
-   pantalla del POS ni siquiera abre. Sin PWA, sin manejo de conexión. → **Fase 2**
-3. **La analítica no habla de plata.** Solo mide merma y rendimiento. No hay ventas
-   del mes, margen, producto más rentable ni comparativo contra el período anterior.
-   Los datos existen; la pantalla no. Choca con la filosofía de producto
-   ("control total, no se escapa ningún dato"). → **Fase 5**
-4. **El panel del dueño solo muestra alertas.** Si no hay nada urgente queda vacío.
-   Es un panel de problemas, no de estado del negocio. → **Fase 5**
-5. **No existe el tutorial de primera vez.** Está en la visión de producto, no en el
-   código. → **Fase 6**
-6. **No hay exportación de datos** (Excel/PDF) para el contador o el dueño. → **Fase 5**
-7. **Menor:** `listTeam()` (`lib/actions/team.ts`) pagina Auth a 1000 usuarios totales
-   antes de filtrar por organización. Irrelevante hoy; anotar si Miura crece.
+| # | Hueco | Estado |
+|---|---|---|
+| 1 | No se podía anular ni devolver una venta | ✅ migración 039 |
+| 2 | El POS moría sin internet | ✅ migración 042 + cola local (opción B) |
+| 3 | La analítica no hablaba de plata | ✅ `/admin/analitica/dinero` |
+| 4 | El panel del dueño solo mostraba alertas | ✅ ahora abre con ventas y ganancia |
+| 5 | No existía el tutorial de primera vez | ✅ `FirstRunTour` |
+| 6 | No hay exportación a Excel/PDF | ⏳ pendiente |
+| 7 | `listTeam()` pagina Auth a 1000 usuarios | ⏳ irrelevante hoy |
 
----
+### Errores encontrados y corregidos (2026-08-26 / 27)
+
+- **Umbrales de merma no guardaban** desde la migración 033: el upsert usaba
+  `onConflict: "key"` y la PK había pasado a `(organization_id, key)`.
+- **Fechas en hora de Londres.** Siete archivos usaban `toISOString()` para
+  saber "hoy" — cinco horas adelante de Colombia. De 7 p.m. a medianoche eso
+  fechaba las compras al día siguiente y la validación "no puede ser futura"
+  dejaba pasar mañana. Todo pasa ahora por `lib/dates.ts`.
+- **Conteo quincenal invisible**: el módulo no estaba en ningún menú; solo se
+  llegaba si el dashboard lanzaba una alerta, o sea si Félix se atrasaba.
+- **La cajera no podía trabajar desde el computador**: Compras, Procesos y
+  Gastos existían solo en el menú del celular.
+- **Doble devolución de inventario** (introducido en la 039): anular una venta
+  con devolución previa devolvía todo otra vez. Corregido en la 041.
+- **Cupo de crédito decorativo**: `credit_limit` se guardaba y mostraba pero no
+  bloqueaba nada. Corregido en la 041 (ver D-025).
+- **Contraseñas en un repositorio público** (DT-005).
 
 ## Hoja de ruta
 
-| # | Fase | Qué se pone | Qué se modifica |
-|---|---|---|---|
-| **0** | Orden de casa | — | Documentación al día (README, este archivo, CLAUDE.md); registrar D-021 y D-022 |
-| **1** | Ventas y clientes | Anular venta y devolver venta; cobro por WhatsApp a clientes con saldo | Pulido de POS y clientes; verificar cadena venta a crédito → abono → saldo |
-| **2** | POS a prueba de fallas | Venta offline **opción B** (D-022): si el POS ya está abierto y cae la conexión, sigue vendiendo y sincroniza al volver; indicador de estado de conexión | La pantalla del POS pasa a guardar catálogo y precios en el dispositivo |
-| **3** | Finanzas | Recordatorio de cuentas por pagar próximas a vencer | Pulido de cuadre de caja, egresos y cuentas por pagar de punta a punta |
-| **4** | Nómina y equipo | Por definir tras auditoría del módulo | Pulido de pago de nómina, deducciones y gestión de empleados |
-| **5** | Analítica y panel del dueño | Analítica de dinero (ventas, margen, producto más rentable, comparativo); exportación a Excel/PDF | El panel de inicio pasa de "solo alertas" a "cómo va mi negocio hoy" + alertas debajo |
-| **6** | Primera impresión | Tutorial de primera vez; procedimiento repetible para instalar un cliente nuevo | Simplificar el menú del admin (hoy 7 grupos — demasiada puerta a la vez) |
+### Construido
 
-**Orden acordado con Félix (2026-08-26):** la Fase 2 va **antes** de Finanzas — un POS
-que se cae le duele más al cliente que una pantalla de finanzas incompleta.
+| Fase | Qué entregó |
+|---|---|
+| **0** | Documentación al día (README, este archivo, CLAUDE.md), D-021 y D-022 |
+| **1a** | Acciones delicadas configurables por negocio (038) |
+| **1b** | Anular y devolver ventas (039), con corrección en la 041 |
+| **1c** | `/admin/actividad` — historial de todo lo que hace el equipo |
+| **1d** | Cupo de crédito respetado (041) · cobro por WhatsApp · comprobantes con foto configurables (040) |
+| **2** | POS sin internet, opción B (042) · app instalable (manifest) |
+| **5** | Analítica de dinero · panel del dueño con ventas y ganancia |
+| **6** | Tutorial de primera vez · menú del admin en 5 puertas |
 
-### Decisiones de negocio pendientes
+### Pendiente
 
-- **Fase 1 — anular/devolver:** ¿la cajera puede anular sola o requiere aprobación del
-  admin? ¿Se puede devolver solo parte de una venta o toda completa? ¿Hasta cuándo se
-  puede anular (mismo día, día ya cerrado)?
-- **Fase 4:** alcance real del pulido de nómina, tras auditar el módulo.
-
----
+| # | Qué falta | Nota |
+|---|---|---|
+| **A** | **Pruebas de Félix** de todo lo anterior | Nada se ha probado en vivo |
+| **B** | Avisos al celular cuando la cajera pide una aprobación | La base (app instalable) ya está |
+| **C** | Exportar a Excel/PDF | Para el contador |
+| **D** | Pulido a fondo de Finanzas y Nómina | Auditoría módulo por módulo |
+| **E** | Diseño visual | Lo toma Félix |
+| **F** | Onboarding de negocio nuevo | Hoy es manual, y está bien para los pilotos |
 
 ## Cómo se despliega un cliente nuevo
 

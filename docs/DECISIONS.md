@@ -8,6 +8,47 @@ lugar de implementarlas.
 
 ## Decisiones tomadas
 
+### D-025 · Cupo de crédito — 0 significa "sin límite"
+**Fecha:** 2026-08-27
+**Decisión:** `customers.credit_limit = 0` significa **sin límite**, no "no se le
+fía". Cualquier valor > 0 es el tope real (saldo + venta nueva).
+**Por qué:** el cupo nunca se verificó desde que se construyó el módulo — se
+guardaba, se mostraba en la ficha, y no bloqueaba nada. Todos los clientes
+existentes tienen 0. Tratarlo como "no puede fiar" habría dejado a la
+carnicería sin poder fiarle a nadie el día que se corriera la migración.
+**Acción delicada asociada:** `perm_credit_over_limit`. De fábrica la cajera NO
+puede pasarse. No se hace con flujo de aprobación como las demás: el cliente
+está parado en el mostrador, la decisión tiene que ser inmediata — se puede o
+no se puede.
+
+### D-024 · El POS no valida stock al vender
+**Fecha:** 2026-08-27
+**Decisión:** `fn_complete_sale` no bloquea vender más de lo que dice el
+inventario. El inventario puede quedar negativo.
+**Por qué:** un POS no puede negarse a vender porque los números estén
+desfasados — el cliente está en el mostrador y la carne está en la vitrina.
+Bloquear ahí convierte un problema de registro en una venta perdida. El
+descuadre lo concilia el conteo quincenal, que existe justamente para eso.
+**Riesgo asumido:** el inventario teórico puede irse a negativo y eso se ve feo
+en pantalla. Es preferible a frenar la caja.
+
+### D-023 · Anular y devolver — dos cosas distintas en el tiempo
+**Fecha:** 2026-08-27
+**Decisión:**
+- **Anular** = la venta no debió existir. Reescribe el pasado (cambia el cuadre
+  de ese día), así que solo el MISMO día y con la caja sin cerrar.
+- **Devolver** = la venta sí ocurrió; el cliente trajo el producto HOY. No
+  reescribe nada: la plata sale de la caja de hoy. Sin límite de tiempo y
+  puede ser parcial.
+**Por qué importa la distinción:** resuelve el caso real de un restaurante que
+devuelve algo de hace días sin tener que tocar un cuadre ya firmado.
+**Reglas:** al devolver, la cajera elige si el producto vuelve al inventario o
+se da por perdido (pollo con mal olor no se revende). Si la venta fue a
+crédito, por defecto se le baja la deuda en vez de entregarle efectivo — si
+nunca pagó, darle plata sería pagarle dos veces.
+**No se puede:** anular una venta que ya tiene devoluciones (devolvería el
+inventario dos veces), ni devolver sobre una venta con anulación pendiente.
+
 ### D-021 · Cada carnicería cliente vive en su propia base de datos
 **Fecha:** 2026-08-26
 **Decisión:** Miura se despliega **una instancia por cliente** — cada carnicería
